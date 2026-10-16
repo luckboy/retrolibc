@@ -12,6 +12,7 @@ void *memccpy(void *d, const void *s, int c, size_t n)
 {
   char *d2 = (char *) d;
   const char *s2 = (const char *) s;
+  
   for(; n > 0; d2++, s2++, n--) {
     if((unsigned char) (*d2 = *s2) == (unsigned char) c) return (void *) d2;
   }

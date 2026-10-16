@@ -7,40 +7,42 @@ TEST_BUILD_DIR = $(TOP_DIR)/build/$(HOST)/libc/test
 CFLAGS = -Wall -nostdinc -I$(TOP_DIR)/include -I.
 
 STRING_OBJS = \
-	$(BUILD_DIR)/memccpy.o \
-	$(BUILD_DIR)/memchr.o \
-	$(BUILD_DIR)/memcmp.o \
-	$(BUILD_DIR)/memcpy.o \
-	$(BUILD_DIR)/memmove.o \
-	$(BUILD_DIR)/memset.o \
-	$(BUILD_DIR)/strcat.o \
-	$(BUILD_DIR)/strchr.o \
-	$(BUILD_DIR)/strcmp.o \
-	$(BUILD_DIR)/strcoll.o \
-	$(BUILD_DIR)/strcpy.o \
-	$(BUILD_DIR)/strcspn.o \
-	$(BUILD_DIR)/strlen.o \
-	$(BUILD_DIR)/strncat.o \
-	$(BUILD_DIR)/strncmp.o \
-	$(BUILD_DIR)/strncpy.o \
-	$(BUILD_DIR)/strpbrk.o \
-	$(BUILD_DIR)/strrchr.o \
-	$(BUILD_DIR)/strspn.o \
-	$(BUILD_DIR)/strstr.o \
-	$(BUILD_DIR)/strtok.o \
-	$(BUILD_DIR)/strtok_r.o \
-	$(BUILD_DIR)/strxfrm.o 
+	$(BUILD_DIR)/string_memccpy.o \
+	$(BUILD_DIR)/string_memchr.o \
+	$(BUILD_DIR)/string_memcmp.o \
+	$(BUILD_DIR)/string_memcpy.o \
+	$(BUILD_DIR)/string_memmove.o \
+	$(BUILD_DIR)/string_memset.o \
+	$(BUILD_DIR)/string_strcat.o \
+	$(BUILD_DIR)/string_strchr.o \
+	$(BUILD_DIR)/string_strcmp.o \
+	$(BUILD_DIR)/string_strcoll.o \
+	$(BUILD_DIR)/string_strcpy.o \
+	$(BUILD_DIR)/string_strcspn.o \
+	$(BUILD_DIR)/string_strlen.o \
+	$(BUILD_DIR)/string_strncat.o \
+	$(BUILD_DIR)/string_strncmp.o \
+	$(BUILD_DIR)/string_strncpy.o \
+	$(BUILD_DIR)/string_strpbrk.o \
+	$(BUILD_DIR)/string_strrchr.o \
+	$(BUILD_DIR)/string_strspn.o \
+	$(BUILD_DIR)/string_strstr.o \
+	$(BUILD_DIR)/string_strtok.o \
+	$(BUILD_DIR)/string_strtok_r.o \
+	$(BUILD_DIR)/string_strxfrm.o 
 
 OBJS = \
-	$(STRING_OBJS)
+	$(STRING_OBJS) \
+	$(BUILD_DIR)/bsearch.o \
+	$(BUILD_DIR)/qsort.o
 
 LIB = $(BUILD_DIR)/libc.a
 
-$(BUILD_DIR)/%.o: string.c $(BUILD_DIR)/.empty
-	$(CC) $(TARGET_CFLAGS) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -c -o $@ $<
+$(BUILD_DIR)/string_%.o: string.c $(BUILD_DIR)/.empty
+	$(CC) $(TARGET_CFLAGS) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -c -o $@ $<	
 
-$(BUILD_DIR)/%.o: %.c
-	$(CC) $(TARGET_CFLAGS) $(CFLAGS) $(EXTRA_CFLAGS) -o $@ $<
+$(BUILD_DIR)/%.o: %.c $(BUILD_DIR)/.empty
+	$(CC) $(TARGET_CFLAGS) $(CFLAGS) $(EXTRA_CFLAGS) -c -o $@ $<
 
 $(LIB): $(OBJS)
 	$(AR) -rc $(LIB) $(OBJS)
