@@ -5,7 +5,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+#ifndef TEST
 #include <stdlib.h>
+#else
+#define RETROLIBC_BSEARCH
+#include "retrolibc.h"
+#endif
 
 void *bsearch(const void *key, const void *base, size_t n, size_t width, int (*cmp)(const void *, const void *))
 {

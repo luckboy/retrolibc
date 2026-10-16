@@ -1,6 +1,6 @@
 DIRS = libc
 
-all run_test clean:
+all test run_test clean:
 	hostcc="$(HOSTCC)"; \
 	if [ "$$hostcc" = "" ]; then hostcc=cc; fi; \
 	cc="$(CC)"; \

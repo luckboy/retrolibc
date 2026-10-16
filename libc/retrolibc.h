@@ -1,0 +1,76 @@
+/*
+ * Copyright (c) 2026 Łukasz Szpakowski
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+#ifndef _RETROLIBC_H
+#define _RETROLIBC_H
+
+#include <stddef.h>
+
+void *retrolibc_memccpy(void *d, const void *s, int c, size_t n);
+void *retrolibc_memchr(const void *s, int c, size_t n);
+int retrolibc_memcmp(const void *s, const void *s2, size_t n);
+void *retrolibc_memcpy(void *d, const void *s, size_t n);
+void *retrolibc_memmove(void *d, const void *s, size_t n);
+void *retrolibc_memset(void *d, int c, size_t n);
+char *retrolibc_strcat(char *d, const char *s);
+char *retrolibc_strchr(const char *s, int c);
+int retrolibc_strcmp(const char *s, const char *s2);
+int retrolibc_strcoll(const char *s, const char *s2);
+char *retrolibc_strcpy(char *d, const char *s);
+size_t retrolibc_strcspn(const char *s, const char *r);
+size_t retrolibc_strlen(const char *s);
+char *retrolibc_strncat(char *d, const char *s, size_t n);
+int retrolibc_strncmp(const char *s, const char *s2, size_t n);
+char *retrolibc_strncpy(char *d, const char *s, size_t n);
+char *retrolibc_strpbrk(const char *s, const char *a);
+char *retrolibc_strrchr(const char *s, int c);
+size_t retrolibc_strspn(const char *s, const char *a);
+char *retrolibc_strstr(const char *s, const char *s2);
+char *retrolibc_strtok(char *s, const char *sep);
+char *retrolibc_strtok_r(char *s, const char *sep, char **lasts);
+size_t retrolibc_strxfrm(char *d, const char *s2, size_t n);
+
+#ifdef RETROLIBC_STRING
+#define memccpy retrolibc_memccpy
+#define memccpy retrolibc_memccpy
+#define memchr retrolibc_memchr
+#define memcmp retrolibc_memcmp
+#define memcpy retrolibc_memcpy
+#define memmove retrolibc_memmove
+#define memset retrolibc_memset
+#define strcat retrolibc_strcat
+#define strchr retrolibc_strchr
+#define strcmp retrolibc_strcmp
+#define strcoll retrolibc_strcoll
+#define strcpy retrolibc_strcpy
+#define strcspn retrolibc_strcspn
+#define strlen retrolibc_strlen
+#define strncat retrolibc_strncat
+#define strncmp retrolibc_strncmp
+#define strncpy retrolibc_strncpy
+#define strpbrk retrolibc_strpbrk
+#define strrchr retrolibc_strrchr
+#define strspn retrolibc_strspn
+#define strstr retrolibc_strstr
+#define strtok retrolibc_strtok
+#define strtok_r retrolibc_strtok_r
+#define strxfrm retrolibc_strxfrm
+#endif
+
+void *retrolibc_bsearch(const void *key, const void *base, size_t n, size_t width, int (*cmp)(const void *, const void *));
+
+#ifdef RETROLIBC_BSEARCH
+#define bsearch retrolibc_bsearch
+#endif
+
+void retrolibc_qsort(void *base, size_t n, size_t size, int (*cmp)(const void *, const void *));
+
+#ifdef RETROLIBC_QSORT
+#define qsort retrolibc_qsort
+#endif
+
+#endif

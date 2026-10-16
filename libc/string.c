@@ -5,7 +5,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+#ifndef TEST
 #include <string.h>
+#else
+#define RETROLIBC_STRING
+#include "retrolibc.h"
+#endif
 
 #ifdef L_memccpy
 void *memccpy(void *d, const void *s, int c, size_t n)
