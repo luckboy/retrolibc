@@ -21,11 +21,11 @@ void *bsearch(const void *key, const void *base, size_t n, size_t width, int (*c
   r = n - 1;
   while(1) {
     size_t m = (l + r) >> 1;
-    int r = cmp(key, (const void *) (s + m * width));
-    if(r < 0) {
+    int q = cmp(key, (const void *) (s + m * width));
+    if(q < 0) {
       if(l >= m) break;
       r = m - 1;
-    } else if(r > 0) {
+    } else if(q > 0) {
       if(m >= r) break;
       l = m + 1;
     } else {
