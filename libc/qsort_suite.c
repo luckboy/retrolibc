@@ -38,7 +38,7 @@ static void test_qsort_sorts_array(void)
   CU_ASSERT_EQUAL(memcmp(expected_array, array, 1000 * sizeof(int)), 0);
 }
 
-static void test_qsort_sorts_array_with_two_elements()
+static void test_qsort_sorts_array_with_two_elements(void)
 {
   static int array[2] = { 1, 2 };
   static int expected_array[2] = { 1, 2 };
@@ -50,7 +50,7 @@ static void test_qsort_sorts_array_with_two_elements()
   CU_ASSERT_EQUAL(memcmp(expected_array2, array2, 2 * sizeof(int)), 0);
 }
 
-static void test_qsort_sorts_array_with_one_element()
+static void test_qsort_sorts_array_with_one_element(void)
 {
   static int array[1] = { 1 };
   static int expected_array[1] = { 1 };
@@ -58,7 +58,7 @@ static void test_qsort_sorts_array_with_one_element()
   CU_ASSERT_EQUAL(memcmp(expected_array, array, 1 * sizeof(int)), 0);
 }
 
-static void test_qsort_sorts_array_without_elements()
+static void test_qsort_sorts_array_without_elements(void)
 {
   static int array[1] = { 1 };
   retrolibc_qsort(array, 0, sizeof(int), cmp);
