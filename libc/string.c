@@ -39,10 +39,10 @@ void *memchr(const void *s, int c, size_t n)
 #ifdef L_memcmp
 int memcmp(const void *s, const void *s2, size_t n)
 {
-  const char *s12 = (const char *) s;
-  const char *s22 = (const char *) s2;
+  const char *p = (const char *) s;
+  const char *p2 = (const char *) s2;
   int r = 0;
-  for(; n > 0 && (r = (int) ((unsigned char) (*s12)) - (int) ((unsigned char) (*s22))) == 0; s12++, s22++, n--);
+  for(; n > 0 && (r = (int) ((unsigned char) (*p)) - (int) ((unsigned char) (*p2))) == 0; p++, p2++, n--);
   return r;
 }
 #endif
