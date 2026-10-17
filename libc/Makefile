@@ -4,11 +4,28 @@ BUILD_DIR = $(TOP_DIR)/build/$(TARGET)/libc
 
 TEST_BUILD_DIR = $(TOP_DIR)/build/$(HOST)/libc/test
 
-CFLAGS = -Wall -nostdinc -I$(TOP_DIR)/include -I.
+CFLAGS = -Wall -Os -nostdinc -I$(TOP_DIR)/include -I.
 
 HOSTCFLAGS = -Wall -DTEST=1 -g
 HOSTLDFLAGS = -g
 HOSTLIBS = -lm -lcunit
+
+CTYPE_OBJS = \
+	$(BUILD_DIR)/ctype_isalnum.o \
+	$(BUILD_DIR)/ctype_isalpha.o \
+	$(BUILD_DIR)/ctype_isascii.o \
+	$(BUILD_DIR)/ctype_iscntrl.o \
+	$(BUILD_DIR)/ctype_isdigit.o \
+	$(BUILD_DIR)/ctype_isgraph.o \
+	$(BUILD_DIR)/ctype_islower.o \
+	$(BUILD_DIR)/ctype_isprint.o \
+	$(BUILD_DIR)/ctype_ispunct.o \
+	$(BUILD_DIR)/ctype_isspace.o \
+	$(BUILD_DIR)/ctype_isupper.o \
+	$(BUILD_DIR)/ctype_isxdigit.o \
+	$(BUILD_DIR)/ctype_toascii.o \
+	$(BUILD_DIR)/ctype_tolower.o \
+	$(BUILD_DIR)/ctype_toupper.o
 
 STRING_OBJS = \
 	$(BUILD_DIR)/string_memccpy.o \
@@ -36,6 +53,7 @@ STRING_OBJS = \
 	$(BUILD_DIR)/string_strxfrm.o
 
 OBJS = \
+	$(CTYPE_OBJS) \
 	$(STRING_OBJS) \
 	$(BUILD_DIR)/bsearch.o \
 	$(BUILD_DIR)/qsort.o
@@ -77,6 +95,9 @@ TEST_OBJS = \
 LIB = $(BUILD_DIR)/libc.a
 
 TEST = $(TEST_BUILD_DIR)/test
+
+$(BUILD_DIR)/ctype_%.o: ctype.c $(BUILD_DIR)/.empty
+	$(CC) $(TARGET_FLAGS) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -c -o $@ $<
 
 $(BUILD_DIR)/string_%.o: string.c $(BUILD_DIR)/.empty
 	$(CC) $(TARGET_FLAGS) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -c -o $@ $<	
