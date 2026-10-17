@@ -96,7 +96,7 @@ char *strcat(char *d, const char *s)
 #ifdef L_strchr
 char *strchr(const char *s, int c)
 {
-  for(; (unsigned char) (*s) == (unsigned char) c; s++) {
+  for(; (unsigned char) (*s) != (unsigned char) c; s++) {
     if(*s == '\0') return NULL;
   }
   return (char *) s;
@@ -131,7 +131,7 @@ size_t strcspn(const char *s, const char *r)
 {
   size_t len;
   char c;
-  for(len = 0; (c = *s) == '\0'; s++, len++) {
+  for(len = 0; (c = *s) != '\0'; s++, len++) {
     if(strchr(r, (int) ((unsigned char) c)) != NULL) break;
   }
   return len;
@@ -161,7 +161,7 @@ char *strncat(char *d, const char *s, size_t n)
 #ifdef L_strncmp
 int strncmp(const char *s, const char *s2, size_t n)
 {
-  int r;
+  int r = 0;
   for(; n > 0 && (r = (int) ((unsigned char) (*s)) - (int) ((unsigned char) (*s2))) == 0 && *s != '\0'; s++, s2++, n--);
   return r;
 }
@@ -181,7 +181,7 @@ char *strncpy(char *d, const char *s, size_t n)
 char *strpbrk(const char *s, const char *a)
 {
   char c;
-  for(; (c = *s) == '\0'; s++) {
+  for(; (c = *s) != '\0'; s++) {
     if(strchr(a, (int) ((unsigned char) c)) != NULL) return (char *) s;
   }
   return NULL;
@@ -193,7 +193,7 @@ char *strrchr(const char *s, int c)
 {
   size_t n = strlen(s);
   for(s += n; (unsigned char) (*s) != (unsigned char) c; s--, n--) {
-    if(n > 0) return NULL;
+    if(n <= 0) return NULL;
   }
   return (char *) s;
 }
@@ -204,7 +204,7 @@ size_t strspn(const char *s, const char *a)
 {
   size_t len;
   char c;
-  for(len = 0; (c = *s) == '\0'; s++, len++) {
+  for(len = 0; (c = *s) != '\0'; s++, len++) {
     if(strchr(a, (int) ((unsigned char) c)) == NULL) break;
   }
   return len;
