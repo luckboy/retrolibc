@@ -78,16 +78,16 @@ LIB = $(BUILD_DIR)/libc.a
 TEST = $(TEST_BUILD_DIR)/test
 
 $(BUILD_DIR)/string_%.o: string.c $(BUILD_DIR)/.empty
-	$(CC) $(TARGET_CFLAGS) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -c -o $@ $<	
+	$(CC) $(TARGET_FLAGS) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -c -o $@ $<	
 
 $(BUILD_DIR)/%.o: %.c $(BUILD_DIR)/.empty
-	$(CC) $(TARGET_CFLAGS) $(CFLAGS) $(EXTRA_CFLAGS) -c -o $@ $<
+	$(CC) $(TARGET_FLAGS) $(CFLAGS) $(EXTRA_CFLAGS) -c -o $@ $<
 
 $(TEST_BUILD_DIR)/string_%.o: string.c retrolibc.h $(TEST_BUILD_DIR)/.empty
-	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -c -o $@ $<
+	$(HOSTCC) $(HOST_FLAGS) $(HOSTCFLAGS) -DL_$* -c -o $@ $<
 
 $(TEST_BUILD_DIR)/%.o: %.c retrolibc.h $(TEST_BUILD_DIR)/.empty
-	$(HOSTCC) $(HOSTCFLAGS) -c -o $@ $<
+	$(HOSTCC) $(HOST_FLAGS) $(HOSTCFLAGS) -c -o $@ $<
 
 all: $(LIB)
 
@@ -104,7 +104,7 @@ $(LIB): $(OBJS)
 	$(AR) -ts $(LIB)
 
 $(TEST): $(TEST_OBJS)
-	$(HOSTCC) $(HOSTLDFLAGS) -o $(TEST) $(TEST_OBJS) $(HOSTLIBS)
+	$(HOSTCC) $(HOST_FLAGS) $(HOSTLDFLAGS) -o $(TEST) $(TEST_OBJS) $(HOSTLIBS)
 	
 run_test: $(TEST)
 	./$(TEST)
