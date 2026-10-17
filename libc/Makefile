@@ -5,8 +5,10 @@ BUILD_DIR = $(TOP_DIR)/build/$(TARGET)/libc
 TEST_BUILD_DIR = $(TOP_DIR)/build/$(HOST)/libc/test
 
 CFLAGS = -Wall -Os -nostdinc -I$(TOP_DIR)/include -I$(TOP_DIR)/arch/$(TARGET_ARCH)/include -I$(TOP_DIR)/sys/$(TARGET_SYS)/$(TARGET_ARCH)/include -I$(TOP_DIR)/sys/$(TARGET_SYS)/include -I. -I./arch/$(TARGET_ARCH) -I./sys/$(TARGET_SYS)/$(TARGET_ARCH) -I./sys/$(TARGET_SYS)
+SFLAGS = $(CFLAGS) -D__ASSEMBLER__=1
 
 HOSTCFLAGS = -Wall -DTEST=1 -g -I. -I./arch/$(HOST_ARCH) -I./sys/$(HOST_SYS)/$(HOST_ARCH) -I./sys/$(HOST_SYS)
+HOSTSFLAGS = $(HOSTCFLAGS) -D__ASSEMBLER__=1
 HOSTLDFLAGS = -g
 HOSTLIBS = -lm -lcunit
 
@@ -107,6 +109,12 @@ $(BUILD_DIR)/ctype_%.o: ctype.c $(BUILD_DIR)/.empty
 $(BUILD_DIR)/string_%.o: string.c $(BUILD_DIR)/.empty
 	$(CC) $(TARGET_FLAGS) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -c -o $@ $<
 
+$(BUILD_DIR)/%.o: arch/$(TARGET_ARCH)/%.S $(BUILD_DIR)/.empty
+	$(CC) $(TARGET_FLAGS) $(SFLAGS) $(EXTRA_CFLAGS) -c -o $@ $<
+
+$(BUILD_DIR)/%.o: sys/$(TARGET_SYS)/$(TARGET_ARCH)/%.S $(BUILD_DIR)/.empty
+	$(CC) $(TARGET_FLAGS) $(SFLAGS) $(EXTRA_CFLAGS) -c -o $@ $<
+	
 $(BUILD_DIR)/%.o: arch/$(TARGET_ARCH)/%.c $(BUILD_DIR)/.empty
 	$(CC) $(TARGET_FLAGS) $(CFLAGS) $(EXTRA_CFLAGS) -c -o $@ $<
 
@@ -122,6 +130,12 @@ $(BUILD_DIR)/%.o: %.c $(BUILD_DIR)/.empty
 $(TEST_BUILD_DIR)/string_%.o: string.c retrolibc.h $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOST_FLAGS) $(HOSTCFLAGS) -DL_$* -c -o $@ $<
 
+$(TEST_BUILD_DIR)/%.o: arch/$(HOST_ARCH)/%.S $(TEST_BUILD_DIR)/.empty
+	$(HOSTCC) $(HOST_FLAGS) $(HOSTSFLAGS) -c -o $@ $<
+
+$(TEST_BUILD_DIR)/%.o: sys/$(HOST_SYS)/$(HOST_ARCH)/%.S $(TEST_BUILD_DIR)/.empty
+	$(HOSTCC) $(HOST_FLAGS) $(HOSTSFLAGS) -c -o $@ $<
+	
 $(TEST_BUILD_DIR)/%.o: arch/$(HOST_ARCH)/%.c retrolibc.h $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOST_FLAGS) $(HOSTCFLAGS) -c -o $@ $<
 
