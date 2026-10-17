@@ -68,6 +68,7 @@ TEST_STRING_OBJS = \
 TEST_OBJS = \
 	$(TEST_STRING_OBJS) \
 	$(TEST_BUILD_DIR)/bsearch.o \
+	$(TEST_BUILD_DIR)/bsearch_suite.o \
 	$(TEST_BUILD_DIR)/qsort.o \
 	$(TEST_BUILD_DIR)/qsort_suite.o \
 	$(TEST_BUILD_DIR)/test.o
