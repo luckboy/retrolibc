@@ -4,11 +4,14 @@ BUILD_DIR = $(TOP_DIR)/build/$(TARGET)/libc
 
 TEST_BUILD_DIR = $(TOP_DIR)/build/$(HOST)/libc/test
 
-CFLAGS = -Wall -Os -nostdinc -I$(TOP_DIR)/include -I.
+CFLAGS = -Wall -Os -nostdinc -I$(TOP_DIR)/include -I$(TOP_DIR)/arch/$(TARGET_ARCH)/include -I$(TOP_DIR)/sys/$(TARGET_SYS)/$(TARGET_ARCH)/include -I$(TOP_DIR)/sys/$(TARGET_SYS)/include -I. -I./arch/$(TARGET_ARCH) -I./sys/$(TARGET_SYS)/$(TARGET_ARCH) -I./sys/$(TARGET_SYS)
 
-HOSTCFLAGS = -Wall -DTEST=1 -g
+HOSTCFLAGS = -Wall -DTEST=1 -g -I. -I./arch/$(HOST_ARCH) -I./sys/$(HOST_SYS)/$(HOST_ARCH) -I./sys/$(HOST_SYS)
 HOSTLDFLAGS = -g
 HOSTLIBS = -lm -lcunit
+
+SYS_OBJS = \
+	$(BUILD_DIR)/sys_errlist.o
 
 CTYPE_OBJS = \
 	$(BUILD_DIR)/ctype_isalnum.o \
@@ -53,10 +56,12 @@ STRING_OBJS = \
 	$(BUILD_DIR)/string_strxfrm.o
 
 OBJS = \
+	$(SYS_OBJS) \
 	$(CTYPE_OBJS) \
 	$(STRING_OBJS) \
 	$(BUILD_DIR)/bsearch.o \
-	$(BUILD_DIR)/qsort.o
+	$(BUILD_DIR)/qsort.o \
+	$(BUILD_DIR)/strerror.o
 
 TEST_STRING_OBJS = \
 	$(TEST_BUILD_DIR)/string_memccpy.o \
@@ -100,13 +105,31 @@ $(BUILD_DIR)/ctype_%.o: ctype.c $(BUILD_DIR)/.empty
 	$(CC) $(TARGET_FLAGS) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -c -o $@ $<
 
 $(BUILD_DIR)/string_%.o: string.c $(BUILD_DIR)/.empty
-	$(CC) $(TARGET_FLAGS) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -c -o $@ $<	
+	$(CC) $(TARGET_FLAGS) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -c -o $@ $<
+
+$(BUILD_DIR)/%.o: arch/$(TARGET_ARCH)/%.c $(BUILD_DIR)/.empty
+	$(CC) $(TARGET_FLAGS) $(CFLAGS) $(EXTRA_CFLAGS) -c -o $@ $<
+
+$(BUILD_DIR)/%.o: sys/$(TARGET_SYS)/$(TARGET_ARCH)/%.c $(BUILD_DIR)/.empty
+	$(CC) $(TARGET_FLAGS) $(CFLAGS) $(EXTRA_CFLAGS) -c -o $@ $<
+
+$(BUILD_DIR)/%.o: sys/$(TARGET_SYS)/%.c $(BUILD_DIR)/.empty
+	$(CC) $(TARGET_FLAGS) $(CFLAGS) $(EXTRA_CFLAGS) -c -o $@ $<
 
 $(BUILD_DIR)/%.o: %.c $(BUILD_DIR)/.empty
 	$(CC) $(TARGET_FLAGS) $(CFLAGS) $(EXTRA_CFLAGS) -c -o $@ $<
 
 $(TEST_BUILD_DIR)/string_%.o: string.c retrolibc.h $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOST_FLAGS) $(HOSTCFLAGS) -DL_$* -c -o $@ $<
+
+$(TEST_BUILD_DIR)/%.o: arch/$(HOST_ARCH)/%.c retrolibc.h $(TEST_BUILD_DIR)/.empty
+	$(HOSTCC) $(HOST_FLAGS) $(HOSTCFLAGS) -c -o $@ $<
+
+$(TEST_BUILD_DIR)/%.o: sys/$(HOST_SYS)/$(HOST_ARCH)/%.c retrolibc.h $(TEST_BUILD_DIR)/.empty
+	$(HOSTCC) $(HOST_FLAGS) $(HOSTCFLAGS) -c -o $@ $<
+
+$(TEST_BUILD_DIR)/%.o: sys/$(HOST_SYS)/%.c retrolibc.h $(TEST_BUILD_DIR)/.empty
+	$(HOSTCC) $(HOST_FLAGS) $(HOSTCFLAGS) -c -o $@ $<
 
 $(TEST_BUILD_DIR)/%.o: %.c retrolibc.h $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOST_FLAGS) $(HOSTCFLAGS) -c -o $@ $<
