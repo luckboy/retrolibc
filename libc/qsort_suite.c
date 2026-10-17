@@ -61,7 +61,6 @@ static void test_qsort_sorts_array_with_one_element()
 static void test_qsort_sorts_array_without_elements()
 {
   static int array[1] = { 1 };
-  static int expected_array[1] = { 1 };
   retrolibc_qsort(array, 0, sizeof(int), cmp);
 }
 
