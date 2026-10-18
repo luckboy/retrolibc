@@ -6,6 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 #include <sys/mman.h>
+#include <errno.h>
 #include <limits.h>
 #include <pthread.h>
 #include <stdlib.h>
@@ -130,11 +131,51 @@ static void *realloc_unlocked(void *p, size_t size)
   if(alloc_mem->size >= PAGE_SIZE) {
     size_t mmap_size = PAGE_ALIGN(mem_size);
     if(mmap_size > alloc_mem->size) {
+#ifdef MREMAP_MAYMOVE
+      void *new_addr;
+      int saved_errno = errno;
+      errno = 0;
+      new_addr = mremap((void *) alloc_mem, alloc_mem->size, mmap_size, MREMAP_MAYMOVE);
+      if(new_addr == MAP_FAILED) {
+        if(errno == ENOSYS) {
+          errno = saved_errno;
+          void *new_p = malloc_unlocked(size);
+          if(new_p == NULL) return NULL;
+          memcpy(new_p, p, size);
+          free_unlocked(p);
+          return new_p;
+        } else {
+          return NULL;
+        }
+      }
+      alloc_mem = (struct alloc_mem_header *) new_addr;
+      alloc_mem->size = mmap_size;
+      return (void *) (((char *) alloc_mem) + sizeof(struct alloc_mem_header));
+#else
       void *new_p = malloc_unlocked(size);
       if(new_p == NULL) return NULL;
       memcpy(new_p, p, size);
       free_unlocked(p);
       return new_p;
+#endif
+    } else if(mmap_size < alloc_mem->size) {
+#ifdef MREMAP_MAYMOVE
+      void *new_addr;
+      int saved_errno = errno;
+      errno = 0;
+      new_addr = mremap((void *) alloc_mem, alloc_mem->size, mmap_size, MREMAP_MAYMOVE);
+      if(new_addr == MAP_FAILED) {
+        if(errno == ENOSYS) {
+          errno = saved_errno;
+          return p;
+        }
+      }
+      alloc_mem = (struct alloc_mem_header *) new_addr;
+      alloc_mem->size = mmap_size;
+      return (void *) (((char *) alloc_mem) + sizeof(struct alloc_mem_header));
+#else
+      return p;
+#endif
     } else {
       return p;
     }

@@ -21,6 +21,7 @@ extern "C" {
 #endif
 
 void *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t);
+void *mremap(void *old_addr, size_t old_len, size_t new_size, int flags, ...);
 int munmap(void *addr, size_t len);
 
 #ifdef __cplusplus

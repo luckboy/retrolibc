@@ -19,6 +19,9 @@
 #define MAP_ANONYMOUS   0x20
 #define MAP_ANON        MAP_ANONYMOUS
 
+#define MREMAP_MAYMOVE  1
+#define MREMAP_FIXED    2
+
 #define MAP_FAILED      ((void *) (-1))
 
 #if __LONG_BIT == 64
