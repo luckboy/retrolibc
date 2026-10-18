@@ -12,9 +12,6 @@ HOSTSFLAGS = $(HOSTCFLAGS) -D__ASSEMBLER__=1
 HOSTLDFLAGS = -g
 HOSTLIBS = -lm -lcunit
 
-SYS_OBJS = \
-	$(BUILD_DIR)/sys_errlist.o
-
 CTYPE_OBJS = \
 	$(BUILD_DIR)/ctype_isalnum.o \
 	$(BUILD_DIR)/ctype_isalpha.o \
@@ -32,6 +29,13 @@ CTYPE_OBJS = \
 	$(BUILD_DIR)/ctype_tolower.o \
 	$(BUILD_DIR)/ctype_toupper.o
 
+STDLIB_OBJS = \
+	$(BUILD_DIR)/stdlib_atoi.o \
+	$(BUILD_DIR)/stdlib_atol.o \
+	$(BUILD_DIR)/stdlib_atoll.o \
+	$(BUILD_DIR)/stdlib_strtol.o \
+	$(BUILD_DIR)/stdlib_strtoul.o
+	
 STRING_OBJS = \
 	$(BUILD_DIR)/string_memccpy.o \
 	$(BUILD_DIR)/string_memchr.o \
@@ -58,12 +62,14 @@ STRING_OBJS = \
 	$(BUILD_DIR)/string_strxfrm.o
 
 OBJS = \
-	$(SYS_OBJS) \
 	$(CTYPE_OBJS) \
+	$(STDLIB_OBJS) \
 	$(STRING_OBJS) \
 	$(BUILD_DIR)/bsearch.o \
 	$(BUILD_DIR)/qsort.o \
-	$(BUILD_DIR)/strerror.o
+	$(BUILD_DIR)/strerror.o \
+	$(BUILD_DIR)/strtoll.o \
+	$(BUILD_DIR)/sys_errlist.o
 
 TEST_STRING_OBJS = \
 	$(TEST_BUILD_DIR)/string_memccpy.o \
@@ -104,6 +110,9 @@ LIB = $(BUILD_DIR)/libc.a
 TEST = $(TEST_BUILD_DIR)/test
 
 $(BUILD_DIR)/ctype_%.o: ctype.c $(BUILD_DIR)/.empty
+	$(CC) $(TARGET_FLAGS) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -c -o $@ $<
+
+$(BUILD_DIR)/stdlib_%.o: stdlib.c $(BUILD_DIR)/.empty
 	$(CC) $(TARGET_FLAGS) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -c -o $@ $<
 
 $(BUILD_DIR)/string_%.o: string.c $(BUILD_DIR)/.empty

@@ -14,7 +14,14 @@
 extern "C" {
 #endif
 
+int atoi(const char *s);
+long atol(const char *s);
+long long atoll(const char *s);
 void *bsearch(const void *key, const void *base, size_t n, size_t width, int (*cmp)(const void *, const void *));
+long strtol(const char *s, char **endptr, int base);
+long long strtoll(const char *s, char **endptr, int base);
+unsigned long strtoul(const char *s, char **endptr, int base);
+unsigned long long strtoull(const char *s, char **endptr, int base);
 void qsort(void *base, size_t n, size_t size, int (*cmp)(const void *, const void *));
 
 #ifdef __cplusplus
