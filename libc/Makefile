@@ -66,6 +66,7 @@ OBJS = \
 	$(STDLIB_OBJS) \
 	$(STRING_OBJS) \
 	$(BUILD_DIR)/bsearch.o \
+	$(BUILD_DIR)/malloc.o \
 	$(BUILD_DIR)/qsort.o \
 	$(BUILD_DIR)/strerror.o \
 	$(BUILD_DIR)/strtoll.o \
@@ -180,3 +181,5 @@ run_test: $(TEST)
 clean:
 	rm -f $(LIB) $(OBJS)
 	rm -f $(TEST) $(TEST_OBJS)
+
+$(BUILD_DIR)/malloc.o: malloc.c priv_malloc.h

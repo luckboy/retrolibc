@@ -29,10 +29,16 @@ typedef unsigned long long int64_t;
 #endif
 
 #if __LONG_BIT == 64
+#ifndef _INTPTR_T
+#define _INTPTR_T
 typedef long intptr_t;
+#endif
 typedef unsigned long uintptr_t;
 #else
+#ifndef _INTPTR_T
+#define _INTPTR_T
 typedef int intptr_t;
+#endif
 typedef unsigned uintptr_t;
 #endif
 

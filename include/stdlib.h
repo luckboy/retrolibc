@@ -24,6 +24,10 @@ unsigned long strtoul(const char *s, char **endptr, int base);
 unsigned long long strtoull(const char *s, char **endptr, int base);
 void qsort(void *base, size_t n, size_t size, int (*cmp)(const void *, const void *));
 
+void *malloc(size_t size);
+void *realloc(void *p, size_t size);
+void free(void *p);
+
 #ifdef __cplusplus
 }
 #endif

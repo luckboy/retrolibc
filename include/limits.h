@@ -9,6 +9,9 @@
 #define _LIMITS_H
 
 #include <bits/long_bit.h>
+#include <bits/page_size.h>
+
+#define PAGE_SIZE       __PAGE_SIZE
 
 #define CHAR_BIT        8
 #define LONG_BIT        __LONG_BIT
