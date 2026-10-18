@@ -184,7 +184,7 @@ static void free_unlocked(void *p)
     if(left_free_mem != NULL && right_free_mem != NULL) break;
   }
   if(left_free_mem != NULL) {
-    if(sbrk(0) == ((char *) alloc_mem) + alloc_mem->size)  {
+    if((char *) sbrk(0) == ((char *) alloc_mem) + alloc_mem->size)  {
       remove_free_mem(left_free_mem);
       brk((void *) left_free_mem);
       return;
@@ -197,7 +197,7 @@ static void free_unlocked(void *p)
     }
   } else {
     size_t free_mem_size;
-    if(sbrk(0) == ((char *) alloc_mem) + alloc_mem->size)  {
+    if((char *) sbrk(0) == ((char *) alloc_mem) + alloc_mem->size)  {
       brk((void *) alloc_mem);
       return;
     }
