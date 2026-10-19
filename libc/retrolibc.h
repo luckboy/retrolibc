@@ -107,6 +107,16 @@ void *retrolibc_bsearch(const void *key, const void *base, size_t n, size_t widt
 #define bsearch retrolibc_bsearch
 #endif
 
+/* strtoll.c */
+
+long long retrolibc_strtoll(const char *s, char **endptr, int base);
+unsigned long long retrolibc_strtoull(const char *s, char **endptr, int base);
+
+#ifdef RETROLIBC_STRTOLL
+#define strtoll retrolibc_strtoll
+#define strtoull retrolibc_strtoull
+#endif
+
 /* qsort.c */
 
 void retrolibc_qsort(void *base, size_t n, size_t size, int (*cmp)(const void *, const void *));

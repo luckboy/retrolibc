@@ -121,6 +121,8 @@ TEST_OBJS = \
 	$(TEST_BUILD_DIR)/test_string_suite.o \
 	$(TEST_BUILD_DIR)/bsearch.o \
 	$(TEST_BUILD_DIR)/test_bsearch_suite.o \
+	$(TEST_BUILD_DIR)/strtoll.o \
+	$(TEST_BUILD_DIR)/test_strtoll_suite.o \
 	$(TEST_BUILD_DIR)/qsort.o \
 	$(TEST_BUILD_DIR)/test_qsort_suite.o \
 	$(TEST_BUILD_DIR)/test.o

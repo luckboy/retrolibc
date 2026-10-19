@@ -8,7 +8,12 @@
 #include <ctype.h>
 #include <errno.h>
 #include <limits.h>
+#ifndef TEST 
 #include <stdlib.h>
+#else
+#define RETROLIBC_STRTOLL
+#include "retrolibc.h"
+#endif
 
 static unsigned long long strtoxll(const char *s, char **endptr, int base, int is_signed)
 {
@@ -52,9 +57,9 @@ static unsigned long long strtoxll(const char *s, char **endptr, int base, int i
     if(*s >= '0' && *s <= (base >= 10 ? '9' : '0' + base - 1)) {
       digit = *s - '0';
     } else if(base > 10) {
-      if(*s >= 'A' && *s <= 'A' + base - 1) {
+      if(*s >= 'A' && *s <= 'A' + base - 11) {
         digit = *s - 'A' + 10;
-      } else if(*s >= 'a' && *s <= 'a' + base - 1) {
+      } else if(*s >= 'a' && *s <= 'a' + base - 11) {
         digit = *s - 'a' + 10;
       } else {
         break;
@@ -63,7 +68,7 @@ static unsigned long long strtoxll(const char *s, char **endptr, int base, int i
       break;
     }
     if(is_overflow) continue;
-    if(n < max_div_base || digit <= max_mod_base) {
+    if(n <= max_div_base && (n != max_div_base || digit <= max_mod_base)) {
       n = n * base + digit;
     } else {
       is_overflow = 1;
