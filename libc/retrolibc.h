@@ -9,6 +9,7 @@
 #define _RETROLIBC_H
 
 #include <stddef.h>
+#include <stdlib.h>
 
 /* ctype.c */
 
@@ -44,6 +45,22 @@ int retrolibc_toupper(int c);
 #define toascii retrolibc_toascii
 #define tolower retrolibc_tolower
 #define toupper retrolibc_toupper
+#endif
+
+/* stdlib.c */
+
+int retrolibc_atoi(const char *s);
+long retrolibc_atol(const char *s);
+long long retrolibc_atoll(const char *s);
+long retrolibc_strtol(const char *s, char **endptr, int base);
+unsigned long retrolibc_strtoul(const char *s, char **endptr, int base);
+
+#ifdef RETROLIBC_STDLIB
+#define atoi retrolibc_atoi
+#define atol retrolibc_atol
+#define atoll retrolibc_atoll
+#define strtol retrolibc_strtol
+#define strtoul retrolibc_strtoul
 #endif
 
 /* string.c */

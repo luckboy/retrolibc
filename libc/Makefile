@@ -7,7 +7,7 @@ TEST_BUILD_DIR = $(TOP_DIR)/build/$(HOST)/libc/test
 CFLAGS = -Wall -Os -nostdinc -I$(TOP_DIR)/include -I$(TOP_DIR)/arch/$(TARGET_ARCH)/include -I$(TOP_DIR)/sys/$(TARGET_SYS)/$(TARGET_ARCH)/include -I$(TOP_DIR)/sys/$(TARGET_SYS)/include -I. -I./arch/$(TARGET_ARCH) -I./sys/$(TARGET_SYS)/$(TARGET_ARCH) -I./sys/$(TARGET_SYS)
 SFLAGS = $(CFLAGS) -D__ASSEMBLER__=1
 
-HOSTCFLAGS = -Wall -DTEST=1 -g -I. -I./arch/$(HOST_ARCH) -I./sys/$(HOST_SYS)/$(HOST_ARCH) -I./sys/$(HOST_SYS)
+HOSTCFLAGS = -Wall -DTEST=1 -D_ISOC99_SOURCE=1 -g -I. -I./arch/$(HOST_ARCH) -I./sys/$(HOST_SYS)/$(HOST_ARCH) -I./sys/$(HOST_SYS)
 HOSTSFLAGS = $(HOSTCFLAGS) -D__ASSEMBLER__=1
 HOSTLDFLAGS = -g
 HOSTLIBS = -lm -lcunit
@@ -88,6 +88,13 @@ TEST_CTYPE_OBJS = \
 	$(TEST_BUILD_DIR)/ctype_toascii.o \
 	$(TEST_BUILD_DIR)/ctype_tolower.o \
 	$(TEST_BUILD_DIR)/ctype_toupper.o
+
+TEST_STDLIB_OBJS = \
+	$(TEST_BUILD_DIR)/stdlib_atoi.o \
+	$(TEST_BUILD_DIR)/stdlib_atol.o \
+	$(TEST_BUILD_DIR)/stdlib_atoll.o \
+	$(TEST_BUILD_DIR)/stdlib_strtol.o \
+	$(TEST_BUILD_DIR)/stdlib_strtoul.o
 	
 TEST_STRING_OBJS = \
 	$(TEST_BUILD_DIR)/string_memccpy.o \
@@ -117,6 +124,8 @@ TEST_STRING_OBJS = \
 TEST_OBJS = \
 	$(TEST_CTYPE_OBJS) \
 	$(TEST_BUILD_DIR)/test_ctype_suite.o \
+	$(TEST_STDLIB_OBJS) \
+	$(TEST_BUILD_DIR)/test_stdlib_suite.o \
 	$(TEST_STRING_OBJS) \
 	$(TEST_BUILD_DIR)/test_string_suite.o \
 	$(TEST_BUILD_DIR)/bsearch.o \
@@ -160,7 +169,10 @@ $(BUILD_DIR)/%.o: %.c $(BUILD_DIR)/.empty
 
 $(TEST_BUILD_DIR)/ctype_%.o: ctype.c retrolibc.h $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOST_FLAGS) $(HOSTCFLAGS) -DL_$* -c -o $@ $<
-	
+
+$(TEST_BUILD_DIR)/stdlib_%.o: stdlib.c retrolibc.h $(TEST_BUILD_DIR)/.empty
+	$(HOSTCC) $(HOST_FLAGS) $(HOSTCFLAGS) -DL_$* -c -o $@ $<
+
 $(TEST_BUILD_DIR)/string_%.o: string.c retrolibc.h $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOST_FLAGS) $(HOSTCFLAGS) -DL_$* -c -o $@ $<
 

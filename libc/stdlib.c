@@ -7,7 +7,12 @@
  */
 #include <errno.h>
 #include <limits.h>
+#ifndef TEST
 #include <stdlib.h>
+#else
+#define RETROLIBC_STDLIB
+#include "retrolibc.h"
+#endif
 
 #ifdef L_atoi
 int atoi(const char *s)
