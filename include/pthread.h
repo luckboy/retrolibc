@@ -8,7 +8,7 @@
 #ifndef _PTHREAD_H
 #define _PTHREAD_H
 
-#define PTHREAD_MUTEX_INITIALIZER ((pthread_mutex_t) { 0 })
+#define PTHREAD_MUTEX_INITIALIZER ((pthread_mutex_t) { 1 })
 
 typedef struct {
   long __bit;
