@@ -174,8 +174,11 @@ $(LIB): $(OBJS)
 
 $(TEST): $(TEST_OBJS)
 	$(HOSTCC) $(HOST_FLAGS) $(HOSTLDFLAGS) -o $(TEST) $(TEST_OBJS) $(HOSTLIBS)
-	
-run_test: $(TEST)
+
+test: $(TEST)
+	echo -n
+
+run_test: test
 	./$(TEST)
 
 clean:
