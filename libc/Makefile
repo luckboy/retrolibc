@@ -72,6 +72,23 @@ OBJS = \
 	$(BUILD_DIR)/strtoll.o \
 	$(BUILD_DIR)/sys_errlist.o
 
+TEST_CTYPE_OBJS = \
+	$(TEST_BUILD_DIR)/ctype_isalnum.o \
+	$(TEST_BUILD_DIR)/ctype_isalpha.o \
+	$(TEST_BUILD_DIR)/ctype_isascii.o \
+	$(TEST_BUILD_DIR)/ctype_iscntrl.o \
+	$(TEST_BUILD_DIR)/ctype_isdigit.o \
+	$(TEST_BUILD_DIR)/ctype_isgraph.o \
+	$(TEST_BUILD_DIR)/ctype_islower.o \
+	$(TEST_BUILD_DIR)/ctype_isprint.o \
+	$(TEST_BUILD_DIR)/ctype_ispunct.o \
+	$(TEST_BUILD_DIR)/ctype_isspace.o \
+	$(TEST_BUILD_DIR)/ctype_isupper.o \
+	$(TEST_BUILD_DIR)/ctype_isxdigit.o \
+	$(TEST_BUILD_DIR)/ctype_toascii.o \
+	$(TEST_BUILD_DIR)/ctype_tolower.o \
+	$(TEST_BUILD_DIR)/ctype_toupper.o
+	
 TEST_STRING_OBJS = \
 	$(TEST_BUILD_DIR)/string_memccpy.o \
 	$(TEST_BUILD_DIR)/string_memchr.o \
@@ -98,6 +115,8 @@ TEST_STRING_OBJS = \
 	$(TEST_BUILD_DIR)/string_strxfrm.o
 
 TEST_OBJS = \
+	$(TEST_CTYPE_OBJS) \
+	$(TEST_BUILD_DIR)/test_ctype_suite.o \
 	$(TEST_STRING_OBJS) \
 	$(TEST_BUILD_DIR)/test_string_suite.o \
 	$(TEST_BUILD_DIR)/bsearch.o \
@@ -137,6 +156,9 @@ $(BUILD_DIR)/%.o: sys/$(TARGET_SYS)/%.c $(BUILD_DIR)/.empty
 $(BUILD_DIR)/%.o: %.c $(BUILD_DIR)/.empty
 	$(CC) $(TARGET_FLAGS) $(CFLAGS) $(EXTRA_CFLAGS) -c -o $@ $<
 
+$(TEST_BUILD_DIR)/ctype_%.o: ctype.c retrolibc.h $(TEST_BUILD_DIR)/.empty
+	$(HOSTCC) $(HOST_FLAGS) $(HOSTCFLAGS) -DL_$* -c -o $@ $<
+	
 $(TEST_BUILD_DIR)/string_%.o: string.c retrolibc.h $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOST_FLAGS) $(HOSTCFLAGS) -DL_$* -c -o $@ $<
 

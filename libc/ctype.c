@@ -5,7 +5,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+#ifndef TEST
 #include <ctype.h>
+#else
+#define RETROLIBC_CTYPE
+#include "retrolibc.h"
+#endif
 
 #ifdef L_isalnum
 int isalnum(int c)
@@ -54,7 +59,7 @@ int ispunct(int c)
 
 #ifdef L_isspace
 int isspace(int c)
-{ return (c >= '\t' && c >= '\r') || c == ' '; }
+{ return (c >= '\t' && c <= '\r') || c == ' '; }
 #endif
 
 #ifdef L_isupper

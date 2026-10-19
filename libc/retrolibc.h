@@ -10,6 +10,44 @@
 
 #include <stddef.h>
 
+/* ctype.c */
+
+int retrolibc_isalnum(int c);
+int retrolibc_isalpha(int c);
+int retrolibc_isascii(int c);
+int retrolibc_iscntrl(int c);
+int retrolibc_isdigit(int c);
+int retrolibc_isgraph(int c);
+int retrolibc_islower(int c);
+int retrolibc_isprint(int c);
+int retrolibc_ispunct(int c);
+int retrolibc_isspace(int c);
+int retrolibc_isupper(int c);
+int retrolibc_isxdigit(int c);
+int retrolibc_toascii(int c);
+int retrolibc_tolower(int c);
+int retrolibc_toupper(int c);
+
+#ifdef RETROLIBC_CTYPE
+#define isalnum retrolibc_isalnum
+#define isalpha retrolibc_isalpha
+#define isascii retrolibc_isascii
+#define iscntrl retrolibc_iscntrl
+#define isdigit retrolibc_isdigit
+#define isgraph retrolibc_isgraph
+#define islower retrolibc_islower
+#define isprint retrolibc_isprint
+#define ispunct retrolibc_ispunct
+#define isspace retrolibc_isspace
+#define isupper retrolibc_isupper
+#define isxdigit retrolibc_isxdigit
+#define toascii retrolibc_toascii
+#define tolower retrolibc_tolower
+#define toupper retrolibc_toupper
+#endif
+
+/* string.c */
+
 void *retrolibc_memccpy(void *d, const void *s, int c, size_t n);
 void *retrolibc_memchr(const void *s, int c, size_t n);
 int retrolibc_memcmp(const void *s, const void *s2, size_t n);
@@ -61,11 +99,15 @@ size_t retrolibc_strxfrm(char *d, const char *s2, size_t n);
 #define strxfrm retrolibc_strxfrm
 #endif
 
+/* bsearch.c */
+
 void *retrolibc_bsearch(const void *key, const void *base, size_t n, size_t width, int (*cmp)(const void *, const void *));
 
 #ifdef RETROLIBC_BSEARCH
 #define bsearch retrolibc_bsearch
 #endif
+
+/* qsort.c */
 
 void retrolibc_qsort(void *base, size_t n, size_t size, int (*cmp)(const void *, const void *));
 
