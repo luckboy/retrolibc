@@ -32,9 +32,7 @@ CTYPE_OBJS = \
 STDLIB_OBJS = \
 	$(BUILD_DIR)/stdlib_atoi.o \
 	$(BUILD_DIR)/stdlib_atol.o \
-	$(BUILD_DIR)/stdlib_atoll.o \
-	$(BUILD_DIR)/stdlib_strtol.o \
-	$(BUILD_DIR)/stdlib_strtoul.o
+	$(BUILD_DIR)/stdlib_atoll.o
 	
 STRING_OBJS = \
 	$(BUILD_DIR)/string_memccpy.o \
@@ -92,9 +90,7 @@ TEST_CTYPE_OBJS = \
 TEST_STDLIB_OBJS = \
 	$(TEST_BUILD_DIR)/stdlib_atoi.o \
 	$(TEST_BUILD_DIR)/stdlib_atol.o \
-	$(TEST_BUILD_DIR)/stdlib_atoll.o \
-	$(TEST_BUILD_DIR)/stdlib_strtol.o \
-	$(TEST_BUILD_DIR)/stdlib_strtoul.o
+	$(TEST_BUILD_DIR)/stdlib_atoll.o
 	
 TEST_STRING_OBJS = \
 	$(TEST_BUILD_DIR)/string_memccpy.o \

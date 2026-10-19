@@ -28,29 +28,3 @@ long atol(const char *s)
 long long atoll(const char *s)
 { return strtoll(s, NULL, 10); }
 #endif
-
-#ifdef L_strtol
-long strtol(const char *s, char **endptr, int base)
-{
-  long long n = strtoll(s, endptr, base);
-  if(n >= LONG_MIN && n <= LONG_MAX) {
-    return (long) n;
-  } else {
-    errno = ERANGE;
-    return n > 0 ? LONG_MAX : LONG_MIN;
-  }
-}
-#endif
-
-#ifdef L_strtoul
-unsigned long strtoul(const char *s, char **endptr, int base)
-{
-  unsigned long long n = strtoull(s, endptr, base);
-  if(n <= ULONG_MAX) {
-    return (unsigned long) n;
-  } else {
-    errno = ERANGE;
-    return ULONG_MAX;
-  }
-}
-#endif

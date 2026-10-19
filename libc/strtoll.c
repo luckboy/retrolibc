@@ -15,7 +15,7 @@
 #include "retrolibc.h"
 #endif
 
-static unsigned long long strtoxll(const char *s, char **endptr, int base, int is_signed)
+static unsigned long long strtoxll(const char *s, char **endptr, int base, unsigned long long max, unsigned long long max_for_sign, unsigned long long min)
 {
   unsigned long long n, max_div_base, max_mod_base;
   int sign = 1;
@@ -76,32 +76,32 @@ static unsigned long long strtoxll(const char *s, char **endptr, int base, int i
   }
   if(endptr != NULL) *endptr = (char *) s;
   if(!is_overflow) {
-    if(is_signed) {
-      if(sign > 0) {
-        if(n > (unsigned long long) LLONG_MAX) {
-          errno = ERANGE;
-          return (unsigned long long) LLONG_MAX;
-        }
-      } else {
-        if(n > ((unsigned long long) (-(LLONG_MIN + 1))) + 1) {
-          errno = ERANGE;
-          return (unsigned long long) LLONG_MIN;
-        }
+    if(sign > 0) {
+      if(n > max) {
+        errno = ERANGE;
+        return max;
+      }
+    } else {
+      if(n > max_for_sign) {
+        errno = ERANGE;
+        return min;
       }
     }
     return (unsigned long long) (((long long) n) * sign);
   } else {
     errno = ERANGE;
-    if(is_signed) {
-      return (unsigned long long) (sign > 0 ? LLONG_MAX : LLONG_MIN);
-    } else {
-      return ULLONG_MAX;
-    }
+    return (unsigned long long) (sign > 0 ? max : min);
   }
 }
 
+long strtol(const char *s, char **endptr, int base)
+{ return (long) strtoxll(s, endptr, base, (unsigned long long) LONG_MAX, ((unsigned long long) (-(LONG_MIN + 1))) + 1, (unsigned long long) LONG_MIN); }
+
 long long strtoll(const char *s, char **endptr, int base)
-{ return (long long) strtoxll(s, endptr, base, 1); }
+{ return (long long) strtoxll(s, endptr, base, (unsigned long long) LLONG_MAX, ((unsigned long long) (-(LLONG_MIN + 1))) + 1, (unsigned long long) LLONG_MIN); }
+
+unsigned long strtoul(const char *s, char **endptr, int base)
+{ return (unsigned long) strtoxll(s, endptr, base, (unsigned long long) ULONG_MAX, (unsigned long long) ULONG_MAX, (unsigned long long) ULONG_MAX); }
 
 unsigned long long strtoull(const char *s, char **endptr, int base)
-{ return strtoxll(s, endptr, base, 0); }
+{ return strtoxll(s, endptr, base, ULLONG_MAX, ULLONG_MAX, ULLONG_MAX); }

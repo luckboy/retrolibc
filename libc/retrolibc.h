@@ -52,15 +52,11 @@ int retrolibc_toupper(int c);
 int retrolibc_atoi(const char *s);
 long retrolibc_atol(const char *s);
 long long retrolibc_atoll(const char *s);
-long retrolibc_strtol(const char *s, char **endptr, int base);
-unsigned long retrolibc_strtoul(const char *s, char **endptr, int base);
 
 #ifdef RETROLIBC_STDLIB
 #define atoi retrolibc_atoi
 #define atol retrolibc_atol
 #define atoll retrolibc_atoll
-#define strtol retrolibc_strtol
-#define strtoul retrolibc_strtoul
 #endif
 
 /* string.c */
@@ -124,13 +120,17 @@ void *retrolibc_bsearch(const void *key, const void *base, size_t n, size_t widt
 #define bsearch retrolibc_bsearch
 #endif
 
-/* strtoll.c */
+/* strtol.c */
 
+long retrolibc_strtol(const char *s, char **endptr, int base);
 long long retrolibc_strtoll(const char *s, char **endptr, int base);
+unsigned long retrolibc_strtoul(const char *s, char **endptr, int base);
 unsigned long long retrolibc_strtoull(const char *s, char **endptr, int base);
 
 #ifdef RETROLIBC_STRTOLL
+#define strtol retrolibc_strtol
 #define strtoll retrolibc_strtoll
+#define strtoul retrolibc_strtoul
 #define strtoull retrolibc_strtoull
 #endif
 
