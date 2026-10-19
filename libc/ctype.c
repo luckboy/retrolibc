@@ -74,10 +74,10 @@ int toascii(int c)
 
 #ifdef L_tolower
 int tolower(int c)
-{ return _tolower(c); }
+{ return (c >= 'A' && c <= 'Z') ? c + 32 : c; }
 #endif
 
 #ifdef L_toupper
 int toupper(int c)
-{ return _toupper(c); }
+{ return (c >= 'a' && c <= 'z') ? c - 32 : c; }
 #endif
