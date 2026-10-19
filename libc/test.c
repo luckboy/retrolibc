@@ -19,7 +19,7 @@ int add_ctype_suite(void);
 int add_stdlib_suite(void);
 int add_string_suite(void);
 int add_bsearch_suite(void);
-int add_strtoll_suite(void);
+int add_strtol_suite(void);
 int add_qsort_suite(void);
 
 int main(int argc, char **argv)
@@ -43,7 +43,7 @@ int main(int argc, char **argv)
     CU_cleanup_registry();
     return CU_get_error();
   }
-  if(add_strtoll_suite() == -1) {
+  if(add_strtol_suite() == -1) {
     CU_cleanup_registry();
     return CU_get_error();
   }

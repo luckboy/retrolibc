@@ -67,7 +67,7 @@ OBJS = \
 	$(BUILD_DIR)/malloc.o \
 	$(BUILD_DIR)/qsort.o \
 	$(BUILD_DIR)/strerror.o \
-	$(BUILD_DIR)/strtoll.o \
+	$(BUILD_DIR)/strtol.o \
 	$(BUILD_DIR)/sys_errlist.o
 
 TEST_CTYPE_OBJS = \
@@ -126,8 +126,8 @@ TEST_OBJS = \
 	$(TEST_BUILD_DIR)/test_string_suite.o \
 	$(TEST_BUILD_DIR)/bsearch.o \
 	$(TEST_BUILD_DIR)/test_bsearch_suite.o \
-	$(TEST_BUILD_DIR)/strtoll.o \
-	$(TEST_BUILD_DIR)/test_strtoll_suite.o \
+	$(TEST_BUILD_DIR)/strtol.o \
+	$(TEST_BUILD_DIR)/test_strtol_suite.o \
 	$(TEST_BUILD_DIR)/qsort.o \
 	$(TEST_BUILD_DIR)/test_qsort_suite.o \
 	$(TEST_BUILD_DIR)/test.o

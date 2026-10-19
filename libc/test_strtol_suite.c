@@ -14,10 +14,10 @@
 #define LONG_BIT        __WORDSIZE
 #endif
 
-static int initialize_strtoll(void)
+static int initialize_strtol(void)
 { return 0; }
 
-static int cleanup_strtoll(void)
+static int cleanup_strtol(void)
 { return 0; }
 
 static void test_strtol_converts_string_to_number_for_base_10(void)
@@ -1311,10 +1311,10 @@ static void test_strtoull_complains_on_invalid_base(void)
   CU_ASSERT_EQUAL(errno, EINVAL);
 }
 
-int add_strtoll_suite(void)
+int add_strtol_suite(void)
 {
   CU_pSuite suite;
-  if((suite = CU_add_suite("strtoll suite", initialize_strtoll, cleanup_strtoll)) == NULL) return -1;
+  if((suite = CU_add_suite("strtol suite", initialize_strtol, cleanup_strtol)) == NULL) return -1;
   if(CU_add_test(suite, "strtol converts string to number for base 10", test_strtol_converts_string_to_number_for_base_10) == NULL) return -1;
   if(CU_add_test(suite, "strtol converts string to number for base 2", test_strtol_converts_string_to_number_for_base_2) == NULL) return -1;
   if(CU_add_test(suite, "strtol converts string to number for base 8", test_strtol_converts_string_to_number_for_base_8) == NULL) return -1;
