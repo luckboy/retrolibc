@@ -11,7 +11,7 @@
 #ifndef TEST 
 #include <stdlib.h>
 #else
-#define RETROLIBC_STRTOLL
+#define RETROLIBC_STRTOL
 #include "retrolibc.h"
 #endif
 

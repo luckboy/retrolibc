@@ -127,7 +127,7 @@ long long retrolibc_strtoll(const char *s, char **endptr, int base);
 unsigned long retrolibc_strtoul(const char *s, char **endptr, int base);
 unsigned long long retrolibc_strtoull(const char *s, char **endptr, int base);
 
-#ifdef RETROLIBC_STRTOLL
+#ifdef RETROLIBC_STRTOL
 #define strtol retrolibc_strtol
 #define strtoll retrolibc_strtoll
 #define strtoul retrolibc_strtoul
