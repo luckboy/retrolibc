@@ -7,7 +7,7 @@ TEST_BUILD_DIR = $(TOP_DIR)/build/$(HOST)/libc/test
 CFLAGS = -Wall -Os -nostdinc -I$(TOP_DIR)/include -I$(TOP_DIR)/arch/$(TARGET_ARCH)/include -I$(TOP_DIR)/sys/$(TARGET_SYS)/$(TARGET_ARCH)/include -I$(TOP_DIR)/sys/$(TARGET_SYS)/include -I. -I./arch/$(TARGET_ARCH) -I./sys/$(TARGET_SYS)/$(TARGET_ARCH) -I./sys/$(TARGET_SYS)
 SFLAGS = $(CFLAGS) -D__ASSEMBLER__=1
 
-HOSTCFLAGS = -Wall -DTEST=1 -D_ISOC99_SOURCE=1 -g -I. -I./arch/$(HOST_ARCH) -I./sys/$(HOST_SYS)/$(HOST_ARCH) -I./sys/$(HOST_SYS)
+HOSTCFLAGS = -Wall -DTEST=1 -D_XOPEN_SOURCE=1 -g -I. -I./arch/$(HOST_ARCH) -I./sys/$(HOST_SYS)/$(HOST_ARCH) -I./sys/$(HOST_SYS)
 HOSTSFLAGS = $(HOSTCFLAGS) -D__ASSEMBLER__=1
 HOSTLDFLAGS = -g
 HOSTLIBS = -lm -lcunit
