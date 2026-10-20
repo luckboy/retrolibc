@@ -345,7 +345,7 @@ void test_malloc_aligns_heap(void)
   CU_ASSERT_PTR_EQUAL(brk_addr, brk_mem + 8 + MEM_SIZE(16));
 }
 
-void test_malloc_complains_on_out_of_memory_for_zero(void)
+void test_malloc_complains_on_out_of_memory_for_counter_0(void)
 {
   void *p;
   initialize_heap();
@@ -359,7 +359,7 @@ void test_malloc_complains_on_out_of_memory_for_zero(void)
   CU_ASSERT_PTR_EQUAL(brk_addr, brk_mem);
 }
 
-void test_malloc_complains_on_out_of_memory_for_one(void)
+void test_malloc_complains_on_out_of_memory_for_counter_1(void)
 {
   void *p;
   initialize_heap();
@@ -668,7 +668,7 @@ void test_realloc_indeed_frees_memory_by_decreasing(void)
   CU_ASSERT_PTR_EQUAL(brk_addr, brk_mem + MEM_SIZE(16) * 2);
 }
 
-void test_realloc_complains_on_out_of_memory_for_null_and_zero(void)
+void test_realloc_complains_on_out_of_memory_for_null_and_counter_0(void)
 {
   void *p;
   initialize_heap();
@@ -682,7 +682,7 @@ void test_realloc_complains_on_out_of_memory_for_null_and_zero(void)
   CU_ASSERT_PTR_EQUAL(brk_addr, brk_mem);
 }
 
-void test_realloc_complains_on_out_of_memory_for_null_and_one(void)
+void test_realloc_complains_on_out_of_memory_for_null_and_counter_1(void)
 {
   void *p;
   initialize_heap();
@@ -740,7 +740,7 @@ void test_realloc_allocates_larger_memory_for_null(void)
   munmap(MEM(p), ALLOC_MEM(p)->size);
 }
 
-void test_realloc_reallocates_larger_memory_for_pointer_and_increasing(void)
+void test_realloc_reallocates_larger_memory_by_increasing_for_pointer(void)
 {
   void *p;
   void *new_p;
@@ -763,7 +763,7 @@ void test_realloc_reallocates_larger_memory_for_pointer_and_increasing(void)
   munmap(MEM(new_p), ALLOC_MEM(new_p)->size);
 }
 
-void test_realloc_reallocates_larger_memory_for_pointer_and_decreasing(void)
+void test_realloc_reallocates_larger_memory_by_decreasing_for_pointer(void)
 {
   void *p;
   void *new_p;
@@ -946,8 +946,8 @@ int add_malloc_suite(void)
   if(CU_add_test(suite, "malloc allocates memory and adds free smallest memory", test_malloc_allocates_memory_and_adds_free_smallest_memory) == NULL) return -1;
   if(CU_add_test(suite, "malloc allocates memory for first match", test_malloc_allocates_memory_for_first_match) == NULL) return -1;
   if(CU_add_test(suite, "malloc aligns heap", test_malloc_aligns_heap) == NULL) return -1;
-  if(CU_add_test(suite, "malloc complains on out of memory for zero", test_malloc_complains_on_out_of_memory_for_zero) == NULL) return -1;
-  if(CU_add_test(suite, "malloc complains on out of memory for one", test_malloc_complains_on_out_of_memory_for_one) == NULL) return -1;
+  if(CU_add_test(suite, "malloc complains on out of memory for counter 0", test_malloc_complains_on_out_of_memory_for_counter_0) == NULL) return -1;
+  if(CU_add_test(suite, "malloc complains on out of memory for counter 1", test_malloc_complains_on_out_of_memory_for_counter_1) == NULL) return -1;
   if(CU_add_test(suite, "malloc allocates larger memory", test_malloc_allocates_larger_memory) == NULL) return -1;
   if(CU_add_test(suite, "realloc allocates memory for null", test_realloc_allocates_memory_for_null) == NULL) return -1;
   if(CU_add_test(suite, "realloc allocates memory 3 times for null", test_realloc_allocates_memory_3_times_for_null) == NULL) return -1;
@@ -962,13 +962,13 @@ int add_malloc_suite(void)
   if(CU_add_test(suite, "realloc decreases memory area size", test_realloc_decreases_memory_area_size) == NULL) return -1;
   if(CU_add_test(suite, "realloc decreases memory area size to smallest", test_realloc_decreases_memory_area_size_to_smallest) == NULL) return -1;
   if(CU_add_test(suite, "realloc indeed frees memory by decreasing", test_realloc_indeed_frees_memory_by_decreasing) == NULL) return -1;
-  if(CU_add_test(suite, "realloc complains on out of memory for null and zero", test_realloc_complains_on_out_of_memory_for_null_and_zero) == NULL) return -1;
-  if(CU_add_test(suite, "realloc complains on out of memory for null and one", test_realloc_complains_on_out_of_memory_for_null_and_one) == NULL) return -1;
+  if(CU_add_test(suite, "realloc complains on out of memory for null and counter 0", test_realloc_complains_on_out_of_memory_for_null_and_counter_0) == NULL) return -1;
+  if(CU_add_test(suite, "realloc complains on out of memory for null and counter 1", test_realloc_complains_on_out_of_memory_for_null_and_counter_1) == NULL) return -1;
   if(CU_add_test(suite, "realloc complains on out of memory for pointer and sbrk", test_realloc_complains_on_out_of_memory_for_pointer_and_sbrk) == NULL) return -1;
   if(CU_add_test(suite, "realloc complains on out of memory for pointer and brk", test_realloc_complains_on_out_of_memory_for_pointer_and_brk) == NULL) return -1;
   if(CU_add_test(suite, "realloc allocates larger memory for null", test_realloc_allocates_larger_memory_for_null) == NULL) return -1;
-  if(CU_add_test(suite, "realloc reallocates larger memory for pointer and increasing", test_realloc_reallocates_larger_memory_for_pointer_and_increasing) == NULL) return -1;
-  if(CU_add_test(suite, "realloc reallocates larger memory for pointer and decreasing", test_realloc_reallocates_larger_memory_for_pointer_and_decreasing) == NULL) return -1;
+  if(CU_add_test(suite, "realloc reallocates larger memory by increasing for pointer", test_realloc_reallocates_larger_memory_by_increasing_for_pointer) == NULL) return -1;
+  if(CU_add_test(suite, "realloc reallocates larger memory by decreasing for pointer", test_realloc_reallocates_larger_memory_by_increasing_for_pointer) == NULL) return -1;
   if(CU_add_test(suite, "free frees memory", test_free_frees_memory) == NULL) return -1;
   if(CU_add_test(suite, "free frees memory after 3 memory allocations", test_free_frees_memory_after_3_memory_allocations) == NULL) return -1;
   if(CU_add_test(suite, "free frees memory 3 times after memory allocations", test_free_frees_memory_3_times_after_memory_allocations) == NULL) return -1;
