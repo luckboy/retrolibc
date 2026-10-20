@@ -120,6 +120,14 @@ void *retrolibc_bsearch(const void *key, const void *base, size_t n, size_t widt
 #define bsearch retrolibc_bsearch
 #endif
 
+/* qsort.c */
+
+void retrolibc_qsort(void *base, size_t n, size_t size, int (*cmp)(const void *, const void *));
+
+#ifdef RETROLIBC_QSORT
+#define qsort retrolibc_qsort
+#endif
+
 /* strtol.c */
 
 long retrolibc_strtol(const char *s, char **endptr, int base);
@@ -132,14 +140,6 @@ unsigned long long retrolibc_strtoull(const char *s, char **endptr, int base);
 #define strtoll retrolibc_strtoll
 #define strtoul retrolibc_strtoul
 #define strtoull retrolibc_strtoull
-#endif
-
-/* qsort.c */
-
-void retrolibc_qsort(void *base, size_t n, size_t size, int (*cmp)(const void *, const void *));
-
-#ifdef RETROLIBC_QSORT
-#define qsort retrolibc_qsort
 #endif
 
 #endif

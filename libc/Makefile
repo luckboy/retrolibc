@@ -126,10 +126,10 @@ TEST_OBJS = \
 	$(TEST_BUILD_DIR)/test_string_suite.o \
 	$(TEST_BUILD_DIR)/bsearch.o \
 	$(TEST_BUILD_DIR)/test_bsearch_suite.o \
-	$(TEST_BUILD_DIR)/strtol.o \
-	$(TEST_BUILD_DIR)/test_strtol_suite.o \
 	$(TEST_BUILD_DIR)/qsort.o \
 	$(TEST_BUILD_DIR)/test_qsort_suite.o \
+	$(TEST_BUILD_DIR)/strtol.o \
+	$(TEST_BUILD_DIR)/test_strtol_suite.o \
 	$(TEST_BUILD_DIR)/test.o
 	
 LIB = $(BUILD_DIR)/libc.a
