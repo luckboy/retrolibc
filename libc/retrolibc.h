@@ -8,8 +8,14 @@
 #ifndef _RETROLIBC_H
 #define _RETROLIBC_H
 
+#include <inttypes.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <unistd.h>
+
+#ifndef PAGE_SIZE
+#define PAGE_SIZE       (sysconf(_SC_PAGE_SIZE))
+#endif
 
 /* ctype.c */
 
@@ -118,6 +124,26 @@ void *retrolibc_bsearch(const void *key, const void *base, size_t n, size_t widt
 
 #ifdef RETROLIBC_BSEARCH
 #define bsearch retrolibc_bsearch
+#endif
+
+/* malloc.c */
+
+int mock_brk(void *addr);
+void *mock_sbrk(intptr_t inc);
+
+void *retrolibc_malloc(size_t size);
+void *retrolibc_realloc(void *p, size_t size);
+void retrolibc_free(void *p);
+
+#ifdef RETROLIBC_MALLOC
+
+#define brk mock_brk
+#define sbrk mock_sbrk
+
+#define malloc retrolibc_malloc
+#define realloc retrolibc_realloc
+#define free retrolibc_free
+
 #endif
 
 /* qsort.c */

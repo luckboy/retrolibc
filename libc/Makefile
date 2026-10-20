@@ -7,10 +7,10 @@ TEST_BUILD_DIR = $(TOP_DIR)/build/$(HOST)/libc/test
 CFLAGS = -Wall -Os -nostdinc -I$(TOP_DIR)/include -I$(TOP_DIR)/arch/$(TARGET_ARCH)/include -I$(TOP_DIR)/sys/$(TARGET_SYS)/$(TARGET_ARCH)/include -I$(TOP_DIR)/sys/$(TARGET_SYS)/include -I. -I./arch/$(TARGET_ARCH) -I./sys/$(TARGET_SYS)/$(TARGET_ARCH) -I./sys/$(TARGET_SYS)
 SFLAGS = $(CFLAGS) -D__ASSEMBLER__=1
 
-HOSTCFLAGS = -Wall -DTEST=1 -D_XOPEN_SOURCE=1 -g -I. -I./arch/$(HOST_ARCH) -I./sys/$(HOST_SYS)/$(HOST_ARCH) -I./sys/$(HOST_SYS)
+HOSTCFLAGS = -Wall -DTEST=1 -D_XOPEN_SOURCE=1 -D_GNU_SOURCE=1 -g -I. -I./arch/$(HOST_ARCH) -I./sys/$(HOST_SYS)/$(HOST_ARCH) -I./sys/$(HOST_SYS)
 HOSTSFLAGS = $(HOSTCFLAGS) -D__ASSEMBLER__=1
 HOSTLDFLAGS = -g
-HOSTLIBS = -lm -lcunit
+HOSTLIBS = -lm -lpthread -lcunit
 
 CTYPE_OBJS = \
 	$(BUILD_DIR)/ctype_isalnum.o \
@@ -126,6 +126,8 @@ TEST_OBJS = \
 	$(TEST_BUILD_DIR)/test_string_suite.o \
 	$(TEST_BUILD_DIR)/bsearch.o \
 	$(TEST_BUILD_DIR)/test_bsearch_suite.o \
+	$(TEST_BUILD_DIR)/malloc.o \
+	$(TEST_BUILD_DIR)/test_malloc_suite.o \
 	$(TEST_BUILD_DIR)/qsort.o \
 	$(TEST_BUILD_DIR)/test_qsort_suite.o \
 	$(TEST_BUILD_DIR)/strtol.o \
@@ -218,3 +220,5 @@ clean:
 	rm -f $(TEST) $(TEST_OBJS)
 
 $(BUILD_DIR)/malloc.o: malloc.c priv_malloc.h
+$(TEST_BUILD_DIR)/malloc.o: malloc.c priv_malloc.h
+$(TEST_BUILD_DIR)/test_malloc_suite.o: test_malloc_suite.c priv_malloc.h
