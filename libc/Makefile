@@ -125,11 +125,7 @@ TEST_OBJS = \
 	$(TEST_BUILD_DIR)/test_strtol_suite.o \
 	$(TEST_BUILD_DIR)/test.o
 
-ifdef SHARED
-LIB = $(BUILD_DIR)/libc.so
-else
 LIB = $(BUILD_DIR)/libc.a
-endif
 
 TEST = $(TEST_BUILD_DIR)/test
 
@@ -163,14 +159,9 @@ $(TEST_BUILD_DIR)/.empty:
 	mkdir -p $(TEST_BUILD_DIR)
 	touch $(TEST_BUILD_DIR)/.empty
 
-ifdef SHARED
-$(LIB): $(OBJS)
-	$(CC) $(LDFLAGS) -o $(LIB) $(OBJS) $(LIBS)
-else
 $(LIB): $(OBJS)
 	$(AR) -rc $(LIB) $(OBJS)
 	$(AR) -ts $(LIB)
-endif
 
 $(TEST): $(TEST_OBJS)
 	$(HOSTCC) $(HOSTLDFLAGS) -o $(TEST) $(TEST_OBJS) $(HOSTLIBS)
