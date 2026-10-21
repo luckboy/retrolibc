@@ -785,6 +785,29 @@ void test_realloc_reallocates_larger_memory_by_decreasing_for_pointer(void)
   munmap(MEM(new_p), ALLOC_MEM(new_p)->size);
 }
 
+void test_realloc_copies_smaller_memory_area_to_large_memory_area(void)
+{
+  void *p;
+  void *new_p;
+  char *new_s;
+  size_t i;
+  int is_x;
+  initialize_heap();
+  p = retrolibc_malloc(10);
+  memset(p, 'X', 10);
+  new_p = retrolibc_realloc(p, PAGE_SIZE);
+  CU_ASSERT_PTR_NOT_NULL(new_p);
+  new_s = (char *) new_p;
+  is_x = 1;
+  for(i = 0; i < 10; i++) is_x &= (new_s[i] == 'X');
+  CU_ASSERT_NOT_EQUAL(is_x, 0);
+  CU_ASSERT_EQUAL(ALLOC_MEM(new_p)->size, PAGE_SIZE * 2);
+  CU_ASSERT_PTR_NULL(retrolibc_first_free_mem());
+  CU_ASSERT_PTR_NULL(retrolibc_last_free_mem());
+  CU_ASSERT_PTR_EQUAL(brk_addr, brk_mem);
+  munmap(MEM(new_p), ALLOC_MEM(new_p)->size);
+}
+
 void test_free_frees_memory(void)
 {
   void *p;
@@ -968,7 +991,8 @@ int add_malloc_suite(void)
   if(CU_add_test(suite, "realloc complains on out of memory for pointer and brk", test_realloc_complains_on_out_of_memory_for_pointer_and_brk) == NULL) return -1;
   if(CU_add_test(suite, "realloc allocates larger memory for null", test_realloc_allocates_larger_memory_for_null) == NULL) return -1;
   if(CU_add_test(suite, "realloc reallocates larger memory by increasing for pointer", test_realloc_reallocates_larger_memory_by_increasing_for_pointer) == NULL) return -1;
-  if(CU_add_test(suite, "realloc reallocates larger memory by decreasing for pointer", test_realloc_reallocates_larger_memory_by_increasing_for_pointer) == NULL) return -1;
+  if(CU_add_test(suite, "realloc reallocates larger memory by decreasing for pointer", test_realloc_reallocates_larger_memory_by_decreasing_for_pointer) == NULL) return -1;
+  if(CU_add_test(suite, "realloc copies smaller memory area to large memory area", test_realloc_copies_smaller_memory_area_to_large_memory_area) == NULL) return -1;
   if(CU_add_test(suite, "free frees memory", test_free_frees_memory) == NULL) return -1;
   if(CU_add_test(suite, "free frees memory after 3 memory allocations", test_free_frees_memory_after_3_memory_allocations) == NULL) return -1;
   if(CU_add_test(suite, "free frees memory 3 times after memory allocations", test_free_frees_memory_3_times_after_memory_allocations) == NULL) return -1;
