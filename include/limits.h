@@ -10,10 +10,9 @@
 
 #include <bits/long_bit.h>
 #include <bits/page_size.h>
+#include <bits/wordsize.h>
 
 #define PAGE_SIZE       __PAGE_SIZE
-
-#define __WORDSIZE      __LONG_BIT
 
 #define CHAR_BIT        8
 #define LONG_BIT        __LONG_BIT
