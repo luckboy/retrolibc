@@ -9,10 +9,11 @@
 #include <errno.h>
 #include <limits.h>
 #include <pthread.h>
-#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#ifdef TEST
+#ifndef TEST
+#include <stdlib.h>
+#else
 #define RETROLIBC_MALLOC
 #include "retrolibc.h"
 #endif
