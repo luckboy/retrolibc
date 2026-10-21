@@ -205,6 +205,14 @@ static void *realloc_unlocked(void *p, size_t size)
       return p;
     }
   }
+  if(mem_size > MAX_SMALLER_MEM_SIZE) {
+    size_t old_size = alloc_mem->size - sizeof(struct alloc_mem_header);
+    void *new_p = malloc_unlocked(size);
+    if(new_p == NULL) return NULL;
+    memcpy(new_p, p, old_size);
+    free_unlocked(p);
+    return new_p;
+  }
 #endif
   if(mem_size != alloc_mem->size) {
     void *addr = sbrk(0);
@@ -234,7 +242,7 @@ static void *realloc_unlocked(void *p, size_t size)
         new_free_mem->size = alloc_mem->size - mem_size + right_free_mem_size;
         alloc_mem->size = mem_size;
       } else {
-        alloc_mem->size = alloc_mem->size + right_free_mem_size;
+        alloc_mem->size += right_free_mem_size;
       }
     } else {
       size_t old_size = alloc_mem->size - sizeof(struct alloc_mem_header);
