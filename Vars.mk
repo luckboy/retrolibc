@@ -9,18 +9,18 @@ TARGET_ARCH = $(shell echo $(TARGET) | cut -d - -f 1)
 TARGET_SYS = $(shell echo $(TARGET) | cut -d - -f 2)
 
 ifeq ($(HOST_ARCH), i386)
-HOST_COMMON_ARCH=x86
+HOST_COMMON_ARCH = x86
 else
 ifeq ($(HOST_ARCH), x86_64)
-HOST_COMMON_ARCH=x86
+HOST_COMMON_ARCH = x86
 endif
 endif
 
 ifeq ($(TARGET_ARCH), i386)
-TARGET_COMMON_ARCH=x86
+TARGET_COMMON_ARCH = x86
 else
 ifeq ($(TARGET_ARCH), x86_64)
-TARGET_COMMON_ARCH=x86
+TARGET_COMMON_ARCH = x86
 endif
 endif
 
@@ -28,7 +28,7 @@ BUILD_DIR = $(TOP_DIR)/build/$(TARGET)/$(DIR)
 TEST_BUILD_DIR = $(TOP_DIR)/build/$(HOST)/$(DIR)/test
 
 CFLAGS += $(TARGET_FLAGS) -Wall -Os -nostdinc
-CFLAGS += -I$(TOP_DIR)/include -I$(TOP_DIR)/arch/$(TARGET_ARCH)/include -I$(TOP_DIR)/sys/$(TARGET_SYS)/$(TARGET_ARCH)/include -I$(TOP_DIR)/sys/$(TARGET_SYS)/include 
+CFLAGS += -I$(TOP_DIR)/include -I$(TOP_DIR)/arch/$(TARGET_ARCH)/include -I$(TOP_DIR)/sys/$(TARGET_SYS)/$(TARGET_ARCH)/include -I$(TOP_DIR)/sys/$(TARGET_SYS)/include
 CFLAGS += -I. -I./arch/$(TARGET_ARCH) -I./sys/$(TARGET_SYS)/$(TARGET_ARCH) -I./sys/$(TARGET_SYS)
 ifdef TARGET_COMMON_ARCH
 CFLAGS += -I$(TOP_DIR)/arch/$(TARGET_COMMON_ARCH)/include -I$(TOP_DIR)/sys/$(TARGET_SYS)/$(TARGET_COMMON_ARCH)/include
