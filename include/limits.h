@@ -13,6 +13,8 @@
 
 #define PAGE_SIZE       __PAGE_SIZE
 
+#define __WORDSIZE      __LONG_BIT
+
 #define CHAR_BIT        8
 #define LONG_BIT        __LONG_BIT
 #define WORD_BIT        32
