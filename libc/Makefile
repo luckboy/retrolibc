@@ -1,16 +1,7 @@
 TOP_DIR = ..
+DIR = libc
 
-BUILD_DIR = $(TOP_DIR)/build/$(TARGET)/libc
-
-TEST_BUILD_DIR = $(TOP_DIR)/build/$(HOST)/libc/test
-
-CFLAGS = -Wall -Os -nostdinc -I$(TOP_DIR)/include -I$(TOP_DIR)/arch/$(TARGET_ARCH)/include -I$(TOP_DIR)/sys/$(TARGET_SYS)/$(TARGET_ARCH)/include -I$(TOP_DIR)/sys/$(TARGET_SYS)/include -I. -I./arch/$(TARGET_ARCH) -I./sys/$(TARGET_SYS)/$(TARGET_ARCH) -I./sys/$(TARGET_SYS)
-SFLAGS = $(CFLAGS) -D__ASSEMBLER__=1
-
-HOSTCFLAGS = -Wall -DTEST=1 -D_XOPEN_SOURCE=1 -D_GNU_SOURCE=1 -g -I. -I./arch/$(HOST_ARCH) -I./sys/$(HOST_SYS)/$(HOST_ARCH) -I./sys/$(HOST_SYS)
-HOSTSFLAGS = $(HOSTCFLAGS) -D__ASSEMBLER__=1
-HOSTLDFLAGS = -g
-HOSTLIBS = -lm -lpthread -lcunit
+include $(TOP_DIR)/Vars.mk
 
 CTYPE_OBJS = \
 	$(BUILD_DIR)/ctype_isalnum.o \
@@ -133,65 +124,35 @@ TEST_OBJS = \
 	$(TEST_BUILD_DIR)/strtol.o \
 	$(TEST_BUILD_DIR)/test_strtol_suite.o \
 	$(TEST_BUILD_DIR)/test.o
-	
+
+ifdef SHARED
+LIB = $(BUILD_DIR)/libc.so
+else
 LIB = $(BUILD_DIR)/libc.a
+endif
 
 TEST = $(TEST_BUILD_DIR)/test
 
 $(BUILD_DIR)/ctype_%.o: ctype.c $(BUILD_DIR)/.empty
-	$(CC) $(TARGET_FLAGS) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -c -o $@ $<
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -c -o $@ $<
 
 $(BUILD_DIR)/stdlib_%.o: stdlib.c $(BUILD_DIR)/.empty
-	$(CC) $(TARGET_FLAGS) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -c -o $@ $<
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -c -o $@ $<
 
 $(BUILD_DIR)/string_%.o: string.c $(BUILD_DIR)/.empty
-	$(CC) $(TARGET_FLAGS) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -c -o $@ $<
-
-$(BUILD_DIR)/%.o: arch/$(TARGET_ARCH)/%.S $(BUILD_DIR)/.empty
-	$(CC) $(TARGET_FLAGS) $(SFLAGS) $(EXTRA_CFLAGS) -c -o $@ $<
-
-$(BUILD_DIR)/%.o: sys/$(TARGET_SYS)/$(TARGET_ARCH)/%.S $(BUILD_DIR)/.empty
-	$(CC) $(TARGET_FLAGS) $(SFLAGS) $(EXTRA_CFLAGS) -c -o $@ $<
-	
-$(BUILD_DIR)/%.o: arch/$(TARGET_ARCH)/%.c $(BUILD_DIR)/.empty
-	$(CC) $(TARGET_FLAGS) $(CFLAGS) $(EXTRA_CFLAGS) -c -o $@ $<
-
-$(BUILD_DIR)/%.o: sys/$(TARGET_SYS)/$(TARGET_ARCH)/%.c $(BUILD_DIR)/.empty
-	$(CC) $(TARGET_FLAGS) $(CFLAGS) $(EXTRA_CFLAGS) -c -o $@ $<
-
-$(BUILD_DIR)/%.o: sys/$(TARGET_SYS)/%.c $(BUILD_DIR)/.empty
-	$(CC) $(TARGET_FLAGS) $(CFLAGS) $(EXTRA_CFLAGS) -c -o $@ $<
-
-$(BUILD_DIR)/%.o: %.c $(BUILD_DIR)/.empty
-	$(CC) $(TARGET_FLAGS) $(CFLAGS) $(EXTRA_CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -c -o $@ $<
 
 $(TEST_BUILD_DIR)/ctype_%.o: ctype.c retrolibc.h $(TEST_BUILD_DIR)/.empty
-	$(HOSTCC) $(HOST_FLAGS) $(HOSTCFLAGS) -DL_$* -c -o $@ $<
+	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -c -o $@ $<
 
 $(TEST_BUILD_DIR)/stdlib_%.o: stdlib.c retrolibc.h $(TEST_BUILD_DIR)/.empty
-	$(HOSTCC) $(HOST_FLAGS) $(HOSTCFLAGS) -DL_$* -c -o $@ $<
+	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -c -o $@ $<
 
 $(TEST_BUILD_DIR)/string_%.o: string.c retrolibc.h $(TEST_BUILD_DIR)/.empty
-	$(HOSTCC) $(HOST_FLAGS) $(HOSTCFLAGS) -DL_$* -c -o $@ $<
+	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -c -o $@ $<
 
-$(TEST_BUILD_DIR)/%.o: arch/$(HOST_ARCH)/%.S $(TEST_BUILD_DIR)/.empty
-	$(HOSTCC) $(HOST_FLAGS) $(HOSTSFLAGS) -c -o $@ $<
-
-$(TEST_BUILD_DIR)/%.o: sys/$(HOST_SYS)/$(HOST_ARCH)/%.S $(TEST_BUILD_DIR)/.empty
-	$(HOSTCC) $(HOST_FLAGS) $(HOSTSFLAGS) -c -o $@ $<
+include $(TOP_DIR)/Rules.mk
 	
-$(TEST_BUILD_DIR)/%.o: arch/$(HOST_ARCH)/%.c retrolibc.h $(TEST_BUILD_DIR)/.empty
-	$(HOSTCC) $(HOST_FLAGS) $(HOSTCFLAGS) -c -o $@ $<
-
-$(TEST_BUILD_DIR)/%.o: sys/$(HOST_SYS)/$(HOST_ARCH)/%.c retrolibc.h $(TEST_BUILD_DIR)/.empty
-	$(HOSTCC) $(HOST_FLAGS) $(HOSTCFLAGS) -c -o $@ $<
-
-$(TEST_BUILD_DIR)/%.o: sys/$(HOST_SYS)/%.c retrolibc.h $(TEST_BUILD_DIR)/.empty
-	$(HOSTCC) $(HOST_FLAGS) $(HOSTCFLAGS) -c -o $@ $<
-
-$(TEST_BUILD_DIR)/%.o: %.c retrolibc.h $(TEST_BUILD_DIR)/.empty
-	$(HOSTCC) $(HOST_FLAGS) $(HOSTCFLAGS) -c -o $@ $<
-
 all: $(LIB)
 
 $(BUILD_DIR)/.empty:
@@ -202,12 +163,17 @@ $(TEST_BUILD_DIR)/.empty:
 	mkdir -p $(TEST_BUILD_DIR)
 	touch $(TEST_BUILD_DIR)/.empty
 
+ifdef SHARED
+$(LIB): $(OBJS)
+	$(CC) $(LDFLAGS) -o $(LIB) $(OBJS) $(LIBS)
+else
 $(LIB): $(OBJS)
 	$(AR) -rc $(LIB) $(OBJS)
 	$(AR) -ts $(LIB)
+endif
 
 $(TEST): $(TEST_OBJS)
-	$(HOSTCC) $(HOST_FLAGS) $(HOSTLDFLAGS) -o $(TEST) $(TEST_OBJS) $(HOSTLIBS)
+	$(HOSTCC) $(HOSTLDFLAGS) -o $(TEST) $(TEST_OBJS) $(HOSTLIBS)
 
 test: $(TEST)
 	echo -n
@@ -217,6 +183,8 @@ run_test: test
 
 clean:
 	rm -f $(LIB) $(OBJS)
+
+clean_test:
 	rm -f $(TEST) $(TEST_OBJS)
 
 $(BUILD_DIR)/malloc.o: malloc.c priv_malloc.h
