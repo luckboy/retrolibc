@@ -24,7 +24,9 @@ TARGET_COMMON_ARCH = x86
 endif
 endif
 
-BUILD_DIR = $(TOP_DIR)/build/$(TARGET)/$(DIR)
+LIB_TYPE = static
+
+BUILD_DIR = $(TOP_DIR)/build/$(TARGET)/$(DIR)/$(LIB_TYPE)
 TEST_BUILD_DIR = $(TOP_DIR)/build/$(HOST)/$(DIR)/test
 
 CFLAGS += $(TARGET_FLAGS) -Wall -Os -nostdinc
