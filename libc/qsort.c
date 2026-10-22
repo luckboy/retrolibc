@@ -11,7 +11,6 @@
 #define RETROLIBC_QSORT
 #include "retrolibc.h"
 #endif
-#include <stdlib.h>
 
 static void swap(char *s, char *s2, size_t n)
 {
