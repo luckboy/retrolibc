@@ -102,7 +102,7 @@ long long strtoll(const char *s, char **endptr, int base)
 { return (long long) strtoull_for_max(s, endptr, base, (unsigned long long) LLONG_MAX, 1); }
 
 unsigned long strtoul(const char *s, char **endptr, int base)
-{ return (unsigned long) strtoull_for_max(s, endptr, base, (unsigned long long) ULONG_MAX, 0); }
+{ return (unsigned long) strtoull_for_max(s, endptr, base, ULONG_MAX, 0); }
 
 unsigned long long strtoull(const char *s, char **endptr, int base)
 { return strtoull_for_max(s, endptr, base, ULLONG_MAX, 0); }
