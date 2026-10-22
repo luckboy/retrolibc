@@ -322,7 +322,6 @@ static void free_unlocked(void *p)
       remove_free_mem(right_free_mem);
     }
   }
-  
 }
 
 void free(void *p)
