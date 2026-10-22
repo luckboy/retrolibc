@@ -8,10 +8,13 @@
 #ifndef _PTHREAD_H
 #define _PTHREAD_H
 
-#define PTHREAD_MUTEX_INITIALIZER ((pthread_mutex_t) { 1 })
+#include <bits/types.h>
+
+#define PTHREAD_MUTEX_INITIALIZER ((pthread_mutex_t) { 1, 0 })
 
 typedef struct {
-  long __bit;
+  int __bit;
+  __pid_t __owner;
 } pthread_mutex_t;
 
 #ifdef __cplusplus
