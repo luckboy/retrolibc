@@ -20,6 +20,21 @@ CTYPE_OBJS = \
 	$(BUILD_DIR)/ctype_tolower.o \
 	$(BUILD_DIR)/ctype_toupper.o
 
+FILE_OBJS = \
+	$(BUILD_DIR)/file_file_list.o \
+	$(BUILD_DIR)/file_fflush_unlocked.o \
+	$(BUILD_DIR)/file_fflush.o \
+	$(BUILD_DIR)/file_fseeko.o \
+	$(BUILD_DIR)/file_ftello.o \
+	$(BUILD_DIR)/file_getc_unlocked.o \
+	$(BUILD_DIR)/file_putc_unlocked.o
+	
+STDIO_OBJS = \
+	$(BUILD_DIR)/stdio_fgetc.o \
+	$(BUILD_DIR)/stdio_fputc.o \
+	$(BUILD_DIR)/stdio_fseek.o \
+	$(BUILD_DIR)/stdio_ftell.o
+
 STDLIB_OBJS = \
 	$(BUILD_DIR)/stdlib_atoi.o \
 	$(BUILD_DIR)/stdlib_atol.o \
@@ -53,6 +68,8 @@ STRING_OBJS = \
 
 OBJS = \
 	$(CTYPE_OBJS) \
+	$(FILE_OBJS) \
+	$(STDIO_OBJS) \
 	$(STDLIB_OBJS) \
 	$(STRING_OBJS) \
 	$(BUILD_DIR)/bsearch.o \
@@ -134,6 +151,12 @@ TEST = $(TEST_BUILD_DIR)/test
 $(BUILD_DIR)/ctype_%.o: ctype.c $(BUILD_DIR)/.empty
 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -c -o $@ $<
 
+$(BUILD_DIR)/file_%.o: file.c $(BUILD_DIR)/.empty
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -c -o $@ $<
+
+$(BUILD_DIR)/stdio_%.o: stdio.c $(BUILD_DIR)/.empty
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -c -o $@ $<
+	
 $(BUILD_DIR)/stdlib_%.o: stdlib.c $(BUILD_DIR)/.empty
 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -c -o $@ $<
 
@@ -181,5 +204,12 @@ clean_test:
 	rm -f $(TEST) $(TEST_OBJS)
 
 $(BUILD_DIR)/malloc.o: malloc.c priv_malloc.h
+$(BUILD_DIR)/file_file_list.o: file.c priv_file.h
+$(BUILD_DIR)/file_fflush_unlocked.o: file.c priv_file.h
+$(BUILD_DIR)/file_fflush.o: file.c priv_file.h
+$(BUILD_DIR)/file_fseeko.o: file.c priv_file.h
+$(BUILD_DIR)/file_ftello.o: file.c priv_file.h
+$(BUILD_DIR)/file_getc_unlocked.o: file.c priv_file.h
+$(BUILD_DIR)/file_putc_unlocked.o: file.c priv_file.h
 $(TEST_BUILD_DIR)/malloc.o: malloc.c priv_malloc.h
 $(TEST_BUILD_DIR)/test_malloc_suite.o: test_malloc_suite.c priv_malloc.h
