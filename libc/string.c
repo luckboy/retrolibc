@@ -5,6 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+#include <stdlib.h>
 #ifndef TEST
 #include <string.h>
 #else
@@ -134,6 +135,16 @@ size_t strcspn(const char *s, const char *r)
     if(strchr(r, (int) ((unsigned char) c)) != NULL) break;
   }
   return len;
+}
+#endif
+
+#ifdef L_strdup
+char *strdup(const char *s)
+{
+  char *new_s = malloc(strlen(s) + 1);
+  if(new_s == NULL) return NULL;
+  strcpy(new_s, s);
+  return new_s;
 }
 #endif
 

@@ -38,6 +38,7 @@ STRING_OBJS = \
 	$(BUILD_DIR)/string_strcoll.o \
 	$(BUILD_DIR)/string_strcpy.o \
 	$(BUILD_DIR)/string_strcspn.o \
+	$(BUILD_DIR)/string_strdup.o \
 	$(BUILD_DIR)/string_strlen.o \
 	$(BUILD_DIR)/string_strncat.o \
 	$(BUILD_DIR)/string_strncmp.o \
