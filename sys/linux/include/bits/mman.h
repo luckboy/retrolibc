@@ -24,16 +24,4 @@
 
 #define MAP_FAILED      ((void *) (-1))
 
-#if __LONG_BIT == 64
-#ifndef _OFF_T
-#define _OFF_T
-typedef long off_t;
-#endif
-#else
-#ifndef _OFF_T
-#define _OFF_T
-typedef long long off_t;
-#endif
-#endif
-
 #endif

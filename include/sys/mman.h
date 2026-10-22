@@ -10,10 +10,16 @@
 
 #include <bits/long_bit.h>
 #include <bits/mman.h>
+#include <bits/types.h>
 
 #ifndef _SIZE_T
 #define _SIZE_T
 typedef __SIZE_TYPE__ size_t;
+#endif
+
+#ifndef _OFF_T
+#define _OFF_T
+typedef __off_t off_t;
 #endif
 
 #ifdef __cplusplus
