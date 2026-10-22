@@ -10,14 +10,11 @@
 
 #include <bits/long_bit.h>
 
+#ifndef _INTPTR_T
+#define _INTPTR_T
 #if __LONG_BIT == 64
-#ifndef _INTPTR_T
-#define _INTPTR_T
 typedef long intptr_t;
-#endif
 #else
-#ifndef _INTPTR_T
-#define _INTPTR_T
 typedef int intptr_t;
 #endif
 #endif
