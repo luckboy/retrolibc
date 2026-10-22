@@ -97,6 +97,7 @@ TEST_STRING_OBJS = \
 	$(TEST_BUILD_DIR)/string_strcoll.o \
 	$(TEST_BUILD_DIR)/string_strcpy.o \
 	$(TEST_BUILD_DIR)/string_strcspn.o \
+	$(TEST_BUILD_DIR)/string_strdup.o \
 	$(TEST_BUILD_DIR)/string_strlen.o \
 	$(TEST_BUILD_DIR)/string_strncat.o \
 	$(TEST_BUILD_DIR)/string_strncmp.o \

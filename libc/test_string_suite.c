@@ -152,7 +152,15 @@ static void test_strcspn_returns_length_of_complementary_substring(void)
   CU_ASSERT_EQUAL(retrolibc_strcspn("abcdef", "ghi"), 6);
 }
 
-static void test_strncat_returns_lenght_of_string(void)
+static void test_strdup_duplicates_string(void)
+{
+  char *s = retrolibc_strdup("abcdef");
+  CU_ASSERT_PTR_NOT_NULL(s);
+  CU_ASSERT_STRING_EQUAL(s, "abcdef");
+  if(s != NULL) free(s);
+}
+
+static void test_strlen_returns_lenght_of_string(void)
 {
   CU_ASSERT_EQUAL(retrolibc_strlen("abcdef"), 6);
   CU_ASSERT_EQUAL(retrolibc_strlen("abc"), 3);
@@ -314,7 +322,8 @@ int add_string_suite(void)
   if(CU_add_test(suite, "strcoll returns number that is greater than zero", test_strcoll_returns_number_that_is_greater_than_zero) == NULL) return -1;
   if(CU_add_test(suite, "strcpy copies string", test_strcpy_copies_string) == NULL) return -1;
   if(CU_add_test(suite, "strcspn returns length of complementary substring", test_strcspn_returns_length_of_complementary_substring) == NULL) return -1;
-  if(CU_add_test(suite, "strncat returns lenght of string", test_strncat_returns_lenght_of_string) == NULL) return -1;
+  if(CU_add_test(suite, "strdup duplicates string", test_strdup_duplicates_string) == NULL) return -1;
+  if(CU_add_test(suite, "strlen returns lenght of string", test_strlen_returns_lenght_of_string) == NULL) return -1;
   if(CU_add_test(suite, "strncat concatenates two strings",  test_strncat_concatenates_two_strings) == NULL) return -1;
   if(CU_add_test(suite, "strncat concatenates two strings for too large string",  test_strncat_concatenates_two_strings_for_too_large_string) == NULL) return -1;
   if(CU_add_test(suite, "strncmp returns zero", test_strncmp_returns_zero) == NULL) return -1;

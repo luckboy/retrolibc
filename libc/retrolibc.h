@@ -79,6 +79,7 @@ int retrolibc_strcmp(const char *s, const char *s2);
 int retrolibc_strcoll(const char *s, const char *s2);
 char *retrolibc_strcpy(char *d, const char *s);
 size_t retrolibc_strcspn(const char *s, const char *r);
+char *retrolibc_strdup(const char *s);
 size_t retrolibc_strlen(const char *s);
 char *retrolibc_strncat(char *d, const char *s, size_t n);
 int retrolibc_strncmp(const char *s, const char *s2, size_t n);
@@ -105,6 +106,7 @@ size_t retrolibc_strxfrm(char *d, const char *s2, size_t n);
 #define strcoll retrolibc_strcoll
 #define strcpy retrolibc_strcpy
 #define strcspn retrolibc_strcspn
+#define strdup retrolibc_strdup
 #define strlen retrolibc_strlen
 #define strncat retrolibc_strncat
 #define strncmp retrolibc_strncmp
