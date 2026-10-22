@@ -72,7 +72,7 @@ int isxdigit(int c)
 { return isdigit(c) || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f'); }
 #endif
 
-#ifdef L_isxdigit
+#ifdef L_toascii
 int toascii(int c)
 { return c & 127; }
 #endif
