@@ -21,7 +21,7 @@ void *bsearch(const void *key, const void *base, size_t n, size_t width, int (*c
   r = n - 1;
   while(1) {
     size_t m = (l + r) >> 1;
-    int q = cmp(key, (const void *) (s + m * width));
+    int q = cmp(key, s + m * width);
     if(q < 0) {
       if(l >= m) break;
       r = m - 1;

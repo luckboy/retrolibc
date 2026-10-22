@@ -29,7 +29,7 @@ static void quicksort(char *s, size_t l, size_t r, size_t width, int (*cmp)(cons
   pivot =  s + r * width;
   i = l;
   for(j = l; j <= r - 1; j++) {
-    if(cmp((const void *) (s + j * width), (const void *) pivot) <= 0) {
+    if(cmp(s + j * width, pivot) <= 0) {
       swap(s + i * width, s + j * width, width);
       i++;
     }
