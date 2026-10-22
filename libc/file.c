@@ -225,7 +225,7 @@ static off_t ftello_unlocked(FILE *f)
   if((f->flags & FILE_FLAG_DATA_TO_WRITE) == 0) {
     return offset - ((off_t) (f->end_pos - f->cur_pos));
   } else {
-    return offset + ((off_t) (f->cur_pos));
+    return offset + ((off_t) (f->end_pos));
   }
 }
 
