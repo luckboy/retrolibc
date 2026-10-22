@@ -9,6 +9,7 @@
 #define _PRIV_MALLOC_H
 
 #include <limits.h>
+#include <stddef.h>
 
 #ifndef LONG_BIT
 #define LONG_BIT        __WORDSIZE
