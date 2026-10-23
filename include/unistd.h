@@ -17,6 +17,10 @@
 #define SEEK_END        2
 #endif
 
+#define STDIN_FILENO    0
+#define STDOUT_FILENO   1
+#define STDERR_FILENO   2
+
 #ifndef _SIZE_T
 #define _SIZE_T
 typedef __SIZE_TYPE__ size_t;

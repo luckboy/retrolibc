@@ -30,6 +30,7 @@ struct __FILE
   size_t buf_size;
   size_t cur_pos;
   size_t end_pos;
+  pid_t pid;
 };
 
 #define FFLUSH_FLAG_CAN_SEEK            (1 << 0)

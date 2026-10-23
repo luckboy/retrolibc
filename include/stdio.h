@@ -11,7 +11,7 @@
 #include <bits/types.h>
 #include <stddef.h>
 
-#define BUFSIZE         4096
+#define BUFSIZ          4096
 
 #define _IOFBF          0
 #define _IOLBF          1
@@ -36,18 +36,26 @@ extern FILE *stdin;
 extern FILE *stdout;
 extern FILE *stderr;
 
-int fflush(FILE *f);
 int fgetc(FILE *f);
-void flockfile(FILE *f);
 int fputc(int c, FILE *f);
-int fseek(FILE *f, long offset, int whence);
-int fseeko(FILE *f, off_t offset, int whence);
 long ftell(FILE *f);
+int fseek(FILE *f, long offset, int whence);
+
+void clearerr(FILE *f);
+int feof(FILE *f);
+int ferror(FILE *f);
+int fflush(FILE *f);
+int fileno(FILE *);
+void flockfile(FILE *f);
+size_t fread(void *buf, size_t size, size_t n, FILE *f);
+int fseeko(FILE *f, off_t offset, int whence);
 off_t ftello(FILE *f);
 int ftrylockfile(FILE *f);
 void funlockfile(FILE *f);
+size_t fwrite(const void *buf, size_t size, size_t n, FILE *f);
 int getc_unlocked(FILE *f);
 int putc_unlocked(int c, FILE *f);
+int ungetc(int c, FILE *f);
 
 #ifdef __cplusplus
 }

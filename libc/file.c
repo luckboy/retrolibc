@@ -10,6 +10,66 @@
 #include <stdio.h>
 #include "priv_file.h"
 
+#ifdef L_stdin
+static char static_stdin_buf[BUFSIZ];
+
+static struct __FILE static_stdin = {
+  .prev = NULL,
+  .next = NULL,
+  .mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP,
+  .fd = STDIN_FILENO,
+  .flags = FILE_FLAG_LINE_BUFFERED,
+  .pushed_char = -1,
+  .buf = static_stdin_buf,
+  .buf_size = BUFSIZ,
+  .cur_pos = 0,
+  .end_pos = 0,
+  .pid = -1
+};
+
+FILE *stdin = &static_stdin;
+#endif
+
+#ifdef L_stdout
+static char static_stdout_buf[BUFSIZ];
+
+static struct __FILE static_stdout = {
+  .prev = NULL,
+  .next = NULL,
+  .mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP,
+  .fd = STDOUT_FILENO,
+  .flags = FILE_FLAG_LINE_BUFFERED,
+  .pushed_char = -1,
+  .buf = static_stdout_buf,
+  .buf_size = BUFSIZ,
+  .cur_pos = 0,
+  .end_pos = 0,
+  .pid = -1
+};
+
+FILE *stdout = &static_stdout;
+#endif
+
+#ifdef L_stderr
+static char static_stderr_buf[BUFSIZ];
+
+static struct __FILE static_stderr = {
+  .prev = NULL,
+  .next = NULL,
+  .mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP,
+  .fd = STDERR_FILENO,
+  .flags = FILE_FLAG_LINE_BUFFERED,
+  .pushed_char = -1,
+  .buf = static_stderr_buf,
+  .buf_size = BUFSIZ,
+  .cur_pos = 0,
+  .end_pos = 0,
+  .pid = -1
+};
+
+FILE *stderr = &static_stderr;
+#endif
+
 #ifdef L_file_list
 pthread_mutex_t __file_list_mutex;
 struct __FILE *__first_file;
@@ -49,7 +109,6 @@ void __remove_file(struct __FILE *f)
 int __fflush_unlocked(struct __FILE *f, int flags)
 {
   if((flags & FFLUSH_FLAG_CAN_SEEK) != 0 && (f->flags & FILE_FLAG_DATA_TO_WRITE) == 0) {
-    f->pushed_char = -1;
     if(f->cur_pos < f->end_pos) {
       if(lseek(f->fd, f->end_pos - f->cur_pos, SEEK_CUR) == -1) {
         f->flags |= FILE_FLAG_ERROR;
@@ -59,20 +118,52 @@ int __fflush_unlocked(struct __FILE *f, int flags)
     }
   }
   if((flags & FFLUSH_FLAG_CAN_WRITE) != 0 && (f->flags & FILE_FLAG_DATA_TO_WRITE) != 0) {
-    f->pushed_char = -1;
     if(f->end_pos > 0) {
       ssize_t n;
       size_t cur_pos = 0;
-      for(; cur_pos < f->end_pos; cur_pos += n) {
+      for(; cur_pos < f->end_pos; cur_pos += (size_t) n) {
         n = write(f->fd, f->buf + cur_pos, f->end_pos - cur_pos);
         if(n == -1) {
           f->flags |= FILE_FLAG_ERROR;
           return EOF;
         }
       }
+      f->flags &= ~FILE_FLAG_DATA_TO_WRITE;
+      f->cur_pos = f->end_pos = 0;
     }
   }
   return 0;
+}
+#endif
+
+#ifdef L_clearerr
+void clearerr(FILE *f)
+{
+  flockfile(f);
+  f->flags &= ~(FILE_FLAG_EOF | FILE_FLAG_ERROR);
+  funlockfile(f);
+}
+#endif
+
+#ifdef L_feof
+int feof(FILE *f)
+{
+  int r;
+  flockfile(f);
+  r = ((f->flags & FILE_FLAG_EOF) != 0);
+  funlockfile(f);
+  return r;
+}
+#endif
+
+#ifdef L_ferror
+int ferror(FILE *f)
+{
+  int r;
+  flockfile(f);
+  r = ((f->flags & FILE_FLAG_ERROR) != 0);
+  funlockfile(f);
+  return r;
 }
 #endif
 
@@ -105,6 +196,57 @@ int fflush(FILE *f)
     pthread_mutex_lock(&__file_list_mutex);
     return r;
   }
+}
+#endif
+
+#ifdef L_fileno
+int fileno(FILE *f)
+{
+  int fd;
+  flockfile(f);
+  fd = f-> fd;
+  funlockfile(f);
+  return fd;
+}
+#endif
+
+#ifdef L_flockfile
+void flockfile(FILE *f)
+{ pthread_mutex_lock(&(f->mutex)); }
+#endif
+
+#ifdef L_fread
+static size_t fread_unlocked(void *buf, size_t size, size_t n, FILE *f)
+{
+  char *p = (char *) buf;
+  size_t buf_size = n * size;
+  ssize_t m;
+  size_t i;
+  for(i = 0; i < buf_size && (f->pushed_char != -1 || f->cur_pos < f->end_pos); i++) {
+    int c = getc_unlocked(f);
+    if(c == EOF) return 0;
+    p[i] = c;
+  }
+  for(; i < buf_size; i += m) {
+    m = read(f->fd, p + i, buf_size - i);
+    if(m == 0) {
+      f->flags |= FILE_FLAG_EOF;
+      return 0;
+    } else if(m == -1) {
+      f->flags |= FILE_FLAG_ERROR;
+      return 0;
+    }
+  }
+  return i / n;
+}
+
+size_t fread(void *buf, size_t size, size_t n, FILE *f)
+{
+  size_t m;
+  flockfile(f);
+  m = fread_unlocked(buf, size, n, f);
+  funlockfile(f);
+  return m;  
 }
 #endif
 
@@ -153,6 +295,16 @@ off_t ftello(FILE *f)
 }
 #endif
 
+#ifdef L_ftrylockfile
+int ftrylockfile(FILE *f)
+{ return pthread_mutex_trylock(&(f->mutex)); }
+#endif
+
+#ifdef L_funlockfile
+void funlockfile(FILE *f)
+{ pthread_mutex_unlock(&(f->mutex)); }
+#endif
+
 #ifdef L_getc_unlocked
 int getc_unlocked(FILE *f)
 {
@@ -160,7 +312,7 @@ int getc_unlocked(FILE *f)
   if(f->pushed_char != -1) {
     int c = f->pushed_char;
     f->pushed_char = -1;
-    return c;
+    return (int) ((unsigned char) c);
   }
   if(__fflush_unlocked(f, FFLUSH_FLAG_CAN_WRITE) == EOF) return EOF;
   if(f->buf != NULL) {
@@ -236,5 +388,60 @@ int putc_unlocked(int c, FILE *f)
     }
   }
   return 0;
+}
+#endif
+
+#ifdef L_fwrite
+static size_t fwrite_unlocked(const void *buf, size_t size, size_t n, FILE *f)
+{
+  const char *p = (const char *) buf;
+  size_t buf_size = n * size;
+  ssize_t m;
+  size_t i;
+  for(i = 0; i < buf_size && f->cur_pos < f->end_pos; i++) {
+    if(putc_unlocked(p[i], f) == EOF) return 0;
+  }
+  for(; i < buf_size; i += m) {
+    m = write(f->fd, p + i, buf_size - i);
+    if(m == -1) {
+      f->flags |= FILE_FLAG_ERROR;
+      return 0;
+    }
+  }
+  return i / n;
+}
+
+size_t fwrite(const void *buf, size_t size, size_t n, FILE *f)
+{
+  size_t m;
+  flockfile(f);
+  m = fwrite_unlocked(buf, size, n, f);
+  funlockfile(f);
+  return m;  
+}
+#endif
+
+#ifdef L_ungetc
+static int ungetc_unlocked(int c, FILE *f)
+{
+  if(f->cur_pos > 0) {
+    f->cur_pos--;
+    f->buf[f->cur_pos] = c;
+  } else if(f->pushed_char == -1) {
+    f->pushed_char = (short) ((unsigned char) c);
+  } else {
+    return EOF;
+  }
+  return (int) ((unsigned char) c);
+}
+
+int ungetc(int c, FILE *f)
+{
+  int r;
+  if(c == EOF) return EOF;
+  flockfile(f);
+  r = ungetc_unlocked(c, f);
+  funlockfile(f);
+  return r;
 }
 #endif
