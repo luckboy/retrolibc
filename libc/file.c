@@ -237,7 +237,7 @@ static size_t fread_unlocked(void *buf, size_t size, size_t n, FILE *f)
       return 0;
     }
   }
-  return i / n;
+  return i / size;
 }
 
 size_t fread(void *buf, size_t size, size_t n, FILE *f)
@@ -408,7 +408,7 @@ static size_t fwrite_unlocked(const void *buf, size_t size, size_t n, FILE *f)
       return 0;
     }
   }
-  return i / n;
+  return i / size;
 }
 
 size_t fwrite(const void *buf, size_t size, size_t n, FILE *f)
