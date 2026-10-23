@@ -108,6 +108,51 @@ int fflush(FILE *f)
 }
 #endif
 
+#ifdef L_fseeko
+static int fseeko_unlocked(FILE *f, off_t offset, int whence)
+{
+  if((f->flags & FILE_FLAG_ERROR) != 0) return -1;
+  if(__fflush_unlocked(f, FFLUSH_FLAG_CAN_SEEK | FFLUSH_FLAG_CAN_WRITE) == EOF) return -1;
+  if(lseek(f->fd, offset, whence) == -1) return -1;
+  return 0;
+}
+
+int fseeko(FILE *f, off_t offset, int whence)
+{
+  int r;
+  flockfile(f);
+  r= fseeko_unlocked(f, offset, whence);
+  flockfile(f);
+  return r;  
+}
+#endif
+
+#ifdef L_ftello
+static off_t ftello_unlocked(FILE *f)
+{
+  if((f->flags & FILE_FLAG_ERROR) != 0) return -1;
+  off_t offset = lseek(f->fd, 0, SEEK_CUR);
+  if(offset == -1) {
+    f->flags |= FILE_FLAG_ERROR;
+    return -1;
+  }
+  if((f->flags & FILE_FLAG_DATA_TO_WRITE) == 0) {
+    return offset - ((off_t) (f->end_pos - f->cur_pos));
+  } else {
+    return offset + ((off_t) (f->end_pos));
+  }
+}
+
+off_t ftello(FILE *f)
+{
+  off_t offset;
+  flockfile(f);
+  offset = ftello_unlocked(f);
+  flockfile(f);
+  return offset;
+}
+#endif
+
 #ifdef L_getc_unlocked
 int getc_unlocked(FILE *f)
 {
@@ -191,50 +236,5 @@ int putc_unlocked(int c, FILE *f)
     }
   }
   return 0;
-}
-#endif
-
-#ifdef L_fseeko
-static int fseeko_unlocked(FILE *f, off_t offset, int whence)
-{
-  if((f->flags & FILE_FLAG_ERROR) != 0) return -1;
-  if(__fflush_unlocked(f, FFLUSH_FLAG_CAN_SEEK | FFLUSH_FLAG_CAN_WRITE) == EOF) return -1;
-  if(lseek(f->fd, offset, whence) == -1) return -1;
-  return 0;
-}
-
-int fseeko(FILE *f, off_t offset, int whence)
-{
-  int r;
-  flockfile(f);
-  r= fseeko_unlocked(f, offset, whence);
-  flockfile(f);
-  return r;  
-}
-#endif
-
-#ifdef L_ftello
-static off_t ftello_unlocked(FILE *f)
-{
-  if((f->flags & FILE_FLAG_ERROR) != 0) return -1;
-  off_t offset = lseek(f->fd, 0, SEEK_CUR);
-  if(offset == -1) {
-    f->flags |= FILE_FLAG_ERROR;
-    return -1;
-  }
-  if((f->flags & FILE_FLAG_DATA_TO_WRITE) == 0) {
-    return offset - ((off_t) (f->end_pos - f->cur_pos));
-  } else {
-    return offset + ((off_t) (f->end_pos));
-  }
-}
-
-off_t ftello(FILE *f)
-{
-  off_t offset;
-  flockfile(f);
-  offset = ftello_unlocked(f);
-  flockfile(f);
-  return offset;
 }
 #endif
