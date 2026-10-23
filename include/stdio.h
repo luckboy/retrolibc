@@ -17,6 +17,12 @@
 #define _IOLBF          1
 #define _IONBF          2
 
+#ifndef SEEK_SET
+#define SEEK_SET        0
+#define SEEK_CUR        1
+#define SEEK_END        2
+#endif
+
 #define EOF             (-1)
 
 struct __FILE;
@@ -28,6 +34,11 @@ typedef struct __FILE FILE;
 typedef __off_t off_t;
 #endif
 
+typedef struct
+{
+  off_t __offset;
+} fpos_t;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -37,9 +48,26 @@ extern FILE *stdout;
 extern FILE *stderr;
 
 int fgetc(FILE *f);
+int fgetpos(FILE *f, fpos_t *pos);
+char *fgets(char *s, int n, FILE *f);
 int fputc(int c, FILE *f);
+int fputs(const char *s, FILE *f);
 long ftell(FILE *f);
 int fseek(FILE *f, long offset, int whence);
+int fsetpos(FILE *f, const fpos_t *pos);
+int getc(FILE *f);
+int getchar(void);
+int getchar_unlocked(void);
+char *gets(char *s);
+int getw(FILE *f);
+void perror(const char *s);
+int putc(int c, FILE *f);
+int putchar(int c);
+int putchar_unlocked(int c);
+int puts(const char *s);
+int putw(int w, FILE *f);
+void rewind(FILE *f);
+void setbuf(FILE *f, char *buf);
 
 void clearerr(FILE *f);
 int fclose(FILE *f);

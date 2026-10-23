@@ -51,9 +51,26 @@ FILE_OBJS = \
 
 STDIO_OBJS = \
 	$(BUILD_DIR)/stdio_fgetc.o \
+	$(BUILD_DIR)/stdio_fgets.o \
+	$(BUILD_DIR)/stdio_fgetpos.o \
 	$(BUILD_DIR)/stdio_fputc.o \
+	$(BUILD_DIR)/stdio_fputs.o \
 	$(BUILD_DIR)/stdio_fseek.o \
-	$(BUILD_DIR)/stdio_ftell.o
+	$(BUILD_DIR)/stdio_fsetpos.o \
+	$(BUILD_DIR)/stdio_ftell.o \
+	$(BUILD_DIR)/stdio_getc.o \
+	$(BUILD_DIR)/stdio_getchar.o \
+	$(BUILD_DIR)/stdio_getchar_unlocked.o \
+	$(BUILD_DIR)/stdio_gets.o \
+	$(BUILD_DIR)/stdio_getw.o \
+	$(BUILD_DIR)/stdio_perror.o \
+	$(BUILD_DIR)/stdio_putc.o \
+	$(BUILD_DIR)/stdio_putchar.o \
+	$(BUILD_DIR)/stdio_putchar_unlocked.o \
+	$(BUILD_DIR)/stdio_puts.o \
+	$(BUILD_DIR)/stdio_putw.o \
+	$(BUILD_DIR)/stdio_rewind.o \
+	$(BUILD_DIR)/stdio_setbuf.o
 
 STDLIB_OBJS = \
 	$(BUILD_DIR)/stdlib_atoi.o \
