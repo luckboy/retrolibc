@@ -8,14 +8,10 @@
 #ifndef _UNISTD_H
 #define _UNISTD_H
 
+#include <bits/access.h>
 #include <bits/long_bit.h>
+#include <bits/seek.h>
 #include <bits/types.h>
-
-#ifndef SEEK_SET
-#define SEEK_SET        0
-#define SEEK_CUR        1
-#define SEEK_END        2
-#endif
 
 #define STDIN_FILENO    0
 #define STDOUT_FILENO   1
@@ -28,7 +24,7 @@ typedef __SIZE_TYPE__ size_t;
 
 #ifndef _SSIZE_T
 #define _SSIZE_T
-#if LONG_BIT == 64
+#if __LONG_BIT == 64
 typedef long ssize_t;
 #else
 typedef int ssize_t;

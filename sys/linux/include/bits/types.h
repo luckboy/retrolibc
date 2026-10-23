@@ -10,13 +10,11 @@
 
 #include <bits/arch_types.h>
 
-typedef long __blkcnt_t;
-typedef long __blksize_t;
+typedef unsigned long __blksize_t;
 typedef unsigned __gid_t;
 typedef unsigned __id_t;
 typedef int __key_t;
 typedef unsigned __mode_t;
-typedef unsigned __nlink_t;
 typedef int __pid_t;
 typedef long __suseconds_t;
 typedef long __time_t;

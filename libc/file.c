@@ -5,6 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+#include <sys/stat.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <pthread.h>
@@ -332,7 +333,7 @@ FILE *fopen(const char *filename, const char *mode)
   oflags = __mode_to_oflags(mode);
   if(oflags == -1) return NULL;
   if(__init_file(f) == -1) return NULL;
-  f->fd = open(filename, oflags, 0666);
+  f->fd = open(filename, oflags, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
   if(f->fd == -1) return NULL;
   pthread_mutex_lock(&__file_list_mutex);
   __add_file(f);
@@ -390,7 +391,7 @@ static FILE *freopen_unlocked(FILE *f, const char *filename, const char *mode)
     f->flags |= FILE_FLAG_ERROR;
     return NULL;
   }
-  f->fd = open(filename, oflags, 0666);
+  f->fd = open(filename, oflags, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
   if(f->fd == -1) {
     f->flags |= FILE_FLAG_ERROR;
     return NULL;

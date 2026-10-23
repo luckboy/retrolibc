@@ -8,6 +8,7 @@
 #ifndef _STDIO_H
 #define _STDIO_H
 
+#include <bits/seek.h>
 #include <bits/types.h>
 #include <stddef.h>
 
@@ -17,11 +18,6 @@
 #define _IOLBF          1
 #define _IONBF          2
 
-#ifndef SEEK_SET
-#define SEEK_SET        0
-#define SEEK_CUR        1
-#define SEEK_END        2
-#endif
 
 #define EOF             (-1)
 

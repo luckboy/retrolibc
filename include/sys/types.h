@@ -88,7 +88,7 @@ typedef __SIZE_TYPE__ size_t;
 
 #ifndef _SSIZE_T
 #define _SSIZE_T
-#if LONG_BIT == 64
+#if __LONG_BIT == 64
 typedef long ssize_t;
 #else
 typedef int ssize_t;

@@ -26,8 +26,13 @@ typedef __off_t off_t;
 extern "C" {
 #endif
 
-void *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t);
-void *mremap(void *old_addr, size_t old_len, size_t new_size, int flags, ...);
+int mlock(const void *addr, size_t len);
+int mlockall(int flags);
+void *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offset);
+int mprotect(void *addr, size_t len, int prot);
+void *mremap(void *old_addr, size_t old_len, size_t new_len, int flags, ...);
+int msync(void *addr, size_t len, int flags);
+int munlock(const void *addr, size_t len);
 int munmap(void *addr, size_t len);
 
 #ifdef __cplusplus
