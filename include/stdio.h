@@ -11,7 +11,7 @@
 #include <bits/types.h>
 #include <stddef.h>
 
-#define BUFSIZ          4096
+#define BUFSIZ          2048
 
 #define _IOFBF          0
 #define _IOLBF          1
