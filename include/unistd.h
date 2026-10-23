@@ -69,6 +69,7 @@ extern "C" {
 #endif
 
 int brk(void *addr);
+int close(int fd);
 off_t lseek(int fd, off_t offset, int whence);
 ssize_t read(int fd, void *buf, size_t size);
 void *sbrk(intptr_t inc);

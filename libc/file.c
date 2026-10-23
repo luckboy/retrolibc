@@ -5,8 +5,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+#include <errno.h>
+#include <fcntl.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include "priv_file.h"
 
@@ -136,12 +139,116 @@ int __fflush_unlocked(struct __FILE *f, int flags)
 }
 #endif
 
+#ifdef L_mode_to_oflags
+int __mode_to_oflags(const char *mode)
+{
+  int is_binary = 0;
+  int oflags = 0;
+  switch(*mode) {
+  case 'r':
+    oflags |= O_RDONLY;
+    break;
+  case 'w':
+    oflags |= O_WRONLY | O_CREAT | O_TRUNC;
+    break;
+  case 'a':
+    oflags |= O_WRONLY | O_CREAT | O_APPEND;
+    break;
+  default:
+    errno = EINVAL;
+    return -1;
+  }
+  mode++;
+  if(*mode == 'b') {
+    is_binary = 1;
+    mode++;
+  }
+  if(*mode == '+') {
+    oflags = (oflags & ~O_ACCMODE) | O_RDWR;
+    mode++;
+  }
+  if(*mode == 'b') {
+    if(is_binary) {
+      errno = EINVAL;
+      return -1;
+    }
+    mode++;
+  }
+  if(*mode != '\0') {
+    errno = EINVAL;
+    return -1;
+  }
+  return 0;
+}
+#endif
+
+#ifdef L_init_file
+int __init_file(struct __FILE *f)
+{
+  f->mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+  f->fd = -1;
+  f->flags = FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER;
+  f->pushed_char = -1;
+  f->buf = (char *) malloc(BUFSIZ);
+  if(f->buf == NULL) return -1;
+  f->buf_size = BUFSIZ;
+  f->cur_pos = f->end_pos = 0;
+  f->pid = -1;
+  return 0;
+}
+#endif
+
 #ifdef L_clearerr
 void clearerr(FILE *f)
 {
   flockfile(f);
   f->flags &= ~(FILE_FLAG_EOF | FILE_FLAG_ERROR);
   funlockfile(f);
+}
+#endif
+
+#ifdef L_fclose
+static int fclose_unlocked(FILE *f)
+{
+  if(__fflush_unlocked(f, FFLUSH_FLAG_CAN_SEEK | FFLUSH_FLAG_CAN_WRITE) == EOF) return EOF;
+  if(close(f->fd) == -1) return EOF;
+  if((f->flags & FILE_FLAG_FREEABLE_BUFFER) != 0) free(f->buf);
+  return 0;
+}
+
+int fclose(FILE *f)
+{
+  int r, flags;
+  pthread_mutex_lock(&__file_list_mutex);
+  flockfile(f);
+  r = fclose_unlocked(f);
+  flags = f->flags;
+  funlockfile(f);
+  if(r != EOF) __remove_file(f);
+  pthread_mutex_unlock(&__file_list_mutex);
+  if(r != EOF) {
+    pthread_mutex_destroy(&(f->mutex));
+    if((flags & FILE_FLAG_FREEABLE) != 0) free(f);
+  }
+  return r;
+}
+#endif
+
+#ifdef L_fdopen
+FILE *fdopen(int fd, const char *mode)
+{
+  FILE *f;
+  int oflags;
+  f = (FILE *) malloc(sizeof(FILE));
+  if(f == NULL) return NULL;
+  oflags = __mode_to_oflags(mode);
+  if(oflags == -1) return NULL;
+  if(__init_file(f) == -1) return NULL;
+  f->fd = fd;
+  pthread_mutex_lock(&__file_list_mutex);
+  __add_file(f);
+  pthread_mutex_unlock(&__file_list_mutex);
+  return f;
 }
 #endif
 
@@ -174,7 +281,7 @@ int fflush(FILE *f)
     int r;
     flockfile(f);
     r = __fflush_unlocked(f, FFLUSH_FLAG_CAN_SEEK | FFLUSH_FLAG_CAN_WRITE);
-    flockfile(f);
+    funlockfile(f);
     return r;
   } else {
     int r = 0;
@@ -187,11 +294,11 @@ int fflush(FILE *f)
     funlockfile(stdout);
     flockfile(stderr);
     if(__fflush_unlocked(stderr, FFLUSH_FLAG_CAN_SEEK | FFLUSH_FLAG_CAN_WRITE) == EOF) r = EOF;
-    flockfile(stderr);
+    funlockfile(stderr);
     for(f = __first_file; f != NULL; f = f->next) {
       flockfile(f);
       if(__fflush_unlocked(f, FFLUSH_FLAG_CAN_SEEK | FFLUSH_FLAG_CAN_WRITE) == EOF) r = EOF;
-      flockfile(f);
+      funlockfile(f);
     }
     pthread_mutex_lock(&__file_list_mutex);
     return r;
@@ -215,6 +322,25 @@ void flockfile(FILE *f)
 { pthread_mutex_lock(&(f->mutex)); }
 #endif
 
+#ifdef L_fopen
+FILE *fopen(const char *filename, const char *mode)
+{
+  FILE *f;
+  int oflags;
+  f = (FILE *) malloc(sizeof(FILE));
+  if(f == NULL) return NULL;
+  oflags = __mode_to_oflags(mode);
+  if(oflags == -1) return NULL;
+  if(__init_file(f) == -1) return NULL;
+  f->fd = open(filename, oflags, 0666);
+  if(f->fd == -1) return NULL;
+  pthread_mutex_lock(&__file_list_mutex);
+  __add_file(f);
+  pthread_mutex_unlock(&__file_list_mutex);
+  return f;
+}
+#endif
+
 #ifdef L_fread
 static size_t fread_unlocked(void *buf, size_t size, size_t n, FILE *f)
 {
@@ -227,7 +353,7 @@ static size_t fread_unlocked(void *buf, size_t size, size_t n, FILE *f)
     if(c == EOF) return 0;
     p[i] = c;
   }
-  for(; i < buf_size; i += m) {
+  for(; i < buf_size; i += (size_t) m) {
     m = read(f->fd, p + i, buf_size - i);
     if(m == 0) {
       f->flags |= FILE_FLAG_EOF;
@@ -250,6 +376,38 @@ size_t fread(void *buf, size_t size, size_t n, FILE *f)
 }
 #endif
 
+
+#ifdef L_freopen
+static FILE *freopen_unlocked(FILE *f, const char *filename, const char *mode)
+{
+  int oflags;
+  __fflush_unlocked(f, FFLUSH_FLAG_CAN_SEEK | FFLUSH_FLAG_CAN_WRITE);
+  close(f->fd);
+  f->flags &= ~(FILE_FLAG_DATA_TO_WRITE | FILE_FLAG_EOF | FILE_FLAG_ERROR);
+  f->cur_pos = f->end_pos = 0;
+  oflags = __mode_to_oflags(mode);
+  if(oflags == -1) {
+    f->flags |= FILE_FLAG_ERROR;
+    return NULL;
+  }
+  f->fd = open(filename, oflags, 0666);
+  if(f->fd == -1) {
+    f->flags |= FILE_FLAG_ERROR;
+    return NULL;
+  }
+  return NULL;
+}
+
+FILE *freopen(FILE *f, const char *filename, const char *mode)
+{
+  FILE *r;
+  flockfile(f);
+  r = freopen_unlocked(f, filename, mode);
+  funlockfile(f);
+  return r;
+}
+#endif
+
 #ifdef L_fseeko
 static int fseeko_unlocked(FILE *f, off_t offset, int whence)
 {
@@ -264,7 +422,7 @@ int fseeko(FILE *f, off_t offset, int whence)
   int r;
   flockfile(f);
   r= fseeko_unlocked(f, offset, whence);
-  flockfile(f);
+  funlockfile(f);
   return r;  
 }
 #endif
@@ -290,7 +448,7 @@ off_t ftello(FILE *f)
   off_t offset;
   flockfile(f);
   offset = ftello_unlocked(f);
-  flockfile(f);
+  funlockfile(f);
   return offset;
 }
 #endif
@@ -303,6 +461,36 @@ int ftrylockfile(FILE *f)
 #ifdef L_funlockfile
 void funlockfile(FILE *f)
 { pthread_mutex_unlock(&(f->mutex)); }
+#endif
+
+#ifdef L_fwrite
+static size_t fwrite_unlocked(const void *buf, size_t size, size_t n, FILE *f)
+{
+  const char *p = (const char *) buf;
+  size_t buf_size = n * size;
+  ssize_t m;
+  size_t i;
+  for(i = 0; i < buf_size && f->cur_pos < f->end_pos; i++) {
+    if(putc_unlocked(p[i], f) == EOF) return 0;
+  }
+  for(; i < buf_size; i += (size_t) m) {
+    m = write(f->fd, p + i, buf_size - i);
+    if(m == -1) {
+      f->flags |= FILE_FLAG_ERROR;
+      return 0;
+    }
+  }
+  return i / size;
+}
+
+size_t fwrite(const void *buf, size_t size, size_t n, FILE *f)
+{
+  size_t m;
+  flockfile(f);
+  m = fwrite_unlocked(buf, size, n, f);
+  funlockfile(f);
+  return m;  
+}
 #endif
 
 #ifdef L_getc_unlocked
@@ -391,33 +579,38 @@ int putc_unlocked(int c, FILE *f)
 }
 #endif
 
-#ifdef L_fwrite
-static size_t fwrite_unlocked(const void *buf, size_t size, size_t n, FILE *f)
+#ifdef L_setvbuf
+int setvbuf_unlocked(FILE *f, char *buf, int type, size_t size)
 {
-  const char *p = (const char *) buf;
-  size_t buf_size = n * size;
-  ssize_t m;
-  size_t i;
-  for(i = 0; i < buf_size && f->cur_pos < f->end_pos; i++) {
-    if(putc_unlocked(p[i], f) == EOF) return 0;
-  }
-  for(; i < buf_size; i += m) {
-    m = write(f->fd, p + i, buf_size - i);
-    if(m == -1) {
-      f->flags |= FILE_FLAG_ERROR;
-      return 0;
+  if(__fflush_unlocked(f, FFLUSH_FLAG_CAN_SEEK | FFLUSH_FLAG_CAN_WRITE) == EOF) return -1;
+  if(f->buf != NULL && (f->flags & FILE_FLAG_FREEABLE_BUFFER) != 0) free(f->buf);
+  if(type == _IOFBF || type == _IOLBF) {
+    int flags = 0;
+    if(type == _IOLBF) flags |= FILE_FLAG_LINE_BUFFERED;
+    if(buf == NULL) {
+      buf = malloc(size);
+      if(buf == NULL) return -1;
     }
+    f->flags |= flags;
+    f->buf = buf;
+    f->buf_size = 0;
+    f->cur_pos = f->end_pos = 0;
+  } else {
+    f->flags &= ~FILE_FLAG_LINE_BUFFERED;
+    f->buf = NULL;
+    f->buf_size = 0;
+    f->cur_pos = f->end_pos = 0;
   }
-  return i / size;
+  return 0;
 }
 
-size_t fwrite(const void *buf, size_t size, size_t n, FILE *f)
+int setvbuf(FILE *f, char *buf, int type, size_t size)
 {
-  size_t m;
+  int r;
   flockfile(f);
-  m = fwrite_unlocked(buf, size, n, f);
+  r = setvbuf_unlocked(f, buf, type, size);
   funlockfile(f);
-  return m;  
+  return r;
 }
 #endif
 

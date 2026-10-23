@@ -44,5 +44,7 @@ void __add_file(struct __FILE *f);
 void __remove_file(struct __FILE *f);
 
 int __fflush_unlocked(struct __FILE *f, int flags);
+int __mode_to_oflags(const char *s);
+int __init_file(struct __FILE *f);
 
 #endif

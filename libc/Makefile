@@ -26,13 +26,19 @@ FILE_OBJS = \
 	$(BUILD_DIR)/file_stderr.o \
 	$(BUILD_DIR)/file_file_list.o \
 	$(BUILD_DIR)/file_fflush_unlocked.o \
+	$(BUILD_DIR)/file_mode_to_oflags.o \
+	$(BUILD_DIR)/file_init_file.o \
 	$(BUILD_DIR)/file_clearerr.o \
+	$(BUILD_DIR)/file_fclose.o \
+	$(BUILD_DIR)/file_fdopen.o \
 	$(BUILD_DIR)/file_feof.o \
 	$(BUILD_DIR)/file_ferror.o \
 	$(BUILD_DIR)/file_fflush.o \
 	$(BUILD_DIR)/file_fileno.o \
 	$(BUILD_DIR)/file_flockfile.o \
+	$(BUILD_DIR)/file_fopen.o \
 	$(BUILD_DIR)/file_fread.o \
+	$(BUILD_DIR)/file_freopen.o \
 	$(BUILD_DIR)/file_fseeko.o \
 	$(BUILD_DIR)/file_ftello.o \
 	$(BUILD_DIR)/file_ftrylockfile.o \
@@ -40,6 +46,7 @@ FILE_OBJS = \
 	$(BUILD_DIR)/file_fwrite.o \
 	$(BUILD_DIR)/file_getc_unlocked.o \
 	$(BUILD_DIR)/file_putc_unlocked.o \
+	$(BUILD_DIR)/file_setvbuf.o \
 	$(BUILD_DIR)/file_ungetc.o
 
 STDIO_OBJS = \
@@ -222,12 +229,17 @@ $(BUILD_DIR)/file_stdout.o: file.c priv_file.h
 $(BUILD_DIR)/file_stderr.o: file.c priv_file.h
 $(BUILD_DIR)/file_file_list.o: file.c priv_file.h
 $(BUILD_DIR)/file_fflush_unlocked.o: file.c priv_file.h
+$(BUILD_DIR)/file_mode_to_oflags.o: file.c priv_file.h
+$(BUILD_DIR)/file_init_file.o: file.c priv_file.h
 $(BUILD_DIR)/file_clearerr.o: file.c priv_file.h
+$(BUILD_DIR)/file_fclose.o: file.c priv_file.h
+$(BUILD_DIR)/file_fdopen.o: file.c priv_file.h
 $(BUILD_DIR)/file_feof.o: file.c priv_file.h
 $(BUILD_DIR)/file_ferror.o: file.c priv_file.h
 $(BUILD_DIR)/file_fflush.o: file.c priv_file.h
 $(BUILD_DIR)/file_fileno.o: file.c priv_file.h
 $(BUILD_DIR)/file_flockfile.o: file.c priv_file.h
+$(BUILD_DIR)/file_fopen.o: file.c priv_file.h
 $(BUILD_DIR)/file_fread.o: file.c priv_file.h
 $(BUILD_DIR)/file_fseeko.o: file.c priv_file.h
 $(BUILD_DIR)/file_ftello.o: file.c priv_file.h
@@ -236,6 +248,7 @@ $(BUILD_DIR)/file_funlockfile.o: file.c priv_file.h
 $(BUILD_DIR)/file_fwrite.o: file.c priv_file.h
 $(BUILD_DIR)/file_getc_unlocked.o: file.c priv_file.h
 $(BUILD_DIR)/file_putc_unlocked.o: file.c priv_file.h
+$(BUILD_DIR)/file_setvbuf.o: file.c priv_file.h
 $(BUILD_DIR)/file_ungetc.o: file.c priv_file.h
 $(TEST_BUILD_DIR)/malloc.o: malloc.c priv_malloc.h
 $(TEST_BUILD_DIR)/test_malloc_suite.o: test_malloc_suite.c priv_malloc.h
