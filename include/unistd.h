@@ -51,6 +51,11 @@ typedef __off_t off_t;
 typedef __pid_t pid_t;
 #endif
 
+#ifndef _USECONDS_T
+#define _USECONDS_T
+typedef __useconds_t useconds_t;
+#endif
+
 #ifndef _INTPTR_T
 #define _INTPTR_T
 #if __LONG_BIT == 64
@@ -64,11 +69,57 @@ typedef int intptr_t;
 extern "C" {
 #endif
 
-int brk(void *addr);
-int close(int fd);
-off_t lseek(int fd, off_t offset, int whence);
-ssize_t read(int fd, void *buf, size_t size);
 void *sbrk(intptr_t inc);
+
+void _exit(int status);
+int access(const char *path, int amode);
+int brk(void *addr);
+int chdir(const char *path);
+int chown(const char *path, uid_t owner, gid_t group);
+int close(int fd);
+int dup(int fd);
+int dup2(int fd, int fd2);
+int execve(const char *path, char *const argv[], char *const envp[]);
+int fchown(int fd, uid_t owner, gid_t group);
+int fchdir(int fd);
+int fdatasync(int fd);
+pid_t fork(void);
+int fsync(int fd);
+int ftruncate(int fd, off_t length);
+char *getcwd(char *buf, size_t size);
+gid_t getegid(void);
+uid_t geteuid(void);
+gid_t getgid(void);
+int getgroups(int size, gid_t list[]);
+pid_t getpgid(pid_t pid);
+pid_t getpgrp(void);
+pid_t getpid(void);
+pid_t getppid(void);
+pid_t getsid(pid_t pid);
+uid_t getuid(void);
+int lchown(const char *path, uid_t owner, gid_t group);
+int link(const char *path1, const char *path2);
+off_t lseek(int fd, off_t offset, int whence);
+int nice(int inc);
+ssize_t read(int fd, void *buf, size_t size);
+int pause(void);
+int pipe(int fds[2]);
+int readlink(const char *path, char *buf, size_t size);
+int rmdir(const char *path);
+int setgid(gid_t gid);
+int setpgid(pid_t pid, pid_t pgid);
+pid_t setpgrp(void);
+int setregid(gid_t rgid, gid_t egid);
+int setreuid(uid_t ruid, uid_t euid);
+pid_t setsid(void);
+int setuid(uid_t uid);
+unsigned int sleep(unsigned int seconds);
+int symlink(const char *path1, const char *path2);
+void sync(void);
+int truncate(const char *path, off_t length);
+int unlink(const char *path);
+int usleep(useconds_t useconds);
+pid_t vfork(void);
 ssize_t write(int fd, const void *buf, size_t size);
 
 #ifdef __cplusplus

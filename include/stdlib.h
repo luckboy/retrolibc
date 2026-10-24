@@ -8,6 +8,7 @@
 #ifndef _STDLIB_H
 #define _STDLIB_H
 
+#include <bits/wait.h>
 #include <stddef.h>
 
 #ifdef __cplusplus

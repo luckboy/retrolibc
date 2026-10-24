@@ -39,14 +39,54 @@
 #define S_ISSOCK(m)     (((m) & S_IFMT) == S_IFSOCK)
 #endif
 
+#ifndef _BLKCNT_T
+#define _BLKCNT_T
+typedef __blkcnt_t blkcnt_t;
+#endif
+
+#ifndef _BLKSIZE_T
+#define _BLKSIZE_T
+typedef __blksize_t blksize_t;
+#endif
+
 #ifndef _DEV_T
 #define _DEV_T
 typedef __dev_t dev_t;
 #endif
 
+#ifndef _INO_T
+#define _INO_T
+typedef __ino_t ino_t;
+#endif
+
 #ifndef _MODE_T
 #define _MODE_T
 typedef __mode_t mode_t;
+#endif
+
+#ifndef _NLINK_T
+#define _NLINK_T
+typedef __nlink_t nlink_t;
+#endif
+
+#ifndef _UID_T
+#define _UID_T
+typedef __uid_t uid_t;
+#endif
+
+#ifndef _GID_T
+#define _GID_T
+typedef __gid_t gid_t;
+#endif
+
+#ifndef _OFF_T
+#define _OFF_T
+typedef __off_t off_t;
+#endif
+
+#ifndef _TIME_T
+#define _TIME_T
+typedef __time_t time_t;
 #endif
 
 #ifdef __cplusplus
