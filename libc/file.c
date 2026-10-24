@@ -348,11 +348,13 @@ static size_t fread_unlocked(void *buf, size_t size, size_t n, FILE *f)
   char *p = (char *) buf;
   size_t buf_size = n * size;
   ssize_t m;
-  size_t i;
-  for(i = 0; i < buf_size && (f->pushed_char != -1 || f->cur_pos < f->end_pos); i++) {
-    int c = getc_unlocked(f);
-    if(c == EOF) return 0;
-    p[i] = c;
+  size_t i = 0;
+  if(f->buf != NULL) {
+    for(; i < buf_size && (f->pushed_char != -1 || f->cur_pos < f->end_pos); i++) {
+      int c = getc_unlocked(f);
+      if(c == EOF) return 0;
+      p[i] = c;
+    }
   }
   for(; i < buf_size; i += (size_t) m) {
     m = read(f->fd, p + i, buf_size - i);
@@ -470,9 +472,15 @@ static size_t fwrite_unlocked(const void *buf, size_t size, size_t n, FILE *f)
   const char *p = (const char *) buf;
   size_t buf_size = n * size;
   ssize_t m;
-  size_t i;
-  for(i = 0; i < buf_size && f->cur_pos < f->end_pos; i++) {
-    if(putc_unlocked(p[i], f) == EOF) return 0;
+  size_t i = 0;
+  if(f->buf != NULL) {
+    for(; i < buf_size && f->end_pos < f->buf_size; i++) {
+      if(putc_unlocked(p[i], f) == EOF) return 0;
+      if(f->end_pos == 0) {
+        i++;
+        break;
+      }
+    }
   }
   for(; i < buf_size; i += (size_t) m) {
     m = write(f->fd, p + i, buf_size - i);
