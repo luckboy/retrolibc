@@ -596,7 +596,7 @@ FILE *popen(const char *command, const char *mode)
   pid_t pid;
   oflags = __mode_to_oflags(mode);
   if(oflags == -1) return NULL;
-  if((oflags & O_ACCMODE) != O_RDONLY && (oflags & O_ACCMODE) != O_WRONLY) {
+  if(((oflags & O_ACCMODE) != O_RDONLY && (oflags & O_ACCMODE) != O_WRONLY) || (oflags & O_APPEND) != 0) {
     errno = EINVAL;
     return NULL;
   }
