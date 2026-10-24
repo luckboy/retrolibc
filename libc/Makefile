@@ -231,6 +231,9 @@ $(LIB): $(OBJS)
 $(TEST): $(TEST_OBJS)
 	$(HOSTCC) $(HOSTLDFLAGS) -o $(TEST) $(TEST_OBJS) $(HOSTLIBS)
 
+gen_config:
+	echo -n
+
 test: $(TEST)
 	echo -n
 
@@ -243,6 +246,9 @@ clean:
 clean_test:
 	rm -f $(TEST) $(TEST_OBJS)
 
+clean_config:
+	echo -n
+	
 $(BUILD_DIR)/malloc.o: malloc.c priv_malloc.h
 $(BUILD_DIR)/file_stdin.o: file.c priv_file.h
 $(BUILD_DIR)/file_stdout.o: file.c priv_file.h

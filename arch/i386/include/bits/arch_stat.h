@@ -8,19 +8,28 @@
 #ifndef _BITS_ARCH_STAT_H
 #define _BITS_ARCH_STAT_H
 
+#include <bits/config.h>
 #include <bits/types.h>
 
 struct stat
 {
   __dev_t st_dev;
+#if __LINUX_VERSION_CODE >= __KERNEL_VERSION(2, 6, 0)
   unsigned char __pad0[4];
+#else
+  unsigned char __pad0[10];
+#endif
   unsigned int __st_ino;
   __mode_t st_mode;
   __nlink_t st_nlink;
   __uid_t st_uid;
   __gid_t st_gid;
   __dev_t st_rdev;
+#if __LINUX_VERSION_CODE >= __KERNEL_VERSION(2, 6, 0)
   unsigned char __pad3[4];
+#else
+  unsigned char __pad3[10];
+#endif
   __off_t st_size;
   __blksize_t st_blksize;
   __blkcnt_t st_blocks;
