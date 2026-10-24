@@ -10,8 +10,8 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <pthread.h>
-#include <unistd.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <stdio.h>
 #include "priv_file.h"
 
