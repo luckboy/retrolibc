@@ -69,6 +69,7 @@ typedef int intptr_t;
 extern "C" {
 #endif
 
+int execv(const char *path, char *const argv[]);
 void *sbrk(intptr_t inc);
 
 void _exit(int status);

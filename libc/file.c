@@ -6,6 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <pthread.h>
@@ -140,6 +141,20 @@ int __fflush_unlocked(struct __FILE *f, int flags)
 }
 #endif
 
+#ifdef L_fdclose_unlocked
+int __fdclose_unlocked(struct __FILE *f)
+{
+  int status = 0;
+  if(close(f->fd) == -1) return EOF;
+  if(f->pid != -1) {
+    pid_t pid;
+    while((pid = waitpid(f->pid, &status, 0)) == -1 && errno == EINTR);
+    if(pid == -1) return EOF;
+  }
+  return status;
+}
+#endif
+
 #ifdef L_mode_to_oflags
 int __mode_to_oflags(const char *mode)
 {
@@ -209,42 +224,22 @@ void clearerr(FILE *f)
 #endif
 
 #ifdef L_fclose
-static int fclose_unlocked(FILE *f)
-{
-  if(__fflush_unlocked(f, FFLUSH_FLAG_CAN_SEEK | FFLUSH_FLAG_CAN_WRITE) == EOF) return EOF;
-  if(close(f->fd) == -1) return EOF;
-  if((f->flags & FILE_FLAG_FREEABLE_BUFFER) != 0) free(f->buf);
-  return 0;
-}
-
 int fclose(FILE *f)
-{
-  int r, flags;
-  pthread_mutex_lock(&__file_list_mutex);
-  flockfile(f);
-  r = fclose_unlocked(f);
-  flags = f->flags;
-  funlockfile(f);
-  if(r != EOF) __remove_file(f);
-  pthread_mutex_unlock(&__file_list_mutex);
-  if(r != EOF) {
-    pthread_mutex_destroy(&(f->mutex));
-    if((flags & FILE_FLAG_FREEABLE) != 0) free(f);
-  }
-  return r;
-}
+{ return pclose(f) != EOF ? 0 : EOF; }
 #endif
 
 #ifdef L_fdopen
 FILE *fdopen(int fd, const char *mode)
 {
   FILE *f;
-  int oflags;
+  int oflags = __mode_to_oflags(mode);
+  if(oflags == -1) return NULL;
   f = (FILE *) malloc(sizeof(FILE));
   if(f == NULL) return NULL;
-  oflags = __mode_to_oflags(mode);
-  if(oflags == -1) return NULL;
-  if(__init_file(f) == -1) return NULL;
+  if(__init_file(f) == -1) {
+    free(f);
+    return NULL;
+  }
   f->fd = fd;
   pthread_mutex_lock(&__file_list_mutex);
   __add_file(f);
@@ -327,14 +322,17 @@ void flockfile(FILE *f)
 FILE *fopen(const char *filename, const char *mode)
 {
   FILE *f;
-  int oflags;
-  f = (FILE *) malloc(sizeof(FILE));
-  if(f == NULL) return NULL;
+  int oflags, fd;
   oflags = __mode_to_oflags(mode);
   if(oflags == -1) return NULL;
-  if(__init_file(f) == -1) return NULL;
-  f->fd = open(filename, oflags, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-  if(f->fd == -1) return NULL;
+  fd = open(filename, oflags, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+  if(fd == -1) return NULL;
+  f = (FILE *) malloc(sizeof(FILE));
+  if(f == NULL) return NULL;
+  if(__init_file(f) == -1) {
+    free(f);
+    return NULL;
+  }
   pthread_mutex_lock(&__file_list_mutex);
   __add_file(f);
   pthread_mutex_unlock(&__file_list_mutex);
@@ -375,17 +373,16 @@ size_t fread(void *buf, size_t size, size_t n, FILE *f)
   flockfile(f);
   m = fread_unlocked(buf, size, n, f);
   funlockfile(f);
-  return m;  
+  return m;
 }
 #endif
-
 
 #ifdef L_freopen
 static FILE *freopen_unlocked(FILE *f, const char *filename, const char *mode)
 {
   int oflags;
   __fflush_unlocked(f, FFLUSH_FLAG_CAN_SEEK | FFLUSH_FLAG_CAN_WRITE);
-  close(f->fd);
+  if(__fdclose_unlocked(f) == EOF) return NULL;
   f->flags &= ~(FILE_FLAG_DATA_TO_WRITE | FILE_FLAG_EOF | FILE_FLAG_ERROR);
   f->cur_pos = f->end_pos = 0;
   oflags = __mode_to_oflags(mode);
@@ -558,6 +555,89 @@ int getc_unlocked(FILE *f)
     }
     return (int) ((unsigned char) tmp);
   }
+}
+#endif
+
+#ifdef L_pclose
+static int pclose_unlocked(FILE *f)
+{
+  int status;
+  if(__fflush_unlocked(f, FFLUSH_FLAG_CAN_SEEK | FFLUSH_FLAG_CAN_WRITE) == EOF) return EOF;
+  if((status = __fdclose_unlocked(f)) == EOF) return EOF;
+  if((f->flags & FILE_FLAG_FREEABLE_BUFFER) != 0) free(f->buf);
+  return 0;
+}
+
+int pclose(FILE *f)
+{
+  int status, flags;
+  pthread_mutex_lock(&__file_list_mutex);
+  flockfile(f);
+  status = pclose_unlocked(f);
+  flags = f->flags;
+  funlockfile(f);
+  if(status != EOF) __remove_file(f);
+  pthread_mutex_unlock(&__file_list_mutex);
+  if(status != EOF) {
+    pthread_mutex_destroy(&(f->mutex));
+    if((flags & FILE_FLAG_FREEABLE) != 0) free(f);
+  }
+  return status;
+}
+#endif
+
+#ifdef L_popen
+FILE *popen(const char *command, const char *mode)
+{
+  FILE *f;
+  int oflags;
+  int fds[2];
+  int fd;
+  pid_t pid;
+  oflags = __mode_to_oflags(mode);
+  if(oflags == -1) return NULL;
+  if((oflags & O_ACCMODE) != O_RDONLY && (oflags & O_ACCMODE) != O_WRONLY) {
+    errno = EINVAL;
+    return NULL;
+  }
+  if(pipe(fds) == -1) return NULL;
+  pid = fork();
+  if(pid == 0) {
+    /* child */
+    char *const argv[]= { "sh", "-c", (char *) command, NULL };
+    if((oflags & O_ACCMODE) == O_RDONLY) {
+      close(fds[0]);
+      dup2(fds[1], STDOUT_FILENO);
+    } else {
+      close(fds[1]);
+      dup2(fds[0], STDIN_FILENO);
+    }
+    execv("/bin/sh", argv);
+    _exit(127);
+  } else if(pid != -1) {
+    /* parent */
+    if((oflags & O_ACCMODE) == O_RDONLY) {
+      close(fds[1]);
+      fd = fds[0];
+    } else {
+      close(fds[0]);
+      fd = fds[1];
+    }
+  } else {
+    return NULL;
+  }
+  f = (FILE *) malloc(sizeof(FILE));
+  if(f == NULL) return NULL;
+  if(__init_file(f) == -1) {
+    free(f);
+    return NULL;
+  }
+  f->fd = fd;
+  f->pid = pid;
+  pthread_mutex_lock(&__file_list_mutex);
+  __add_file(f);
+  pthread_mutex_unlock(&__file_list_mutex);
+  return f;
 }
 #endif
 

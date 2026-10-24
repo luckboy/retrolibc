@@ -26,6 +26,7 @@ FILE_OBJS = \
 	$(BUILD_DIR)/file_stderr.o \
 	$(BUILD_DIR)/file_file_list.o \
 	$(BUILD_DIR)/file_fflush_unlocked.o \
+	$(BUILD_DIR)/file_fdclose_unlocked.o \
 	$(BUILD_DIR)/file_mode_to_oflags.o \
 	$(BUILD_DIR)/file_init_file.o \
 	$(BUILD_DIR)/file_clearerr.o \
@@ -45,6 +46,8 @@ FILE_OBJS = \
 	$(BUILD_DIR)/file_funlockfile.o \
 	$(BUILD_DIR)/file_fwrite.o \
 	$(BUILD_DIR)/file_getc_unlocked.o \
+	$(BUILD_DIR)/file_popen.o \
+	$(BUILD_DIR)/file_pclose.o \
 	$(BUILD_DIR)/file_putc_unlocked.o \
 	$(BUILD_DIR)/file_setvbuf.o \
 	$(BUILD_DIR)/file_ungetc.o
@@ -246,6 +249,7 @@ $(BUILD_DIR)/file_stdout.o: file.c priv_file.h
 $(BUILD_DIR)/file_stderr.o: file.c priv_file.h
 $(BUILD_DIR)/file_file_list.o: file.c priv_file.h
 $(BUILD_DIR)/file_fflush_unlocked.o: file.c priv_file.h
+$(BUILD_DIR)/file_fdclose_unlocked.o: file.c priv_file.h
 $(BUILD_DIR)/file_mode_to_oflags.o: file.c priv_file.h
 $(BUILD_DIR)/file_init_file.o: file.c priv_file.h
 $(BUILD_DIR)/file_clearerr.o: file.c priv_file.h
@@ -264,6 +268,8 @@ $(BUILD_DIR)/file_ftrylockfile.o: file.c priv_file.h
 $(BUILD_DIR)/file_funlockfile.o: file.c priv_file.h
 $(BUILD_DIR)/file_fwrite.o: file.c priv_file.h
 $(BUILD_DIR)/file_getc_unlocked.o: file.c priv_file.h
+$(BUILD_DIR)/file_pclose.o: file.c priv_file.h
+$(BUILD_DIR)/file_popen.o: file.c priv_file.h
 $(BUILD_DIR)/file_putc_unlocked.o: file.c priv_file.h
 $(BUILD_DIR)/file_setvbuf.o: file.c priv_file.h
 $(BUILD_DIR)/file_ungetc.o: file.c priv_file.h

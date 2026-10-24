@@ -10,6 +10,11 @@
 #include <string.h>
 #include <stdio.h>
 
+#ifdef L_fclose
+int fclose(FILE *f)
+{ return pclose(f) != EOF ? 0 : EOF; }
+#endif
+
 #ifdef L_fgetc
 int fgetc(FILE *f)
 {

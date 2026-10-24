@@ -82,6 +82,8 @@ int ftrylockfile(FILE *f);
 void funlockfile(FILE *f);
 size_t fwrite(const void *buf, size_t size, size_t n, FILE *f);
 int getc_unlocked(FILE *f);
+int pclose(FILE *f);
+FILE *popen(const char *command, const char *mode);
 int putc_unlocked(int c, FILE *f);
 int setvbuf(FILE *f, char *buf, int type, size_t size);
 int ungetc(int c, FILE *f);
