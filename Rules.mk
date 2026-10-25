@@ -1,4 +1,4 @@
-# Objects for target.
+# Rules for target objects.
 
 $(BUILD_DIR)/%.o: arch/$(TARGET_ARCH)/%.S $(BUILD_DIR)/.empty
 	$(CC) $(SFLAGS) $(EXTRA_CFLAGS) -c -o $@ $<
@@ -26,7 +26,7 @@ endif
 $(BUILD_DIR)/%.o: %.c $(BUILD_DIR)/.empty
 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -c -o $@ $<
 
-# Dependencies for target.
+# Rules for target dependencies.
 
 $(BUILD_DIR)/%.o.d: arch/$(TARGET_ARCH)/%.S $(BUILD_DIR)/.empty
 	$(CC) $(SFLAGS) $(EXTRA_CFLAGS) -MM -MT $(BUILD_DIR)/$*.o $< > $@
@@ -54,7 +54,7 @@ endif
 $(BUILD_DIR)/%.o.d: %.c $(BUILD_DIR)/.empty
 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -MM -MT $(BUILD_DIR)/$*.o $< > $@
 	
-# Objects for host.
+# Rules for host objects.
 
 $(TEST_BUILD_DIR)/%.o: arch/$(HOST_ARCH)/%.S $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTSFLAGS) -c -o $@ $<
@@ -82,7 +82,7 @@ endif
 $(TEST_BUILD_DIR)/%.o: %.c $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTCFLAGS) -c -o $@ $<
 
-# Dependencies for host.
+# Rules for host dependencies.
 
 $(TEST_BUILD_DIR)/%.o.d: arch/$(HOST_ARCH)/%.S $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTSFLAGS) -MM -MT $(TEST_BUILD_DIR)/$*.o $< > $@

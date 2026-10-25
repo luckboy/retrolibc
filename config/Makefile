@@ -1,7 +1,11 @@
 TOP_DIR = ..
 DIR = config
 
+# Variables.
+
 include $(TOP_DIR)/Vars.mk
+
+# Rules.
 
 all: $(CONFIG_BUILD_DIR)/include/bits/config.h
 	echo -n

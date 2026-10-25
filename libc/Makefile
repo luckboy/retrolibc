@@ -3,6 +3,8 @@ DIR = libc
 
 include $(TOP_DIR)/Vars.mk
 
+# Variables.
+
 CTYPE_OBJS = \
 	$(BUILD_DIR)/ctype_isalnum.o \
 	$(BUILD_DIR)/ctype_isalpha.o \
@@ -192,7 +194,7 @@ LIB = $(BUILD_DIR)/libc.a
 
 TEST = $(TEST_BUILD_DIR)/test
 
-# Objects for target.
+# Rules for target objects.
 
 $(BUILD_DIR)/ctype_%.o: ctype.c $(BUILD_DIR)/.empty
 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -c -o $@ $<
@@ -209,7 +211,7 @@ $(BUILD_DIR)/stdlib_%.o: stdlib.c $(BUILD_DIR)/.empty
 $(BUILD_DIR)/string_%.o: string.c $(BUILD_DIR)/.empty
 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -c -o $@ $<
 
-# Dependencies for target.
+# Rules for target dependencies.
 
 $(BUILD_DIR)/ctype_%.o.d: ctype.c $(BUILD_DIR)/.empty
 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -MM -MT $(BUILD_DIR)/ctype_$*.o $< > $@
@@ -226,7 +228,7 @@ $(BUILD_DIR)/stdlib_%.o.d: stdlib.c $(BUILD_DIR)/.empty
 $(BUILD_DIR)/string_%.o.d: string.c $(BUILD_DIR)/.empty
 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -MM -MT $(BUILD_DIR)/string_$*.o $< > $@
 
-# Objects for host.
+# Rules for host objects.
 
 $(TEST_BUILD_DIR)/ctype_%.o: ctype.c $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -c -o $@ $<
@@ -237,7 +239,7 @@ $(TEST_BUILD_DIR)/stdlib_%.o: stdlib.c $(TEST_BUILD_DIR)/.empty
 $(TEST_BUILD_DIR)/string_%.o: string.c $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -c -o $@ $<
 
-# Dependencies for host.
+# Rules for host dependencies.
 
 $(TEST_BUILD_DIR)/ctype_%.o.d: ctype.c $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -MM -MT $(TEST_BUILD_DIR)/ctype_$*.o $< > $@
@@ -249,7 +251,9 @@ $(TEST_BUILD_DIR)/string_%.o.d: string.c $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -MM -MT $(TEST_BUILD_DIR)/string_$*.o $< > $@
 
 include $(TOP_DIR)/Rules.mk
-	
+
+# Rules.
+
 all: $(LIB)
 
 $(BUILD_DIR)/.empty:
