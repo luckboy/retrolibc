@@ -35,6 +35,9 @@ clean:
 clean_test:
 	echo -n
 
+clean_deps:
+	echo -n
+
 clean_config:
 	rm -f $(CONFIG_BUILD_DIR)/include/bits/config.h
 	rm -f $(CONFIG_BUILD_DIR)/retrolibc_config.h

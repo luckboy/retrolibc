@@ -119,6 +119,8 @@ OBJS = \
 	$(BUILD_DIR)/strtol.o \
 	$(BUILD_DIR)/sys_errlist.o
 
+DEPS = $(addsuffix .d, $(OBJS))
+	
 TEST_CTYPE_OBJS = \
 	$(TEST_BUILD_DIR)/ctype_isalnum.o \
 	$(TEST_BUILD_DIR)/ctype_isalpha.o \
@@ -184,9 +186,13 @@ TEST_OBJS = \
 	$(TEST_BUILD_DIR)/test_strtol_suite.o \
 	$(TEST_BUILD_DIR)/test.o
 
+TEST_DEPS = $(addsuffix .d, $(TEST_OBJS))
+
 LIB = $(BUILD_DIR)/libc.a
 
 TEST = $(TEST_BUILD_DIR)/test
+
+# Objects for target.
 
 $(BUILD_DIR)/ctype_%.o: ctype.c $(BUILD_DIR)/.empty
 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -c -o $@ $<
@@ -203,14 +209,44 @@ $(BUILD_DIR)/stdlib_%.o: stdlib.c $(BUILD_DIR)/.empty
 $(BUILD_DIR)/string_%.o: string.c $(BUILD_DIR)/.empty
 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -c -o $@ $<
 
-$(TEST_BUILD_DIR)/ctype_%.o: ctype.c retrolibc.h $(TEST_BUILD_DIR)/.empty
+# Dependencies for target.
+
+$(BUILD_DIR)/ctype_%.o.d: ctype.c $(BUILD_DIR)/.empty
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -MM -MT $(BUILD_DIR)/ctype_$*.o $< > $@
+
+$(BUILD_DIR)/file_%.o.d: file.c $(BUILD_DIR)/.empty
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -MM -MT $(BUILD_DIR)/file_$*.o $< > $@
+
+$(BUILD_DIR)/stdio_%.o.d: stdio.c $(BUILD_DIR)/.empty
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -MM -MT $(BUILD_DIR)/stdio_$*.o $< > $@
+	
+$(BUILD_DIR)/stdlib_%.o.d: stdlib.c $(BUILD_DIR)/.empty
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -MM -MT $(BUILD_DIR)/stdlib_$*.o $< > $@
+
+$(BUILD_DIR)/string_%.o.d: string.c $(BUILD_DIR)/.empty
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -MM -MT $(BUILD_DIR)/string_$*.o $< > $@
+
+# Objects for host.
+
+$(TEST_BUILD_DIR)/ctype_%.o: ctype.c $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -c -o $@ $<
 
-$(TEST_BUILD_DIR)/stdlib_%.o: stdlib.c retrolibc.h $(TEST_BUILD_DIR)/.empty
+$(TEST_BUILD_DIR)/stdlib_%.o: stdlib.c $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -c -o $@ $<
 
-$(TEST_BUILD_DIR)/string_%.o: string.c retrolibc.h $(TEST_BUILD_DIR)/.empty
+$(TEST_BUILD_DIR)/string_%.o: string.c $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -c -o $@ $<
+
+# Dependencies for host.
+
+$(TEST_BUILD_DIR)/ctype_%.o.d: ctype.c $(TEST_BUILD_DIR)/.empty
+	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -MM -MT $(TEST_BUILD_DIR)/ctype_$*.o $< > $@
+
+$(TEST_BUILD_DIR)/stdlib_%.o.d: stdlib.c $(TEST_BUILD_DIR)/.empty
+	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -MM -MT $(TEST_BUILD_DIR)/stdlib_$*.o $< > $@
+
+$(TEST_BUILD_DIR)/string_%.o.d: string.c $(TEST_BUILD_DIR)/.empty
+	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -MM -MT $(TEST_BUILD_DIR)/string_$*.o $< > $@
 
 include $(TOP_DIR)/Rules.mk
 	
@@ -246,38 +282,11 @@ clean:
 clean_test:
 	rm -f $(TEST) $(TEST_OBJS)
 
+clean_deps:
+	rm -f $(DEPS)
+	rm -f $(TEST_DEPS)
+
 clean_config:
 	echo -n
-	
-$(BUILD_DIR)/malloc.o: malloc.c priv_malloc.h
-$(BUILD_DIR)/file_stdin.o: file.c priv_file.h
-$(BUILD_DIR)/file_stdout.o: file.c priv_file.h
-$(BUILD_DIR)/file_stderr.o: file.c priv_file.h
-$(BUILD_DIR)/file_file_list.o: file.c priv_file.h
-$(BUILD_DIR)/file_fflush_unlocked.o: file.c priv_file.h
-$(BUILD_DIR)/file_fdclose_unlocked.o: file.c priv_file.h
-$(BUILD_DIR)/file_mode_to_oflags.o: file.c priv_file.h
-$(BUILD_DIR)/file_init_file.o: file.c priv_file.h
-$(BUILD_DIR)/file_clearerr.o: file.c priv_file.h
-$(BUILD_DIR)/file_fclose.o: file.c priv_file.h
-$(BUILD_DIR)/file_fdopen.o: file.c priv_file.h
-$(BUILD_DIR)/file_feof.o: file.c priv_file.h
-$(BUILD_DIR)/file_ferror.o: file.c priv_file.h
-$(BUILD_DIR)/file_fflush.o: file.c priv_file.h
-$(BUILD_DIR)/file_fileno.o: file.c priv_file.h
-$(BUILD_DIR)/file_flockfile.o: file.c priv_file.h
-$(BUILD_DIR)/file_fopen.o: file.c priv_file.h
-$(BUILD_DIR)/file_fread.o: file.c priv_file.h
-$(BUILD_DIR)/file_fseeko.o: file.c priv_file.h
-$(BUILD_DIR)/file_ftello.o: file.c priv_file.h
-$(BUILD_DIR)/file_ftrylockfile.o: file.c priv_file.h
-$(BUILD_DIR)/file_funlockfile.o: file.c priv_file.h
-$(BUILD_DIR)/file_fwrite.o: file.c priv_file.h
-$(BUILD_DIR)/file_getc_unlocked.o: file.c priv_file.h
-$(BUILD_DIR)/file_pclose.o: file.c priv_file.h
-$(BUILD_DIR)/file_popen.o: file.c priv_file.h
-$(BUILD_DIR)/file_putc_unlocked.o: file.c priv_file.h
-$(BUILD_DIR)/file_setvbuf.o: file.c priv_file.h
-$(BUILD_DIR)/file_ungetc.o: file.c priv_file.h
-$(TEST_BUILD_DIR)/malloc.o: malloc.c priv_malloc.h
-$(TEST_BUILD_DIR)/test_malloc_suite.o: test_malloc_suite.c priv_malloc.h
+
+include $(DEPS) $(TEST_DEPS)

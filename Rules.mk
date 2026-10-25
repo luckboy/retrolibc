@@ -1,3 +1,5 @@
+# Objects for target.
+
 $(BUILD_DIR)/%.o: arch/$(TARGET_ARCH)/%.S $(BUILD_DIR)/.empty
 	$(CC) $(SFLAGS) $(EXTRA_CFLAGS) -c -o $@ $<
 
@@ -24,28 +26,86 @@ endif
 $(BUILD_DIR)/%.o: %.c $(BUILD_DIR)/.empty
 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -c -o $@ $<
 
+# Dependencies for target.
+
+$(BUILD_DIR)/%.o.d: arch/$(TARGET_ARCH)/%.S $(BUILD_DIR)/.empty
+	$(CC) $(SFLAGS) $(EXTRA_CFLAGS) -MM -MT $(BUILD_DIR)/$*.o $< > $@
+
+$(BUILD_DIR)/%.o.d: sys/$(TARGET_SYS)/$(TARGET_ARCH)/%.S $(BUILD_DIR)/.empty
+	$(CC) $(SFLAGS) $(EXTRA_CFLAGS) -MM -MT $(BUILD_DIR)/$*.o $< > $@
+	
+$(BUILD_DIR)/%.o.d: arch/$(TARGET_ARCH)/%.c $(BUILD_DIR)/.empty
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -MM -MT $(BUILD_DIR)/$*.o $< > $@
+
+$(BUILD_DIR)/%.o.d: sys/$(TARGET_SYS)/$(TARGET_ARCH)/%.c $(BUILD_DIR)/.empty
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -MM -MT $(BUILD_DIR)/$*.o $< > $@
+
+$(BUILD_DIR)/%.o.d: sys/$(TARGET_SYS)/%.c $(BUILD_DIR)/.empty
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -MM -MT $(BUILD_DIR)/$*.o $< > $@
+
+ifdef TARGET_COMMON_ARCH
+$(BUILD_DIR)/%.o.d: arch/$(TARGET_COMMON_ARCH)/%.c $(BUILD_DIR)/.empty
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -MM -MT $(BUILD_DIR)/$*.o $< > $@
+
+$(BUILD_DIR)/%.o.d: sys/$(TARGET_SYS)/$(TARGET_COMMON_ARCH)/%.c $(BUILD_DIR)/.empty
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -MM -MT $(BUILD_DIR)/$*.o $< > $@
+endif
+
+$(BUILD_DIR)/%.o.d: %.c $(BUILD_DIR)/.empty
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -MM -MT $(BUILD_DIR)/$*.o $< > $@
+	
+# Objects for host.
+
 $(TEST_BUILD_DIR)/%.o: arch/$(HOST_ARCH)/%.S $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTSFLAGS) -c -o $@ $<
 
 $(TEST_BUILD_DIR)/%.o: sys/$(HOST_SYS)/$(HOST_ARCH)/%.S $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTSFLAGS) -c -o $@ $<
 	
-$(TEST_BUILD_DIR)/%.o: arch/$(HOST_ARCH)/%.c retrolibc.h $(TEST_BUILD_DIR)/.empty
+$(TEST_BUILD_DIR)/%.o: arch/$(HOST_ARCH)/%.c $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTCFLAGS) -c -o $@ $<
 
-$(TEST_BUILD_DIR)/%.o: sys/$(HOST_SYS)/$(HOST_ARCH)/%.c retrolibc.h $(TEST_BUILD_DIR)/.empty
+$(TEST_BUILD_DIR)/%.o: sys/$(HOST_SYS)/$(HOST_ARCH)/%.c $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTCFLAGS) -c -o $@ $<
 
-$(TEST_BUILD_DIR)/%.o: sys/$(HOST_SYS)/%.c retrolibc.h $(TEST_BUILD_DIR)/.empty
+$(TEST_BUILD_DIR)/%.o: sys/$(HOST_SYS)/%.c $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTCFLAGS) -c -o $@ $<
 
 ifdef HOST_COMMON_ARCH
-$(TEST_BUILD_DIR)/%.o: arch/$(HOST_COMMON_ARCH)/%.c retrolibc.h $(TEST_BUILD_DIR)/.empty
+$(TEST_BUILD_DIR)/%.o: arch/$(HOST_COMMON_ARCH)/%.c $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTCFLAGS) -c -o $@ $<
 
-$(TEST_BUILD_DIR)/%.o: sys/$(HOST_SYS)/$(HOST_COMMON_ARCH)/%.c retrolibc.h $(TEST_BUILD_DIR)/.empty
+$(TEST_BUILD_DIR)/%.o: sys/$(HOST_SYS)/$(HOST_COMMON_ARCH)/%.c $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTCFLAGS) -c -o $@ $<
 endif
 	
-$(TEST_BUILD_DIR)/%.o: %.c retrolibc.h $(TEST_BUILD_DIR)/.empty
+$(TEST_BUILD_DIR)/%.o: %.c $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTCFLAGS) -c -o $@ $<
+
+# Dependencies for host.
+
+$(TEST_BUILD_DIR)/%.o.d: arch/$(HOST_ARCH)/%.S $(TEST_BUILD_DIR)/.empty
+	$(HOSTCC) $(HOSTSFLAGS) -MM -MT $(TEST_BUILD_DIR)/$*.o $< > $@
+
+$(TEST_BUILD_DIR)/%.o.d: sys/$(HOST_SYS)/$(HOST_ARCH)/%.S $(TEST_BUILD_DIR)/.empty
+	$(HOSTCC) $(HOSTSFLAGS) -MM -MT $(TEST_BUILD_DIR)/$*.o $< > $@
+	
+$(TEST_BUILD_DIR)/%.o.d: arch/$(HOST_ARCH)/%.c $(TEST_BUILD_DIR)/.empty
+	$(HOSTCC) $(HOSTCFLAGS) -MM -MT $(TEST_BUILD_DIR)/$*.o $< > $@
+
+$(TEST_BUILD_DIR)/%.o.d: sys/$(HOST_SYS)/$(HOST_ARCH)/%.c $(TEST_BUILD_DIR)/.empty
+	$(HOSTCC) $(HOSTCFLAGS) -MM -MT $(TEST_BUILD_DIR)/$*.o $< > $@
+
+$(TEST_BUILD_DIR)/%.o.d: sys/$(HOST_SYS)/%.c $(TEST_BUILD_DIR)/.empty
+	$(HOSTCC) $(HOSTCFLAGS) -MM -MT $(TEST_BUILD_DIR)/$*.o $< > $@
+
+ifdef HOST_COMMON_ARCH
+$(TEST_BUILD_DIR)/%.o.d: arch/$(HOST_COMMON_ARCH)/%.c $(TEST_BUILD_DIR)/.empty
+	$(HOSTCC) $(HOSTCFLAGS) -MM -MT $(TEST_BUILD_DIR)/$*.o $< > $@
+
+$(TEST_BUILD_DIR)/%.o.d: sys/$(HOST_SYS)/$(HOST_COMMON_ARCH)/%.c $(TEST_BUILD_DIR)/.empty
+	$(HOSTCC) $(HOSTCFLAGS) -MM -MT $(TEST_BUILD_DIR)/$*.o $< > $@
+endif
+	
+$(TEST_BUILD_DIR)/%.o.d: %.c $(TEST_BUILD_DIR)/.empty
+	$(HOSTCC) $(HOSTCFLAGS) -MM -MT $(TEST_BUILD_DIR)/$*.o $< > $@
