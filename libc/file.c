@@ -350,7 +350,7 @@ static size_t fread_unlocked(void *buf, size_t size, size_t n, FILE *f)
   if(f->buf != NULL) {
     for(; i < buf_size && (f->pushed_char != -1 || f->cur_pos < f->end_pos); i++) {
       int c = getc_unlocked(f);
-      if(c == EOF) return 0;
+      if(c == EOF) return i / size;
       p[i] = c;
     }
   }
@@ -358,10 +358,10 @@ static size_t fread_unlocked(void *buf, size_t size, size_t n, FILE *f)
     m = read(f->fd, p + i, buf_size - i);
     if(m == 0) {
       f->flags |= FILE_FLAG_EOF;
-      return 0;
+      break;
     } else if(m == -1) {
       f->flags |= FILE_FLAG_ERROR;
-      return 0;
+      break;
     }
   }
   return i / size;
@@ -483,7 +483,7 @@ static size_t fwrite_unlocked(const void *buf, size_t size, size_t n, FILE *f)
     m = write(f->fd, p + i, buf_size - i);
     if(m == -1) {
       f->flags |= FILE_FLAG_ERROR;
-      return 0;
+      break;
     }
   }
   return i / size;
