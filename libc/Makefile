@@ -272,10 +272,10 @@ $(TEST): $(TEST_OBJS)
 	$(HOSTCC) $(HOSTLDFLAGS) -o $(TEST) $(TEST_OBJS) $(HOSTLIBS)
 
 gen_config:
-	echo -n
+	@echo -n
 
 test: $(TEST)
-	echo -n
+	@echo -n
 
 run_test: test
 	./$(TEST)
@@ -291,6 +291,6 @@ clean_deps:
 	rm -f $(TEST_DEPS)
 
 clean_config:
-	echo -n
+	@echo -n
 
 include $(DEPS) $(TEST_DEPS)

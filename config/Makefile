@@ -8,7 +8,7 @@ include $(TOP_DIR)/Vars.mk
 # Rules.
 
 all: $(CONFIG_BUILD_DIR)/include/bits/config.h
-	echo -n
+	@echo -n
 
 $(CONFIG_BUILD_DIR)/include/bits/config.h:
 	mkdir -p $(CONFIG_BUILD_DIR)/include/bits
@@ -20,10 +20,10 @@ $(CONFIG_BUILD_DIR)/.empty:
 	touch $(BUILD_DIR)/.empty
 
 gen_config: $(CONFIG_BUILD_DIR)/include/bits/config.h $(CONFIG_BUILD_DIR)/retrolibc_config.h
-	echo -n
+	@echo -n
 
 test: $(CONFIG_BUILD_DIR)/retrolibc_config.h
-	echo -n
+	@echo -n
 
 $(CONFIG_BUILD_DIR)/retrolibc_config.h:
 	mkdir -p $(CONFIG_BUILD_DIR)/include/bits
@@ -31,16 +31,16 @@ $(CONFIG_BUILD_DIR)/retrolibc_config.h:
 	./$(HOST_SYS)/config.sh host $(HOST_KERNEL_VERSION) >> $(CONFIG_BUILD_DIR)/retrolibc_config.h
 
 run_test: test
-	echo -n
+	@echo -n
 
 clean:
-	echo -n
+	@echo -n
 
 clean_test:
-	echo -n
+	@echo -n
 
 clean_deps:
-	echo -n
+	@echo -n
 
 clean_config:
 	rm -f $(CONFIG_BUILD_DIR)/include/bits/config.h
