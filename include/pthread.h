@@ -10,9 +10,9 @@
 
 #include <bits/types.h>
 
-#define PTHREAD_MUTEX_INITIALIZER ((pthread_mutex_t) { 1, -1 })
+#define PTHREAD_MUTEX_INITIALIZER { 1, -1 }
 
-#define PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP ((pthread_mutex_t) { 1, 0 })
+#define PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP { 1, 0 }
 
 typedef struct {
   int __bit;

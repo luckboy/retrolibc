@@ -12,7 +12,12 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <unistd.h>
+#ifndef TEST
 #include <stdio.h>
+#else
+#define RETROLIBC_FILE
+#include "retrolibc.h"
+#endif
 #include "priv_file.h"
 
 #ifdef L_stdin
@@ -115,7 +120,7 @@ int __fflush_unlocked(struct __FILE *f, int flags)
 {
   if((flags & FFLUSH_FLAG_CAN_SEEK) != 0 && (f->flags & FILE_FLAG_DATA_TO_WRITE) == 0) {
     if(f->cur_pos < f->end_pos) {
-      if(lseek(f->fd, f->end_pos - f->cur_pos, SEEK_CUR) == -1) {
+      if(lseek(f->fd,  f->cur_pos - f->end_pos, SEEK_CUR) == -1) {
         f->flags |= FILE_FLAG_ERROR;
         return EOF;
       }
@@ -162,13 +167,13 @@ int __mode_to_oflags(const char *mode)
   int oflags = 0;
   switch(*mode) {
   case 'r':
-    oflags |= O_RDONLY;
+    oflags = O_RDONLY;
     break;
   case 'w':
-    oflags |= O_WRONLY | O_CREAT | O_TRUNC;
+    oflags = O_WRONLY | O_CREAT | O_TRUNC;
     break;
   case 'a':
-    oflags |= O_WRONLY | O_CREAT | O_APPEND;
+    oflags = O_WRONLY | O_CREAT | O_APPEND;
     break;
   default:
     errno = EINVAL;
@@ -194,14 +199,14 @@ int __mode_to_oflags(const char *mode)
     errno = EINVAL;
     return -1;
   }
-  return 0;
+  return oflags;
 }
 #endif
 
 #ifdef L_init_file
 int __init_file(struct __FILE *f)
 {
-  f->mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+  f->mutex = (pthread_mutex_t) PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
   f->fd = -1;
   f->flags = FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER;
   f->pushed_char = -1;
@@ -333,6 +338,7 @@ FILE *fopen(const char *filename, const char *mode)
     free(f);
     return NULL;
   }
+  f->fd = fd;
   pthread_mutex_lock(&__file_list_mutex);
   __add_file(f);
   pthread_mutex_unlock(&__file_list_mutex);
@@ -564,7 +570,7 @@ static int pclose_unlocked(FILE *f)
   int status;
   if(__fflush_unlocked(f, FFLUSH_FLAG_CAN_SEEK | FFLUSH_FLAG_CAN_WRITE) == EOF) return EOF;
   if((status = __fdclose_unlocked(f)) == EOF) return EOF;
-  if((f->flags & FILE_FLAG_FREEABLE_BUFFER) != 0) free(f->buf);
+  if((f->flags & FILE_FLAG_FREEABLE_BUFFER) != 0 && f->buf != NULL) free(f->buf);
   return 0;
 }
 
@@ -657,7 +663,7 @@ int putc_unlocked(int c, FILE *f)
       if(__fflush_unlocked(f, FFLUSH_FLAG_CAN_WRITE) == EOF) return EOF;
     }
   } else {
-    char tmp_c;
+    char tmp_c = c;
     ssize_t n = write(f->fd, &tmp_c, 1);
     if(n == -1) {
       f->flags |= FILE_FLAG_ERROR;
@@ -682,7 +688,7 @@ int setvbuf_unlocked(FILE *f, char *buf, int type, size_t size)
     }
     f->flags |= flags;
     f->buf = buf;
-    f->buf_size = 0;
+    f->buf_size = size;
     f->cur_pos = f->end_pos = 0;
   } else {
     f->flags &= ~FILE_FLAG_LINE_BUFFERED;

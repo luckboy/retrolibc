@@ -18,7 +18,6 @@
 #define _IOLBF          1
 #define _IONBF          2
 
-
 #define EOF             (-1)
 
 struct __FILE;

@@ -140,6 +140,38 @@ TEST_CTYPE_OBJS = \
 	$(TEST_BUILD_DIR)/ctype_tolower.o \
 	$(TEST_BUILD_DIR)/ctype_toupper.o
 
+TEST_FILE_OBJS = \
+	$(TEST_BUILD_DIR)/file_stdin.o \
+	$(TEST_BUILD_DIR)/file_stdout.o \
+	$(TEST_BUILD_DIR)/file_stderr.o \
+	$(TEST_BUILD_DIR)/file_file_list.o \
+	$(TEST_BUILD_DIR)/file_fflush_unlocked.o \
+	$(TEST_BUILD_DIR)/file_fdclose_unlocked.o \
+	$(TEST_BUILD_DIR)/file_mode_to_oflags.o \
+	$(TEST_BUILD_DIR)/file_init_file.o \
+	$(TEST_BUILD_DIR)/file_clearerr.o \
+	$(TEST_BUILD_DIR)/file_fclose.o \
+	$(TEST_BUILD_DIR)/file_fdopen.o \
+	$(TEST_BUILD_DIR)/file_feof.o \
+	$(TEST_BUILD_DIR)/file_ferror.o \
+	$(TEST_BUILD_DIR)/file_fflush.o \
+	$(TEST_BUILD_DIR)/file_fileno.o \
+	$(TEST_BUILD_DIR)/file_flockfile.o \
+	$(TEST_BUILD_DIR)/file_fopen.o \
+	$(TEST_BUILD_DIR)/file_fread.o \
+	$(TEST_BUILD_DIR)/file_freopen.o \
+	$(TEST_BUILD_DIR)/file_fseeko.o \
+	$(TEST_BUILD_DIR)/file_ftello.o \
+	$(TEST_BUILD_DIR)/file_ftrylockfile.o \
+	$(TEST_BUILD_DIR)/file_funlockfile.o \
+	$(TEST_BUILD_DIR)/file_fwrite.o \
+	$(TEST_BUILD_DIR)/file_getc_unlocked.o \
+	$(TEST_BUILD_DIR)/file_popen.o \
+	$(TEST_BUILD_DIR)/file_pclose.o \
+	$(TEST_BUILD_DIR)/file_putc_unlocked.o \
+	$(TEST_BUILD_DIR)/file_setvbuf.o \
+	$(TEST_BUILD_DIR)/file_ungetc.o
+	
 TEST_STDLIB_OBJS = \
 	$(TEST_BUILD_DIR)/stdlib_atoi.o \
 	$(TEST_BUILD_DIR)/stdlib_atol.o \
@@ -172,8 +204,11 @@ TEST_STRING_OBJS = \
 	$(TEST_BUILD_DIR)/string_strxfrm.o
 
 TEST_OBJS = \
+	$(TEST_BUILD_DIR)/test_file_helpers.o \
 	$(TEST_CTYPE_OBJS) \
 	$(TEST_BUILD_DIR)/test_ctype_suite.o \
+	$(TEST_FILE_OBJS) \
+	$(TEST_BUILD_DIR)/test_file_suite.o \
 	$(TEST_STDLIB_OBJS) \
 	$(TEST_BUILD_DIR)/test_stdlib_suite.o \
 	$(TEST_STRING_OBJS) \
@@ -233,6 +268,9 @@ $(BUILD_DIR)/string_%.o.d: string.c $(BUILD_DIR)/.empty
 $(TEST_BUILD_DIR)/ctype_%.o: ctype.c $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -c -o $@ $<
 
+$(TEST_BUILD_DIR)/file_%.o: file.c $(TEST_BUILD_DIR)/.empty
+	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -c -o $@ $<
+
 $(TEST_BUILD_DIR)/stdlib_%.o: stdlib.c $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -c -o $@ $<
 
@@ -243,6 +281,9 @@ $(TEST_BUILD_DIR)/string_%.o: string.c $(TEST_BUILD_DIR)/.empty
 
 $(TEST_BUILD_DIR)/ctype_%.o.d: ctype.c $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -MM -MT $(TEST_BUILD_DIR)/ctype_$*.o $< > $@
+
+$(TEST_BUILD_DIR)/file_%.o.d: file.c $(TEST_BUILD_DIR)/.empty
+	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -MM -MT $(TEST_BUILD_DIR)/stdlib_$*.o $< > $@
 
 $(TEST_BUILD_DIR)/stdlib_%.o.d: stdlib.c $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -MM -MT $(TEST_BUILD_DIR)/stdlib_$*.o $< > $@

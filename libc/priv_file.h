@@ -11,6 +11,10 @@
 #include <pthread.h>
 #include <stddef.h>
 
+#ifdef TEST
+#define __FILE retrolibc___FILE
+#endif
+
 #define FILE_FLAG_FREEABLE              (1 << 0)
 #define FILE_FLAG_FREEABLE_BUFFER       (1 << 1)
 #define FILE_FLAG_DATA_TO_WRITE         (1 << 2)
@@ -43,9 +47,13 @@ extern struct __FILE *__last_file;
 void __add_file(struct __FILE *f);
 void __remove_file(struct __FILE *f);
 
-int __fdclose_unlocked(struct __FILE *f);
 int __fflush_unlocked(struct __FILE *f, int flags);
+int __fdclose_unlocked(struct __FILE *f);
 int __mode_to_oflags(const char *s);
 int __init_file(struct __FILE *f);
+
+#if defined(TEST) && !defined(RETROLIBC_FILE)
+#undef __FILE
+#endif
 
 #endif

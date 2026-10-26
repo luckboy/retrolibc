@@ -10,6 +10,7 @@
 
 #include <inttypes.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -126,6 +127,123 @@ void *retrolibc_bsearch(const void *key, const void *base, size_t n, size_t widt
 
 #ifdef RETROLIBC_BSEARCH
 #define bsearch retrolibc_bsearch
+#endif
+
+/* file.c */
+
+#define RETROLIBC_BUFSIZ        2048
+
+#define RETROLIBC__IOFBF        0
+#define RETROLIBC__IOLBF        1
+#define RETROLIBC__IONBF        2
+
+#define RETROLIBC_EOF           (-1)
+
+struct retrolibc___FILE;
+
+typedef struct retrolibc___FILE retrolibc_FILE;
+
+extern retrolibc_FILE *retrolibc_stdin;
+extern retrolibc_FILE *retrolibc_stdout;
+extern retrolibc_FILE *retrolibc_stderr;
+
+extern pthread_mutex_t retrolibc___file_list_mutex;
+extern struct retrolibc___FILE *retrolibc___first_file;
+extern struct retrolibc___FILE *retrolibc___last_file;
+
+void retrolibc___add_file(struct retrolibc___FILE *f);
+void retrolibc___remove_file(struct retrolibc___FILE *f);
+
+int retrolibc___fdclose_unlocked(struct retrolibc___FILE *f);
+int retrolibc___fflush_unlocked(struct retrolibc___FILE *f, int flags);
+int retrolibc___mode_to_oflags(const char *s);
+int retrolibc___init_file(struct retrolibc___FILE *f);
+
+void retrolibc_clearerr(retrolibc_FILE *f);
+int retrolibc_fclose(retrolibc_FILE *f);
+retrolibc_FILE *retrolibc_fdopen(int fd, const char *mode);
+int retrolibc_feof(retrolibc_FILE *f);
+int retrolibc_ferror(retrolibc_FILE *f);
+int retrolibc_fflush(retrolibc_FILE *f);
+int retrolibc_fileno(retrolibc_FILE *);
+void retrolibc_flockfile(retrolibc_FILE *f);
+retrolibc_FILE *retrolibc_fopen(const char *filename, const char *mode);
+size_t retrolibc_fread(void *buf, size_t size, size_t n, retrolibc_FILE *f);
+retrolibc_FILE *retrolibc_freopen(retrolibc_FILE *f, const char *filename, const char *mode);
+int retrolibc_fseeko(retrolibc_FILE *f, off_t offset, int whence);
+off_t retrolibc_ftello(retrolibc_FILE *f);
+int retrolibc_ftrylockfile(retrolibc_FILE *f);
+void retrolibc_funlockfile(retrolibc_FILE *f);
+size_t retrolibc_fwrite(const void *buf, size_t size, size_t n, retrolibc_FILE *f);
+int retrolibc_getc_unlocked(retrolibc_FILE *f);
+int retrolibc_pclose(retrolibc_FILE *f);
+retrolibc_FILE *retrolibc_popen(const char *command, const char *mode);
+int retrolibc_putc_unlocked(int c, retrolibc_FILE *f);
+int retrolibc_setvbuf(retrolibc_FILE *f, char *buf, int type, size_t size);
+int retrolibc_ungetc(int c, retrolibc_FILE *f);
+
+#ifdef RETROLIBC_FILE
+
+#undef BUFSIZ
+#define BUFSIZ          RETROLIBC_BUFSIZ
+
+#undef _IOFBF
+#undef _IOLBF
+#undef _IONBF
+#define _IOFBF          RETROLIBC__IOFBF
+#define _IOLBF          RETROLIBC__IOFBF
+#define _IONBF          RETROLIBC__IOFBF
+
+#undef EOF
+#define EOF             RETROLIBC_EOF
+
+#define FILE retrolibc_FILE
+
+#undef stdin
+#undef stdout
+#undef stderr
+#define stdin retrolibc_stdin
+#define stdout retrolibc_stdout
+#define stderr retrolibc_stderr
+
+#define __file_list_mutex retrolibc___file_list_mutex
+#define __first_file retrolibc___first_file
+#define __last_file retrolibc___last_file
+
+#define __add_file retrolibc___add_file
+#define __remove_file retrolibc___remove_file
+
+#define __fflush_unlocked retrolibc___fflush_unlocked
+#define __fdclose_unlocked retrolibc___fdclose_unlocked
+#define __mode_to_oflags retrolibc___mode_to_oflags
+#define __init_file retrolibc___init_file
+
+#define clearerr retrolibc_clearerr
+#define fclose retrolibc_fclose
+#define fdopen retrolibc_fdopen
+#define feof retrolibc_feof
+#define ferror retrolibc_ferror
+#define fflush retrolibc_fflush
+#define fileno retrolibc_fileno
+#define flockfile retrolibc_flockfile
+#define fopen retrolibc_fopen
+#define fread retrolibc_fread
+#define freopen retrolibc_freopen
+#define fseeko retrolibc_fseeko
+#define ftello retrolibc_ftello
+#define ftrylockfile retrolibc_ftrylockfile
+#define funlockfile retrolibc_funlockfile
+#define fwrite retrolibc_fwrite
+#define getc_unlocked retrolibc_getc_unlocked
+#define pclose retrolibc_pclose
+#define popen retrolibc_popen
+#define putc_unlocked retrolibc_putc_unlocked
+#define setvbuf retrolibc_setvbuf
+#define ungetc retrolibc_ungetc
+
+#define fread_unlocked retrolibc_fread_unlocked
+#define fwrite_unlocked retrolibc_fwrite_unlocked
+
 #endif
 
 /* malloc.c */
