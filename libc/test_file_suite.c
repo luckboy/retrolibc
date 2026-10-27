@@ -34,6 +34,118 @@ static int cleanup_file(void)
   return 0;
 }
 
+static void test___add_file_adds_file(void)
+{
+  retrolibc_FILE f;
+  clean_current_dir();
+  initalize_retrolibc_file();
+  retrolibc___add_file(&f);
+  CU_ASSERT_PTR_NULL(f.prev);
+  CU_ASSERT_PTR_NULL(f.next);
+  CU_ASSERT_PTR_EQUAL(retrolibc___first_file, &f);
+  CU_ASSERT_PTR_EQUAL(retrolibc___last_file, &f);
+}
+
+static void test___add_file_adds_file_3_times(void)
+{
+  retrolibc_FILE f;
+  retrolibc_FILE f2;
+  retrolibc_FILE f3;
+  clean_current_dir();
+  initalize_retrolibc_file();
+  retrolibc___add_file(&f);
+  CU_ASSERT_PTR_NULL(f.prev);
+  CU_ASSERT_PTR_NULL(f.next);
+  CU_ASSERT_PTR_EQUAL(retrolibc___first_file, &f);
+  CU_ASSERT_PTR_EQUAL(retrolibc___last_file, &f);
+  retrolibc___add_file(&f2);
+  CU_ASSERT_PTR_NULL(f.prev);
+  CU_ASSERT_PTR_EQUAL(f.next, &f2);
+  CU_ASSERT_PTR_EQUAL(f2.prev, &f);
+  CU_ASSERT_PTR_NULL(f2.next);
+  CU_ASSERT_PTR_EQUAL(retrolibc___first_file, &f);
+  CU_ASSERT_PTR_EQUAL(retrolibc___last_file, &f2);
+  retrolibc___add_file(&f3);
+  CU_ASSERT_PTR_NULL(f.prev);
+  CU_ASSERT_PTR_EQUAL(f.next, &f2);
+  CU_ASSERT_PTR_EQUAL(f2.prev, &f);
+  CU_ASSERT_PTR_EQUAL(f2.next, &f3);
+  CU_ASSERT_PTR_EQUAL(f3.prev, &f2);
+  CU_ASSERT_PTR_NULL(f3.next);
+  CU_ASSERT_PTR_EQUAL(retrolibc___first_file, &f);
+  CU_ASSERT_PTR_EQUAL(retrolibc___last_file, &f3);
+}
+
+static void test___remove_file_removes_file(void)
+{
+  retrolibc_FILE f;
+  clean_current_dir();
+  initalize_retrolibc_file();
+  retrolibc___add_file(&f);
+  retrolibc___remove_file(&f);
+  CU_ASSERT_PTR_NULL(f.prev);
+  CU_ASSERT_PTR_NULL(f.next);
+  CU_ASSERT_PTR_NULL(retrolibc___first_file);
+  CU_ASSERT_PTR_NULL(retrolibc___last_file);
+}
+
+static void test___remove_file_removes_file_for_left(void)
+{
+  retrolibc_FILE f;
+  retrolibc_FILE f2;
+  retrolibc_FILE f3;
+  clean_current_dir();
+  initalize_retrolibc_file();
+  retrolibc___add_file(&f);
+  retrolibc___add_file(&f2);
+  retrolibc___add_file(&f3);
+  retrolibc___remove_file(&f);
+  CU_ASSERT_PTR_NULL(f2.prev);
+  CU_ASSERT_PTR_EQUAL(f2.next, &f3);
+  CU_ASSERT_PTR_EQUAL(f3.prev, &f2);
+  CU_ASSERT_PTR_NULL(f3.next);
+  CU_ASSERT_PTR_EQUAL(retrolibc___first_file, &f2);
+  CU_ASSERT_PTR_EQUAL(retrolibc___last_file, &f3);
+}
+
+static void test___remove_file_removes_file_for_center(void)
+{
+  retrolibc_FILE f;
+  retrolibc_FILE f2;
+  retrolibc_FILE f3;
+  clean_current_dir();
+  initalize_retrolibc_file();
+  retrolibc___add_file(&f);
+  retrolibc___add_file(&f2);
+  retrolibc___add_file(&f3);
+  retrolibc___remove_file(&f2);
+  CU_ASSERT_PTR_NULL(f.prev);
+  CU_ASSERT_PTR_EQUAL(f.next, &f3);
+  CU_ASSERT_PTR_EQUAL(f3.prev, &f);
+  CU_ASSERT_PTR_NULL(f3.next);
+  CU_ASSERT_PTR_EQUAL(retrolibc___first_file, &f);
+  CU_ASSERT_PTR_EQUAL(retrolibc___last_file, &f3);
+}
+
+static void test___remove_file_removes_file_for_right(void)
+{
+  retrolibc_FILE f;
+  retrolibc_FILE f2;
+  retrolibc_FILE f3;
+  clean_current_dir();
+  initalize_retrolibc_file();
+  retrolibc___add_file(&f);
+  retrolibc___add_file(&f2);
+  retrolibc___add_file(&f3);
+  retrolibc___remove_file(&f3);
+  CU_ASSERT_PTR_NULL(f.prev);
+  CU_ASSERT_PTR_EQUAL(f.next, &f2);
+  CU_ASSERT_PTR_EQUAL(f2.prev, &f);
+  CU_ASSERT_PTR_NULL(f2.next);
+  CU_ASSERT_PTR_EQUAL(retrolibc___first_file, &f);
+  CU_ASSERT_PTR_EQUAL(retrolibc___last_file, &f2);
+}
+
 static void test___mode_to_oflags_converts_mode_to_open_flags(void)
 {
   clean_current_dir();
@@ -3493,6 +3605,12 @@ int add_file_suite(void)
 {
   CU_pSuite suite;
   if((suite = CU_add_suite("file suite", initialize_file, cleanup_file)) == NULL) return -1;
+  if(CU_add_test(suite, "__add_file adds file", test___add_file_adds_file) == NULL) return -1;
+  if(CU_add_test(suite, "__add_file adds file 3 times", test___add_file_adds_file_3_times) == NULL) return -1;
+  if(CU_add_test(suite, "__remove_file removes file", test___remove_file_removes_file) == NULL) return -1;
+  if(CU_add_test(suite, "__remove_file removes file for left", test___remove_file_removes_file_for_left) == NULL) return -1;
+  if(CU_add_test(suite, "__remove_file removes file for center", test___remove_file_removes_file_for_center) == NULL) return -1;
+  if(CU_add_test(suite, "__remove_file removes file for right", test___remove_file_removes_file_for_right) == NULL) return -1;
   if(CU_add_test(suite, "__mode_to_oflags converts mode to open flags", test___mode_to_oflags_converts_mode_to_open_flags) == NULL) return -1;
   if(CU_add_test(suite, "__mode_to_oflags complains on invalid mode", test___mode_to_oflags_complains_on_invalid_mode) == NULL) return -1;
   if(CU_add_test(suite, "fopen opens file to read", test_fopen_opens_file_to_read) == NULL) return -1;
