@@ -2586,6 +2586,73 @@ static void test_getc_unlocked_complains_on_bad_fd_for_unbuffered(void)
   free(f);
 }
 
+static void test_popen_opens_pipe_and_fread_reads_and_fclose_closes(void)
+{
+  char block[7];
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initalize_retrolibc_file();
+  f = retrolibc_popen("echo abcdef", "r");
+  CU_ASSERT_PTR_NOT_NULL(f);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_NOT_EQUAL(f->pid, -1);
+  CU_ASSERT_EQUAL(retrolibc_fread(block, 7, 1, f), 1);
+  CU_ASSERT_EQUAL(memcmp(block, "abcdef\n", 7), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_NOT_EQUAL(f->pid, -1);
+  CU_ASSERT_NOT_EQUAL(retrolibc_pclose(f), -1);
+}
+
+static void test_popen_opens_pipe_and_fwrite_writes_and_fclose_closes(void)
+{
+  char s[RETROLIBC_BUFSIZ * 2];
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initalize_retrolibc_file();
+  f = retrolibc_popen("cat > test.txt", "w");
+  CU_ASSERT_PTR_NOT_NULL(f);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_NOT_EQUAL(f->pid, -1);
+  CU_ASSERT_EQUAL(retrolibc_fwrite("abcdef\n", 7, 1, f), 1);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER | FILE_FLAG_DATA_TO_WRITE);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 7);
+  CU_ASSERT_NOT_EQUAL(f->pid, -1);
+  CU_ASSERT_NOT_EQUAL(retrolibc_pclose(f), -1);
+  CU_ASSERT_FATAL(read_from_file("test.txt", s, RETROLIBC_BUFSIZ * 2));
+  CU_ASSERT_STRING_EQUAL(s, "abcdef\n");
+}
+
 static void test_putc_unlocked_writes_character(void)
 {
   static char s[RETROLIBC_BUFSIZ * 2];
@@ -3514,6 +3581,8 @@ int add_file_suite(void)
   if(CU_add_test(suite, "getc_unlocked complains on bad fd", test_getc_unlocked_complains_on_bad_fd) == NULL) return -1;
   if(CU_add_test(suite, "getc_unlocked complains on bad fd for line buffered", test_getc_unlocked_complains_on_bad_fd_for_line_buffered) == NULL) return -1;
   if(CU_add_test(suite, "getc_unlocked complains on bad fd for unbuffered", test_getc_unlocked_complains_on_bad_fd_for_unbuffered) == NULL) return -1;
+  if(CU_add_test(suite, "popen opens pipe and fread reads and fclose closes", test_popen_opens_pipe_and_fread_reads_and_fclose_closes) == NULL) return -1;
+  if(CU_add_test(suite, "popen opens pipe and fwrite writes and fclose closes", test_popen_opens_pipe_and_fwrite_writes_and_fclose_closes) == NULL) return -1;
   if(CU_add_test(suite, "putc_unlocked writes character", test_putc_unlocked_writes_character) == NULL) return -1;
   if(CU_add_test(suite, "putc_unlocked writes character 3 times", test_putc_unlocked_writes_character_3_times) == NULL) return -1;
   if(CU_add_test(suite, "putc_unlocked writes character for newline", test_putc_unlocked_writes_character_for_newline) == NULL) return -1;
