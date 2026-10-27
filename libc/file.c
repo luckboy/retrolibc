@@ -120,11 +120,18 @@ int __fflush_unlocked(struct __FILE *f, int flags)
 {
   if((flags & FFLUSH_FLAG_CAN_SEEK) != 0 && (f->flags & FILE_FLAG_DATA_TO_WRITE) == 0) {
     if(f->cur_pos < f->end_pos) {
+      int is_epipe = 0;
+      int saved_errno = errno;
       if(lseek(f->fd,  f->cur_pos - f->end_pos, SEEK_CUR) == -1) {
-        f->flags |= FILE_FLAG_ERROR;
-        return EOF;
+        if(errno == EPIPE) {
+          is_epipe = 1;
+        } else {
+          f->flags |= FILE_FLAG_ERROR;
+          return EOF;
+        }
       }
-      f->cur_pos = f->end_pos = 0;
+      errno = saved_errno;
+      if(!is_epipe) f->cur_pos = f->end_pos = 0;
     }
   }
   if((flags & FFLUSH_FLAG_CAN_WRITE) != 0 && (f->flags & FILE_FLAG_DATA_TO_WRITE) != 0) {
@@ -153,7 +160,8 @@ int __fdclose_unlocked(struct __FILE *f)
   if(close(f->fd) == -1) return EOF;
   if(f->pid != -1) {
     pid_t pid;
-    while((pid = waitpid(f->pid, &status, 0)) == -1 && errno == EINTR);
+    int saved_errno = errno;
+    while((pid = waitpid(f->pid, &status, 0)) == -1 && errno == EINTR) errno = saved_errno;
     if(pid == -1) return EOF;
   }
   return status;
@@ -352,7 +360,10 @@ static size_t fread_unlocked(void *buf, size_t size, size_t n, FILE *f)
   char *p = (char *) buf;
   size_t buf_size = n * size;
   ssize_t m;
-  size_t i = 0;
+  size_t i;
+  if((f->flags & (FILE_FLAG_EOF | FILE_FLAG_ERROR)) != 0) return 0;
+  if(__fflush_unlocked(f, FFLUSH_FLAG_CAN_WRITE) == EOF) return 0;
+  i = 0;
   if(f->buf != NULL) {
     for(; i < buf_size && (f->pushed_char != -1 || f->cur_pos < f->end_pos); i++) {
       int c = getc_unlocked(f);
@@ -475,7 +486,9 @@ static size_t fwrite_unlocked(const void *buf, size_t size, size_t n, FILE *f)
   const char *p = (const char *) buf;
   size_t buf_size = n * size;
   ssize_t m;
-  size_t i = 0;
+  size_t i;
+  if(__fflush_unlocked(f, FFLUSH_FLAG_CAN_SEEK) == EOF) return EOF;
+  i = 0;
   if(f->buf != NULL) {
     for(; i < buf_size && f->end_pos < f->buf_size; i++) {
       if(putc_unlocked(p[i], f) == EOF) return 0;
