@@ -430,7 +430,10 @@ static int fseeko_unlocked(FILE *f, off_t offset, int whence)
 {
   if((f->flags & FILE_FLAG_ERROR) != 0) return -1;
   if(__fflush_unlocked(f, FFLUSH_FLAG_CAN_SEEK | FFLUSH_FLAG_CAN_WRITE) == EOF) return -1;
-  if(lseek(f->fd, offset, whence) == -1) return -1;
+  if(lseek(f->fd, offset, whence) == -1) {
+    f->flags |= FILE_FLAG_ERROR;
+    return -1;
+  }
   return 0;
 }
 

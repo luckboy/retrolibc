@@ -37,3 +37,6 @@ int write_to_file(const char *filename, const char *s)
 
 off_t get_file_pos(int fd)
 { return lseek(fd, 0, SEEK_CUR); }
+
+int set_file_pos(int fd, off_t offset)
+{ return lseek(fd, offset, SEEK_SET) != -1; }

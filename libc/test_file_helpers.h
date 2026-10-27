@@ -14,5 +14,6 @@ void clean_current_dir(void);
 int read_from_file(const char *filename, char *s, size_t max_size);
 int write_to_file(const char *filename, const char *s);
 off_t get_file_pos(int fd);
+int set_file_pos(int fd, off_t offset);
 
 #endif
