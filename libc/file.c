@@ -726,9 +726,11 @@ int setvbuf(FILE *f, char *buf, int type, size_t size)
 static int ungetc_unlocked(int c, FILE *f)
 {
   if(f->cur_pos > 0) {
+    f->flags &= ~FILE_FLAG_EOF;
     f->cur_pos--;
     f->buf[f->cur_pos] = c;
   } else if(f->pushed_char == -1) {
+    f->flags &= ~FILE_FLAG_EOF;
     f->pushed_char = (short) ((unsigned char) c);
   } else {
     return EOF;
