@@ -679,7 +679,7 @@ int putc_unlocked(int c, FILE *f)
       return EOF;
     }
   }
-  return 0;
+  return c;
 }
 #endif
 

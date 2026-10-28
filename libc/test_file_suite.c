@@ -3904,7 +3904,7 @@ static void test_putc_unlocked_writes_character(void)
   clean_current_dir();
   initialize_retrolibc_file();
   f = retrolibc_fopen("test.txt", "w");
-  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('a', f), 0);
+  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('a', f), 'a');
   CU_ASSERT_PTR_NULL(f->prev);
   CU_ASSERT_PTR_NULL(f->next);
   CU_ASSERT_NOT_EQUAL(f->fd, -1);
@@ -3930,7 +3930,7 @@ static void test_putc_unlocked_writes_character_3_times(void)
   clean_current_dir();
   initialize_retrolibc_file();
   f = retrolibc_fopen("test.txt", "w");
-  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('a', f), 0);
+  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('a', f), 'a');
   CU_ASSERT_PTR_NULL(f->prev);
   CU_ASSERT_PTR_NULL(f->next);
   CU_ASSERT_NOT_EQUAL(f->fd, -1);
@@ -3942,7 +3942,7 @@ static void test_putc_unlocked_writes_character_3_times(void)
   CU_ASSERT_EQUAL(f->cur_pos, 0);
   CU_ASSERT_EQUAL(f->end_pos, 1);
   CU_ASSERT_EQUAL(f->pid, -1);
-  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('b', f), 0);
+  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('b', f), 'b');
   CU_ASSERT_PTR_NULL(f->prev);
   CU_ASSERT_PTR_NULL(f->next);
   CU_ASSERT_NOT_EQUAL(f->fd, -1);
@@ -3954,7 +3954,7 @@ static void test_putc_unlocked_writes_character_3_times(void)
   CU_ASSERT_EQUAL(f->cur_pos, 0);
   CU_ASSERT_EQUAL(f->end_pos, 2);
   CU_ASSERT_EQUAL(f->pid, -1);
-  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('c', f), 0);
+  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('c', f), 'c');
   CU_ASSERT_PTR_NULL(f->prev);
   CU_ASSERT_PTR_NULL(f->next);
   CU_ASSERT_NOT_EQUAL(f->fd, -1);
@@ -3983,7 +3983,7 @@ static void test_putc_unlocked_writes_character_for_newline(void)
   retrolibc_putc_unlocked('a', f);
   retrolibc_putc_unlocked('b', f);
   retrolibc_putc_unlocked('c', f);
-  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('\n', f), 0);
+  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('\n', f), '\n');
   CU_ASSERT_PTR_NULL(f->prev);
   CU_ASSERT_PTR_NULL(f->next);
   CU_ASSERT_NOT_EQUAL(f->fd, -1);
@@ -4016,7 +4016,7 @@ static void test_putc_unlocked_writes_character_buffer_size_times(void)
   f = retrolibc_fopen("test.txt", "w");
   for(i = 0; i < RETROLIBC_BUFSIZ; i++) r = retrolibc_putc_unlocked(buf[i], f);
   buf[i] = '\0';
-  CU_ASSERT_EQUAL(r, 0);
+  CU_ASSERT_EQUAL(r, 'b');
   CU_ASSERT_PTR_NULL(f->prev);
   CU_ASSERT_PTR_NULL(f->next);
   CU_ASSERT_NOT_EQUAL(f->fd, -1);
@@ -4049,7 +4049,7 @@ static void test_putc_unlocked_writes_character_buffer_size_plus_1_times(void)
   f = retrolibc_fopen("test.txt", "w");
   for(i = 0; i < RETROLIBC_BUFSIZ + 1; i++) r = retrolibc_putc_unlocked(buf[i], f);
   buf[i - 1] = '\0';
-  CU_ASSERT_EQUAL(r, 0);
+  CU_ASSERT_EQUAL(r, 'c');
   CU_ASSERT_PTR_NULL(f->prev);
   CU_ASSERT_PTR_NULL(f->next);
   CU_ASSERT_NOT_EQUAL(f->fd, -1);
@@ -4076,7 +4076,7 @@ static void test_putc_unlocked_writes_character_for_line_buffered(void)
   initialize_retrolibc_file();
   f = retrolibc_fopen("test.txt", "w");
   f->flags |= FILE_FLAG_LINE_BUFFERED;
-  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('a', f), 0);
+  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('a', f), 'a');
   CU_ASSERT_PTR_NULL(f->prev);
   CU_ASSERT_PTR_NULL(f->next);
   CU_ASSERT_NOT_EQUAL(f->fd, -1);
@@ -4103,7 +4103,7 @@ static void test_putc_unlocked_writes_character_3_times_for_line_buffered(void)
   initialize_retrolibc_file();
   f = retrolibc_fopen("test.txt", "w");
   f->flags |= FILE_FLAG_LINE_BUFFERED;
-  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('a', f), 0);
+  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('a', f), 'a');
   CU_ASSERT_PTR_NULL(f->prev);
   CU_ASSERT_PTR_NULL(f->next);
   CU_ASSERT_NOT_EQUAL(f->fd, -1);
@@ -4115,7 +4115,7 @@ static void test_putc_unlocked_writes_character_3_times_for_line_buffered(void)
   CU_ASSERT_EQUAL(f->cur_pos, 0);
   CU_ASSERT_EQUAL(f->end_pos, 1);
   CU_ASSERT_EQUAL(f->pid, -1);
-  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('b', f), 0);
+  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('b', f), 'b');
   CU_ASSERT_PTR_NULL(f->prev);
   CU_ASSERT_PTR_NULL(f->next);
   CU_ASSERT_NOT_EQUAL(f->fd, -1);
@@ -4127,7 +4127,7 @@ static void test_putc_unlocked_writes_character_3_times_for_line_buffered(void)
   CU_ASSERT_EQUAL(f->cur_pos, 0);
   CU_ASSERT_EQUAL(f->end_pos, 2);
   CU_ASSERT_EQUAL(f->pid, -1);
-  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('c', f), 0);
+  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('c', f), 'c');
   CU_ASSERT_PTR_NULL(f->prev);
   CU_ASSERT_PTR_NULL(f->next);
   CU_ASSERT_NOT_EQUAL(f->fd, -1);
@@ -4157,7 +4157,7 @@ static void test_putc_unlocked_writes_character_for_newline_and_line_buffered(vo
   retrolibc_putc_unlocked('a', f);
   retrolibc_putc_unlocked('b', f);
   retrolibc_putc_unlocked('c', f);
-  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('\n', f), 0);
+  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('\n', f), '\n');
   CU_ASSERT_PTR_NULL(f->prev);
   CU_ASSERT_PTR_NULL(f->next);
   CU_ASSERT_NOT_EQUAL(f->fd, -1);
@@ -4190,7 +4190,7 @@ static void test_putc_unlocked_writes_character_buffer_size_times_for_line_buffe
   f->flags |= FILE_FLAG_LINE_BUFFERED;
   for(i = 0; i < RETROLIBC_BUFSIZ; i++) r = retrolibc_putc_unlocked(buf[i], f);
   buf[i] = '\0';
-  CU_ASSERT_EQUAL(r, 0);
+  CU_ASSERT_EQUAL(r, 'b');
   CU_ASSERT_PTR_NULL(f->prev);
   CU_ASSERT_PTR_NULL(f->next);
   CU_ASSERT_NOT_EQUAL(f->fd, -1);
@@ -4224,7 +4224,7 @@ static void test_putc_unlocked_writes_character_buffer_size_plus_1_times_for_lin
   f->flags |= FILE_FLAG_LINE_BUFFERED;
   for(i = 0; i < RETROLIBC_BUFSIZ + 1; i++) r = retrolibc_putc_unlocked(buf[i], f);
   buf[i - 1] = '\0';
-  CU_ASSERT_EQUAL(r, 0);
+  CU_ASSERT_EQUAL(r, 'c');
   CU_ASSERT_PTR_NULL(f->prev);
   CU_ASSERT_PTR_NULL(f->next);
   CU_ASSERT_NOT_EQUAL(f->fd, -1);
@@ -4254,7 +4254,7 @@ static void test_putc_unlocked_writes_character_for_unbuffered(void)
   f->flags &= ~FILE_FLAG_FREEABLE_BUFFER;
   f->buf = NULL;
   f->buf_size = 0;
-  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('a', f), 0);
+  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('a', f), 'a');
   CU_ASSERT_PTR_NULL(f->prev);
   CU_ASSERT_PTR_NULL(f->next);
   CU_ASSERT_NOT_EQUAL(f->fd, -1);
@@ -4282,7 +4282,7 @@ static void test_putc_unlocked_writes_character_3_times_for_unbuffered(void)
   f->flags &= ~FILE_FLAG_FREEABLE_BUFFER;
   f->buf = NULL;
   f->buf_size = 0;
-  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('a', f), 0);
+  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('a', f), 'a');
   CU_ASSERT_PTR_NULL(f->prev);
   CU_ASSERT_PTR_NULL(f->next);
   CU_ASSERT_NOT_EQUAL(f->fd, -1);
@@ -4293,7 +4293,7 @@ static void test_putc_unlocked_writes_character_3_times_for_unbuffered(void)
   CU_ASSERT_EQUAL(f->cur_pos, 0);
   CU_ASSERT_EQUAL(f->end_pos, 0);
   CU_ASSERT_EQUAL(f->pid, -1);
-  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('b', f), 0);
+  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('b', f), 'b');
   CU_ASSERT_PTR_NULL(f->prev);
   CU_ASSERT_PTR_NULL(f->next);
   CU_ASSERT_NOT_EQUAL(f->fd, -1);
@@ -4304,7 +4304,7 @@ static void test_putc_unlocked_writes_character_3_times_for_unbuffered(void)
   CU_ASSERT_EQUAL(f->cur_pos, 0);
   CU_ASSERT_EQUAL(f->end_pos, 0);
   CU_ASSERT_EQUAL(f->pid, -1);
-  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('c', f), 0);
+  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('c', f), 'c');
   CU_ASSERT_PTR_NULL(f->prev);
   CU_ASSERT_PTR_NULL(f->next);
   CU_ASSERT_NOT_EQUAL(f->fd, -1);
@@ -4335,7 +4335,7 @@ static void test_putc_unlocked_writes_character_for_newline_and_unbuffered(void)
   retrolibc_putc_unlocked('a', f);
   retrolibc_putc_unlocked('b', f);
   retrolibc_putc_unlocked('c', f);
-  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('\n', f), 0);
+  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('\n', f), '\n');
   CU_ASSERT_PTR_NULL(f->prev);
   CU_ASSERT_PTR_NULL(f->next);
   CU_ASSERT_NOT_EQUAL(f->fd, -1);
@@ -4363,7 +4363,7 @@ static void test_putc_unlocked_writes_character_after_getc_unlocked(void)
   retrolibc_getc_unlocked(f);
   retrolibc_getc_unlocked(f);
   retrolibc_getc_unlocked(f);
-  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('A', f), 0);
+  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('A', f), 'A');
   CU_ASSERT_PTR_NULL(f->prev);
   CU_ASSERT_PTR_NULL(f->next);
   CU_ASSERT_NOT_EQUAL(f->fd, -1);
@@ -4395,7 +4395,7 @@ static void test_putc_unlocked_writes_character_after_getc_unlocked_buffer_size_
   CU_ASSERT_FATAL(write_to_file("test.txt", buf));
   f = retrolibc_fopen("test.txt", "r+");
   for(i = 0; i < RETROLIBC_BUFSIZ + 1; i++) retrolibc_getc_unlocked(f);
-  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('D', f), 0);
+  CU_ASSERT_EQUAL(retrolibc_putc_unlocked('D', f), 'D');
   CU_ASSERT_PTR_NULL(f->prev);
   CU_ASSERT_PTR_NULL(f->next);
   CU_ASSERT_NOT_EQUAL(f->fd, -1);
@@ -4431,7 +4431,7 @@ static void test_putc_unlocked_writes_character_buffer_size_times_after_getc_unl
   retrolibc_getc_unlocked(f);
   retrolibc_getc_unlocked(f);
   for(i = 0; i < RETROLIBC_BUFSIZ; i++) r = retrolibc_putc_unlocked(buf[i + 3] = toupper(buf[i + 3]), f);
-  CU_ASSERT_EQUAL(r, 0);
+  CU_ASSERT_EQUAL(r, 'E');
   CU_ASSERT_PTR_NULL(f->prev);
   CU_ASSERT_PTR_NULL(f->next);
   CU_ASSERT_NOT_EQUAL(f->fd, -1);
