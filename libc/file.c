@@ -600,7 +600,7 @@ int pclose(FILE *f)
   status = pclose_unlocked(f);
   flags = f->flags;
   funlockfile(f);
-  if(status != EOF) __remove_file(f);
+  if(status != EOF && (flags & FILE_FLAG_FREEABLE) != 0) __remove_file(f);
   pthread_mutex_unlock(&__file_list_mutex);
   if(status != EOF) {
     pthread_mutex_destroy(&(f->mutex));
