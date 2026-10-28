@@ -21,8 +21,11 @@ static void initialize_retrolibc_file(void)
   retrolibc___first_file = NULL;
   retrolibc___last_file = NULL;
   retrolibc_stdin->fd = STDIN_FILENO;
+  retrolibc_stdin->cur_pos = retrolibc_stdin->end_pos = 0;
   retrolibc_stdout->fd = STDOUT_FILENO;
+  retrolibc_stdout->cur_pos = retrolibc_stdout->end_pos = 0;
   retrolibc_stderr->fd = STDERR_FILENO;
+  retrolibc_stderr->cur_pos = retrolibc_stderr->end_pos = 0;
 }
 
 static int initialize_file(void)
@@ -146,6 +149,488 @@ static void test___remove_file_removes_file_for_right(void)
   CU_ASSERT_PTR_EQUAL(retrolibc___last_file, &f2);
 }
 
+static void test___fflush_unlocked_sets_offset_for_fflush_flag_can_seek(void)
+{
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  retrolibc_getc_unlocked(f);
+  retrolibc_getc_unlocked(f);
+  retrolibc_getc_unlocked(f);
+  CU_ASSERT_EQUAL(retrolibc___fflush_unlocked(f, FFLUSH_FLAG_CAN_SEEK), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  CU_ASSERT_EQUAL(get_file_pos(f->fd), 3);
+  close(f->fd);
+  free(f->buf);
+  free(f);
+}
+
+static void test___fflush_unlocked_does_not_set_offset_for_0(void)
+{
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  retrolibc_getc_unlocked(f);
+  retrolibc_getc_unlocked(f);
+  retrolibc_getc_unlocked(f);
+  CU_ASSERT_EQUAL(retrolibc___fflush_unlocked(f, 0), 0)
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(memcmp(f->buf, "abcdef", 6), 0);
+  CU_ASSERT_EQUAL(f->cur_pos, 3);
+  CU_ASSERT_EQUAL(f->end_pos, 6);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  CU_ASSERT_EQUAL(get_file_pos(f->fd), 6);
+  close(f->fd);
+  free(f->buf);
+  free(f);
+}
+
+static void test___fflush_unlocked_does_not_set_offset_for_fflush_flag_can_write(void)
+{
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  retrolibc_getc_unlocked(f);
+  retrolibc_getc_unlocked(f);
+  retrolibc_getc_unlocked(f);
+  CU_ASSERT_EQUAL(retrolibc___fflush_unlocked(f, FFLUSH_FLAG_CAN_WRITE), 0)
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(memcmp(f->buf, "abcdef", 6), 0);
+  CU_ASSERT_EQUAL(f->cur_pos, 3);
+  CU_ASSERT_EQUAL(f->end_pos, 6);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  CU_ASSERT_EQUAL(get_file_pos(f->fd), 6);
+  close(f->fd);
+  free(f->buf);
+  free(f);
+}
+
+static void test___fflush_unlocked_writes_data_for_fflush_flag_can_write(void)
+{
+  static char s[RETROLIBC_BUFSIZ * 2];
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  f = retrolibc_fopen("test.txt", "w");
+  retrolibc_putc_unlocked('a', f);
+  retrolibc_putc_unlocked('b', f);
+  retrolibc_putc_unlocked('c', f);
+  CU_ASSERT_EQUAL(retrolibc___fflush_unlocked(f, FFLUSH_FLAG_CAN_WRITE), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f->buf);
+  free(f);
+  CU_ASSERT_FATAL(read_from_file("test.txt", s, RETROLIBC_BUFSIZ * 2));
+  CU_ASSERT_STRING_EQUAL(s, "abc");  
+}
+
+static void test___fflush_unlocked_does_not_write_data_for_0(void)
+{
+  static char s[RETROLIBC_BUFSIZ * 2];
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  f = retrolibc_fopen("test.txt", "w");
+  retrolibc_putc_unlocked('a', f);
+  retrolibc_putc_unlocked('b', f);
+  retrolibc_putc_unlocked('c', f);
+  CU_ASSERT_EQUAL(retrolibc___fflush_unlocked(f, 0), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER | FILE_FLAG_DATA_TO_WRITE);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(memcmp(f->buf, "abc", 3), 0);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 3);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f->buf);
+  free(f);
+  CU_ASSERT_FATAL(read_from_file("test.txt", s, RETROLIBC_BUFSIZ * 2));
+  CU_ASSERT_STRING_EQUAL(s, "");  
+}
+
+static void test___fflush_unlocked_does_not_write_data_for_fflush_flag_can_seek(void)
+{
+  static char s[RETROLIBC_BUFSIZ * 2];
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  f = retrolibc_fopen("test.txt", "w");
+  retrolibc_putc_unlocked('a', f);
+  retrolibc_putc_unlocked('b', f);
+  retrolibc_putc_unlocked('c', f);
+  CU_ASSERT_EQUAL(retrolibc___fflush_unlocked(f, FFLUSH_FLAG_CAN_SEEK), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER | FILE_FLAG_DATA_TO_WRITE);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(memcmp(f->buf, "abc", 3), 0);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 3);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f->buf);
+  free(f);
+  CU_ASSERT_FATAL(read_from_file("test.txt", s, RETROLIBC_BUFSIZ * 2));
+  CU_ASSERT_STRING_EQUAL(s, "");  
+}
+
+static void test___fflush_unlocked_sets_offset_for_fully_readed_buffer(void)
+{
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  retrolibc_getc_unlocked(f);
+  retrolibc_getc_unlocked(f);
+  retrolibc_getc_unlocked(f);
+  retrolibc_getc_unlocked(f);
+  retrolibc_getc_unlocked(f);
+  retrolibc_getc_unlocked(f);
+  CU_ASSERT_EQUAL(retrolibc___fflush_unlocked(f, FFLUSH_FLAG_CAN_SEEK), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 6);
+  CU_ASSERT_EQUAL(f->end_pos, 6);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  CU_ASSERT_EQUAL(get_file_pos(f->fd), 6);
+  close(f->fd);
+  free(f->buf);
+  free(f);
+}
+
+static void test___fflush_unlocked_sets_offset_for_empty_buffer(void)
+{
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  CU_ASSERT_EQUAL(retrolibc___fflush_unlocked(f, FFLUSH_FLAG_CAN_SEEK), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  CU_ASSERT_EQUAL(get_file_pos(f->fd), 0);
+  close(f->fd);
+  free(f->buf);
+  free(f);
+}
+
+static void test___fflush_unlocked_does_not_set_offset_for_unbuffered(void)
+{
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  free(f->buf);
+  f->flags &= ~FILE_FLAG_FREEABLE_BUFFER;
+  f->buf = NULL;
+  f->buf_size = 0;
+  retrolibc_getc_unlocked(f);
+  retrolibc_getc_unlocked(f);
+  retrolibc_getc_unlocked(f);
+  CU_ASSERT_EQUAL(retrolibc___fflush_unlocked(f, FFLUSH_FLAG_CAN_SEEK), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, 0);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  CU_ASSERT_EQUAL(get_file_pos(f->fd), 3);
+  close(f->fd);
+  free(f);
+}
+
+static void test___fflush_unlocked_writes_data_for_empty_buffer(void)
+{
+  static char s[RETROLIBC_BUFSIZ * 2];
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  f = retrolibc_fopen("test.txt", "w");
+  CU_ASSERT_EQUAL(retrolibc___fflush_unlocked(f, FFLUSH_FLAG_CAN_WRITE), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f->buf);
+  free(f);
+  CU_ASSERT_FATAL(read_from_file("test.txt", s, RETROLIBC_BUFSIZ * 2));
+  CU_ASSERT_STRING_EQUAL(s, "");  
+}
+
+static void test___fflush_unlocked_does_not_write_data_for_unbuffered(void)
+{
+  static char s[RETROLIBC_BUFSIZ * 2];
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  f = retrolibc_fopen("test.txt", "w");
+  free(f->buf);
+  f->flags &= ~FILE_FLAG_FREEABLE_BUFFER;
+  f->buf = NULL;
+  f->buf_size = 0;
+  retrolibc_putc_unlocked('a', f);
+  retrolibc_putc_unlocked('b', f);
+  retrolibc_putc_unlocked('c', f);
+  CU_ASSERT_EQUAL(retrolibc___fflush_unlocked(f, FFLUSH_FLAG_CAN_WRITE), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, 0);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f);
+  CU_ASSERT_FATAL(read_from_file("test.txt", s, RETROLIBC_BUFSIZ * 2));
+  CU_ASSERT_STRING_EQUAL(s, "abc");  
+}
+
+static void test___fflush_unlocked_complains_on_bad_fd_for_fflush_flag_can_seek(void)
+{
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  retrolibc_getc_unlocked(f);
+  retrolibc_getc_unlocked(f);
+  retrolibc_getc_unlocked(f);
+  close(f->fd);
+  errno = 0;
+  CU_ASSERT_EQUAL(retrolibc___fflush_unlocked(f, FFLUSH_FLAG_CAN_SEEK), RETROLIBC_EOF);
+  CU_ASSERT_EQUAL(errno, EBADF);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER | FILE_FLAG_ERROR);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 3);
+  CU_ASSERT_EQUAL(f->end_pos, 6);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  free(f->buf);
+  free(f);
+}
+
+static void test___fflush_unlocked_complains_on_bad_fd_for_fflush_flag_can_write(void)
+{
+  static char s[RETROLIBC_BUFSIZ * 2];
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  f = retrolibc_fopen("test.txt", "w");
+  retrolibc_putc_unlocked('a', f);
+  retrolibc_putc_unlocked('b', f);
+  retrolibc_putc_unlocked('c', f);
+  close(f->fd);
+  errno = 0;
+  CU_ASSERT_EQUAL(retrolibc___fflush_unlocked(f, FFLUSH_FLAG_CAN_WRITE), RETROLIBC_EOF);
+  CU_ASSERT_EQUAL(errno, EBADF);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER | FILE_FLAG_DATA_TO_WRITE | FILE_FLAG_ERROR);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(memcmp(f->buf, "abc", 3), 0);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 3);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  free(f->buf);
+  free(f);
+  CU_ASSERT_FATAL(read_from_file("test.txt", s, RETROLIBC_BUFSIZ * 2));
+  CU_ASSERT_STRING_EQUAL(s, "");  
+}
+
+static void test___fdclose_unlocked_closes_fd_for_file_to_read(void)
+{
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  retrolibc_getc_unlocked(f);
+  CU_ASSERT_NOT_EQUAL(retrolibc___fdclose_unlocked(f), RETROLIBC_EOF);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(memcmp(f->buf, "abcdef", 6), 0);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 1);
+  CU_ASSERT_EQUAL(f->end_pos, 6);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  free(f->buf);
+  free(f);
+}
+
+static void test___fdclose_unlocked_closes_fd_for_file_to_write(void)
+{
+  static char s[RETROLIBC_BUFSIZ * 2];
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  f = retrolibc_fopen("test.txt", "w");
+  retrolibc_putc_unlocked('a', f);
+  CU_ASSERT_NOT_EQUAL(retrolibc___fdclose_unlocked(f), RETROLIBC_EOF);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER | FILE_FLAG_DATA_TO_WRITE);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(memcmp(f->buf, "a", 1), 0);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 1);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  free(f->buf);
+  free(f);
+  CU_ASSERT_FATAL(read_from_file("test.txt", s, RETROLIBC_BUFSIZ * 2));
+  CU_ASSERT_STRING_EQUAL(s, "");  
+}
+
+static void test___fdclose_unlocked_closes_fd_and_waits_for_process_for_pipe(void)
+{
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  f = retrolibc_popen("echo -n", "r");
+  CU_ASSERT_PTR_NOT_NULL(f);
+  CU_ASSERT_NOT_EQUAL(retrolibc___fdclose_unlocked(f), RETROLIBC_EOF);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_NOT_EQUAL(f->pid, -1);
+  free(f->buf);
+  free(f);
+}
+
+static void test___fdclose_unlocked_complains_on_bad_fd(void)
+{
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  close(f->fd);
+  errno = 0;
+  CU_ASSERT_EQUAL(retrolibc___fdclose_unlocked(f), RETROLIBC_EOF);
+  CU_ASSERT_EQUAL(errno, EBADF);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  free(f->buf);
+  free(f);
+}
+
+static void test___init_file_initializes_file(void)
+{
+  retrolibc_FILE f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  retrolibc___init_file(&f);
+  CU_ASSERT_EQUAL(f.fd, -1);
+  CU_ASSERT_EQUAL(f.flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f.pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f.buf);
+  CU_ASSERT_EQUAL(f.buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f.cur_pos, 0);
+  CU_ASSERT_EQUAL(f.end_pos, 0);
+  CU_ASSERT_EQUAL(f.pid, -1);
+  free(f.buf);
+}
+
 static void test___mode_to_oflags_converts_mode_to_open_flags(void)
 {
   clean_current_dir();
@@ -183,6 +668,510 @@ static void test___mode_to_oflags_complains_on_invalid_mode(void)
   errno = 0;
   CU_ASSERT_EQUAL(retrolibc___mode_to_oflags("a++"), -1);
   CU_ASSERT_EQUAL(errno, EINVAL);
+}
+
+static void test_clearerr_clears_0(void)
+{
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  f->flags |= FILE_FLAG_EOF;
+  retrolibc_clearerr(f);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f->buf);
+  free(f);
+}
+
+static void test_clearerr_clears_eof_flag(void)
+{
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  f->flags |= FILE_FLAG_EOF;
+  retrolibc_clearerr(f);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f->buf);
+  free(f);
+}
+
+static void test_clearerr_clears_error_flag(void)
+{
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  f->flags |= FILE_FLAG_ERROR;
+  retrolibc_clearerr(f);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f->buf);
+  free(f);
+}
+
+static void test_clearerr_clears_eof_flag_and_error_flag(void)
+{
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  f->flags |= FILE_FLAG_EOF | FILE_FLAG_ERROR;
+  retrolibc_clearerr(f);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f->buf);
+  free(f);
+}
+
+static void test_fclose_closes_file_to_read(void)
+{
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  CU_ASSERT_EQUAL(retrolibc_fclose(f), 0);
+}
+
+static void test_fclose_closes_file_to_write(void)
+{
+  static char s[RETROLIBC_BUFSIZ * 2];
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  f = retrolibc_fopen("test.txt", "w");
+  CU_ASSERT_EQUAL(retrolibc_fclose(f), 0);
+  CU_ASSERT_FATAL(read_from_file("test.txt", s, RETROLIBC_BUFSIZ * 2));
+  CU_ASSERT_STRING_EQUAL(s, "");  
+}
+
+static void test_fclose_flushes(void)
+{
+  static char s[RETROLIBC_BUFSIZ * 2];
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  f = retrolibc_fopen("test.txt", "w");
+  retrolibc_putc_unlocked('a', f);
+  retrolibc_putc_unlocked('b', f);
+  retrolibc_putc_unlocked('c', f);
+  CU_ASSERT_EQUAL(retrolibc_fclose(f), 0);
+  CU_ASSERT_FATAL(read_from_file("test.txt", s, RETROLIBC_BUFSIZ * 2));
+  CU_ASSERT_STRING_EQUAL(s, "abc");  
+}
+
+static void test_fclose_complains_on_bad_fd(void)
+{
+  retrolibc_FILE *f;
+  int r;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  close(f->fd);
+  errno = 0;
+  r = retrolibc_fclose(f);
+  CU_ASSERT_EQUAL(r, RETROLIBC_EOF);
+  CU_ASSERT_EQUAL(errno, EBADF);
+  if(r == RETROLIBC_EOF) {
+    free(f->buf);
+    free(f);
+  }
+}
+
+static void test_fdopen_opens_file_with_fd_to_read(void)
+{
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  f = retrolibc_fdopen(5, "r");
+  CU_ASSERT_PTR_NOT_NULL(f);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_EQUAL(f->fd, 5);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  free(f->buf);
+  free(f);
+}
+
+static void test_fdopen_opens_file_with_fd_to_write(void)
+{
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  f = retrolibc_fdopen(5, "w");
+  CU_ASSERT_PTR_NOT_NULL(f);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_EQUAL(f->fd, 5);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  free(f->buf);
+  free(f);
+}
+
+static void test_feof_returns_0(void)
+{
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  CU_ASSERT_EQUAL(retrolibc_feof(f), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f->buf);
+  free(f);
+}
+
+static void test_feof_returns_1(void)
+{
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  f->flags |= FILE_FLAG_EOF;
+  CU_ASSERT_EQUAL(retrolibc_feof(f), 1);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER | FILE_FLAG_EOF);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f->buf);
+  free(f);
+}
+
+static void test_feof_returns_0_for_error_flag(void)
+{
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  f->flags |= FILE_FLAG_ERROR;
+  CU_ASSERT_EQUAL(retrolibc_feof(f), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER | FILE_FLAG_ERROR);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f->buf);
+  free(f);
+}
+
+static void test_ferror_returns_0(void)
+{
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  CU_ASSERT_EQUAL(retrolibc_ferror(f), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f->buf);
+  free(f);
+}
+
+static void test_ferror_returns_1(void)
+{
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  f->flags |= FILE_FLAG_ERROR;
+  CU_ASSERT_EQUAL(retrolibc_ferror(f), 1);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER | FILE_FLAG_ERROR);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f->buf);
+  free(f);
+}
+
+static void test_ferror_returns_0_for_eof_flag(void)
+{
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  f->flags |= FILE_FLAG_EOF;
+  CU_ASSERT_EQUAL(retrolibc_ferror(f), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER | FILE_FLAG_EOF);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f->buf);
+  free(f);
+}
+
+static void test_fflush_sets_offset(void)
+{
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  retrolibc_getc_unlocked(f);
+  retrolibc_getc_unlocked(f);
+  retrolibc_getc_unlocked(f);
+  CU_ASSERT_EQUAL(retrolibc_fflush(f), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  CU_ASSERT_EQUAL(get_file_pos(f->fd), 3);
+  close(f->fd);
+  free(f->buf);
+  free(f);
+}
+
+static void test_fflush_writes_data(void)
+{
+  static char s[RETROLIBC_BUFSIZ * 2];
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  f = retrolibc_fopen("test.txt", "w");
+  retrolibc_putc_unlocked('a', f);
+  retrolibc_putc_unlocked('b', f);
+  retrolibc_putc_unlocked('c', f);
+  CU_ASSERT_EQUAL(retrolibc_fflush(f), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f->buf);
+  free(f);
+  CU_ASSERT_FATAL(read_from_file("test.txt", s, RETROLIBC_BUFSIZ * 2));
+  CU_ASSERT_STRING_EQUAL(s, "abc");  
+}
+
+static void test_fflush_flushes_all_files(void)
+{
+  static char s[RETROLIBC_BUFSIZ * 2];
+  retrolibc_FILE *f;
+  retrolibc_FILE *f2;
+  retrolibc_FILE *f3;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  retrolibc_stdin->fd = creat("test_stdin.txt", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+  retrolibc_putc_unlocked('A', retrolibc_stdin);
+  retrolibc_putc_unlocked('B', retrolibc_stdin);
+  retrolibc_putc_unlocked('C', retrolibc_stdin);
+  retrolibc_stdout->fd = creat("test_stdout.txt", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+  retrolibc_putc_unlocked('D', retrolibc_stdout);
+  retrolibc_putc_unlocked('E', retrolibc_stdout);
+  retrolibc_putc_unlocked('F', retrolibc_stdout);
+  retrolibc_stderr->fd = creat("test_stderr.txt", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+  retrolibc_putc_unlocked('G', retrolibc_stderr);
+  retrolibc_putc_unlocked('H', retrolibc_stderr);
+  retrolibc_putc_unlocked('I', retrolibc_stderr);
+  f = retrolibc_fopen("test.txt", "w");
+  retrolibc_putc_unlocked('a', f);
+  retrolibc_putc_unlocked('b', f);
+  retrolibc_putc_unlocked('c', f);
+  f2 = retrolibc_fopen("test2.txt", "w");
+  retrolibc_putc_unlocked('d', f2);
+  retrolibc_putc_unlocked('e', f2);
+  retrolibc_putc_unlocked('f', f2);
+  f3 = retrolibc_fopen("test3.txt", "w");
+  retrolibc_putc_unlocked('g', f3);
+  retrolibc_putc_unlocked('h', f3);
+  retrolibc_putc_unlocked('i', f3);
+  CU_ASSERT_EQUAL(retrolibc_fflush(NULL), 0);
+  close(f3->fd);
+  free(f3->buf);
+  free(f3);
+  close(f2->fd);
+  free(f2->buf);
+  free(f2);
+  close(f->fd);
+  free(f->buf);
+  free(f);
+  close(retrolibc_stderr->fd);
+  close(retrolibc_stdout->fd);
+  close(retrolibc_stdin->fd);
+  CU_ASSERT_FATAL(read_from_file("test_stdin.txt", s, RETROLIBC_BUFSIZ * 2));
+  CU_ASSERT_STRING_EQUAL(s, "ABC");  
+  CU_ASSERT_FATAL(read_from_file("test_stdout.txt", s, RETROLIBC_BUFSIZ * 2));
+  CU_ASSERT_STRING_EQUAL(s, "DEF");  
+  CU_ASSERT_FATAL(read_from_file("test_stderr.txt", s, RETROLIBC_BUFSIZ * 2));
+  CU_ASSERT_STRING_EQUAL(s, "GHI");  
+  CU_ASSERT_FATAL(read_from_file("test.txt", s, RETROLIBC_BUFSIZ * 2));
+  CU_ASSERT_STRING_EQUAL(s, "abc");  
+  CU_ASSERT_FATAL(read_from_file("test2.txt", s, RETROLIBC_BUFSIZ * 2));
+  CU_ASSERT_STRING_EQUAL(s, "def");  
+  CU_ASSERT_FATAL(read_from_file("test3.txt", s, RETROLIBC_BUFSIZ * 2));
+  CU_ASSERT_STRING_EQUAL(s, "ghi");  
+}
+
+static void test_fflush_complains_on_bad_fd(void)
+{
+  static char s[RETROLIBC_BUFSIZ * 2];
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  f = retrolibc_fopen("test.txt", "w");
+  retrolibc_putc_unlocked('a', f);
+  retrolibc_putc_unlocked('b', f);
+  retrolibc_putc_unlocked('c', f);
+  close(f->fd);
+  errno = 0;
+  CU_ASSERT_EQUAL(retrolibc_fflush(f), RETROLIBC_EOF);
+  CU_ASSERT_EQUAL(errno, EBADF);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER | FILE_FLAG_DATA_TO_WRITE | FILE_FLAG_ERROR);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(memcmp(f->buf, "abc", 3), 0);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 3);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  free(f->buf);
+  free(f);
+  CU_ASSERT_FATAL(read_from_file("test.txt", s, RETROLIBC_BUFSIZ * 2));
+  CU_ASSERT_STRING_EQUAL(s, "");  
+}
+
+static void test_fileno_returns_fd(void)
+{
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  CU_ASSERT_EQUAL(retrolibc_fileno(f), f->fd);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f->buf);
+  free(f);
 }
 
 static void test_fopen_opens_file_to_read(void)
@@ -878,6 +1867,149 @@ static void test_fread_complains_on_bad_fd_for_unbuffered(void)
   CU_ASSERT_EQUAL(f->end_pos, 0);
   CU_ASSERT_EQUAL(f->pid, -1);
   free(f);
+}
+
+static void test_freopen_closes_old_file_and_opens_new_file_to_read(void)
+{
+  char s[RETROLIBC_BUFSIZ * 2];
+  retrolibc_FILE *f;
+  retrolibc_FILE *f2;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test2.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "w");
+  f2 = retrolibc_freopen(f, "test2.txt", "r");
+  CU_ASSERT_PTR_EQUAL(f2, f);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f->buf);
+  free(f);
+  CU_ASSERT_FATAL(read_from_file("test.txt", s, RETROLIBC_BUFSIZ * 2));
+  CU_ASSERT_STRING_EQUAL(s, "");  
+}
+
+static void test_freopen_closes_old_file_and_opens_new_file_to_write(void)
+{
+  char s[RETROLIBC_BUFSIZ * 2];
+  retrolibc_FILE *f;
+  retrolibc_FILE *f2;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  f2 = retrolibc_freopen(f, "test2.txt", "w");
+  CU_ASSERT_PTR_EQUAL(f2, f);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f->buf);
+  free(f);
+  CU_ASSERT_FATAL(read_from_file("test2.txt", s, RETROLIBC_BUFSIZ * 2));
+  CU_ASSERT_STRING_EQUAL(s, "");  
+}
+
+static void test_freopen_flushes(void)
+{
+  char s[RETROLIBC_BUFSIZ * 2];
+  retrolibc_FILE *f;
+  retrolibc_FILE *f2;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test2.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "w");
+  retrolibc_putc_unlocked('a', f);
+  retrolibc_putc_unlocked('b', f);
+  retrolibc_putc_unlocked('c', f);
+  f2 = retrolibc_freopen(f, "test2.txt", "r");
+  CU_ASSERT_PTR_EQUAL(f2, f);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f->buf);
+  free(f);
+  CU_ASSERT_FATAL(read_from_file("test.txt", s, RETROLIBC_BUFSIZ * 2));
+  CU_ASSERT_STRING_EQUAL(s, "abc");  
+}
+
+static void test_freopen_opens_file_after_not_found(void)
+{
+  char s[RETROLIBC_BUFSIZ * 2];
+  retrolibc_FILE *f;
+  retrolibc_FILE *f2;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test3.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "w");
+  retrolibc_freopen(f, "test2.txt", "r");
+  f2 = retrolibc_freopen(f, "test3.txt", "r");
+  CU_ASSERT_PTR_NOT_NULL(f2);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f->buf);
+  free(f);
+  CU_ASSERT_FATAL(read_from_file("test.txt", s, RETROLIBC_BUFSIZ * 2));
+  CU_ASSERT_STRING_EQUAL(s, "");
+}
+
+static void test_freopen_complains_on_not_found(void)
+{
+  char s[RETROLIBC_BUFSIZ * 2];
+  retrolibc_FILE *f;
+  retrolibc_FILE *f2;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  f = retrolibc_fopen("test.txt", "w");
+  f2 = retrolibc_freopen(f, "test2.txt", "r");
+  CU_ASSERT_PTR_NULL(f2);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER | FILE_FLAG_ERROR);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f->buf);
+  free(f);
+  CU_ASSERT_FATAL(read_from_file("test.txt", s, RETROLIBC_BUFSIZ * 2));
+  CU_ASSERT_STRING_EQUAL(s, "");  
 }
 
 static void test_fseeko_sets_offset_for_seek_set(void)
@@ -3444,6 +4576,378 @@ static void test_putc_unlocked_complains_on_bad_fd_for_unbuffered(void)
   CU_ASSERT_STRING_EQUAL(s, "");
 }
 
+static void test_setvbuf_sets_static_buffer(void)
+{
+  static char buf[RETROLIBC_BUFSIZ * 2];
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  CU_ASSERT_EQUAL(retrolibc_setvbuf(f, buf, RETROLIBC__IOFBF, RETROLIBC_BUFSIZ * 2), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_EQUAL(f->buf, buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ * 2);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f);
+}
+
+static void test_setvbuf_sets_static_buffer_with_line_buffered(void)
+{
+  static char buf[RETROLIBC_BUFSIZ * 2];
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  CU_ASSERT_EQUAL(retrolibc_setvbuf(f, buf, RETROLIBC__IOLBF, RETROLIBC_BUFSIZ * 2), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_LINE_BUFFERED);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_EQUAL(f->buf, buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ * 2);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f);
+}
+
+static void test_setvbuf_sets_allocated_buffer(void)
+{
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  CU_ASSERT_EQUAL(retrolibc_setvbuf(f, NULL, RETROLIBC__IOFBF, RETROLIBC_BUFSIZ * 2), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ * 2);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f->buf);
+  free(f);
+}
+
+static void test_setvbuf_sets_allocated_buffer_with_line_buffered(void)
+{
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  CU_ASSERT_EQUAL(retrolibc_setvbuf(f, NULL, RETROLIBC__IOLBF, RETROLIBC_BUFSIZ * 2), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER | FILE_FLAG_LINE_BUFFERED);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ * 2);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f->buf);
+  free(f);
+}
+
+static void test_setvbuf_unsets_buffer(void)
+{
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  CU_ASSERT_EQUAL(retrolibc_setvbuf(f, NULL, RETROLIBC__IONBF, RETROLIBC_BUFSIZ * 2), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, 0);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f);
+}
+
+static void test_setvbuf_sets_static_buffer_after_setting_static_buffer(void)
+{
+  static char buf[RETROLIBC_BUFSIZ * 2];
+  static char buf2[RETROLIBC_BUFSIZ * 3];
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  CU_ASSERT_EQUAL(retrolibc_setvbuf(f, buf, RETROLIBC__IOFBF, RETROLIBC_BUFSIZ * 2), 0);
+  CU_ASSERT_EQUAL(retrolibc_setvbuf(f, buf2, RETROLIBC__IOFBF, RETROLIBC_BUFSIZ * 3), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_EQUAL(f->buf, buf2);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ * 3);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f);
+}
+
+static void test_setvbuf_sets_static_buffer_after_unsetting_buffer(void)
+{
+  static char buf[RETROLIBC_BUFSIZ * 2];
+  static char buf2[RETROLIBC_BUFSIZ * 3];
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  CU_ASSERT_EQUAL(retrolibc_setvbuf(f, buf, RETROLIBC__IONBF, RETROLIBC_BUFSIZ * 2), 0);
+  CU_ASSERT_EQUAL(retrolibc_setvbuf(f, buf2, RETROLIBC__IOFBF, RETROLIBC_BUFSIZ * 3), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_EQUAL(f->buf, buf2);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ * 3);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f);
+}
+
+static void test_setvbuf_sets_allocated_buffer_after_setting_static_buffer(void)
+{
+  static char buf[RETROLIBC_BUFSIZ * 2];
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  CU_ASSERT_EQUAL(retrolibc_setvbuf(f, buf, RETROLIBC__IOFBF, RETROLIBC_BUFSIZ * 2), 0);
+  CU_ASSERT_EQUAL(retrolibc_setvbuf(f, NULL, RETROLIBC__IOFBF, RETROLIBC_BUFSIZ * 3), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ * 3);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f);
+}
+
+static void test_setvbuf_sets_allocated_buffer_after_unsetting_buffer(void)
+{
+  static char buf[RETROLIBC_BUFSIZ * 2];
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  CU_ASSERT_EQUAL(retrolibc_setvbuf(f, buf, RETROLIBC__IONBF, RETROLIBC_BUFSIZ * 2), 0);
+  CU_ASSERT_EQUAL(retrolibc_setvbuf(f, NULL, RETROLIBC__IOFBF, RETROLIBC_BUFSIZ * 3), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE | FILE_FLAG_FREEABLE_BUFFER);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NOT_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ * 3);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f);
+}
+
+static void test_setvbuf_unsets_buffer_after_setting_static_buffer(void)
+{
+  static char buf[RETROLIBC_BUFSIZ * 2];
+  static char buf2[RETROLIBC_BUFSIZ * 3];
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  CU_ASSERT_EQUAL(retrolibc_setvbuf(f, buf, RETROLIBC__IOFBF, RETROLIBC_BUFSIZ * 2), 0);
+  CU_ASSERT_EQUAL(retrolibc_setvbuf(f, buf2, RETROLIBC__IONBF, RETROLIBC_BUFSIZ * 3), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, 0);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f);
+}
+
+static void test_setvbuf_unsets_buffer_after_unsetting_buffer(void)
+{
+  static char buf[RETROLIBC_BUFSIZ * 2];
+  static char buf2[RETROLIBC_BUFSIZ * 3];
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  CU_ASSERT_EQUAL(retrolibc_setvbuf(f, buf, RETROLIBC__IONBF, RETROLIBC_BUFSIZ * 2), 0);
+  CU_ASSERT_EQUAL(retrolibc_setvbuf(f, buf2, RETROLIBC__IONBF, RETROLIBC_BUFSIZ * 3), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, 0);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f);
+}
+
+static void test_setvbuf_sets_offset_for_setting(void)
+{
+  static char buf[RETROLIBC_BUFSIZ * 2];
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  retrolibc_getc_unlocked(f);
+  retrolibc_getc_unlocked(f);
+  retrolibc_getc_unlocked(f);
+  CU_ASSERT_EQUAL(retrolibc_setvbuf(f, buf, RETROLIBC__IOFBF, RETROLIBC_BUFSIZ * 2), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_EQUAL(f->buf, buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ * 2);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  CU_ASSERT_EQUAL(get_file_pos(f->fd), 3);
+  close(f->fd);
+  free(f);
+}
+
+static void test_setvbuf_sets_offset_for_unsetting(void)
+{
+  static char buf[RETROLIBC_BUFSIZ * 2];
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
+  f = retrolibc_fopen("test.txt", "r");
+  retrolibc_getc_unlocked(f);
+  retrolibc_getc_unlocked(f);
+  retrolibc_getc_unlocked(f);
+  CU_ASSERT_EQUAL(retrolibc_setvbuf(f, buf, RETROLIBC__IONBF, RETROLIBC_BUFSIZ * 2), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, 0);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  CU_ASSERT_EQUAL(get_file_pos(f->fd), 3);
+  close(f->fd);
+  free(f);
+}
+
+static void test_setvbuf_flushes_for_setting(void)
+{
+  static char buf[RETROLIBC_BUFSIZ * 2];
+  static char s[RETROLIBC_BUFSIZ * 2];
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  f = retrolibc_fopen("test.txt", "w");
+  retrolibc_putc_unlocked('a', f);
+  retrolibc_putc_unlocked('b', f);
+  retrolibc_putc_unlocked('c', f);
+  CU_ASSERT_EQUAL(retrolibc_setvbuf(f, buf, RETROLIBC__IOFBF, RETROLIBC_BUFSIZ * 2), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_EQUAL(f->buf, buf);
+  CU_ASSERT_EQUAL(f->buf_size, RETROLIBC_BUFSIZ * 2);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f);
+  CU_ASSERT_FATAL(read_from_file("test.txt", s, RETROLIBC_BUFSIZ * 2));
+  CU_ASSERT_STRING_EQUAL(s, "abc");
+}
+
+static void test_setvbuf_flushes_for_unsetting(void)
+{
+  static char buf[RETROLIBC_BUFSIZ * 2];
+  static char s[RETROLIBC_BUFSIZ * 2];
+  retrolibc_FILE *f;
+  clean_current_dir();
+  initialize_retrolibc_file();
+  f = retrolibc_fopen("test.txt", "w");
+  retrolibc_putc_unlocked('a', f);
+  retrolibc_putc_unlocked('b', f);
+  retrolibc_putc_unlocked('c', f);
+  CU_ASSERT_EQUAL(retrolibc_setvbuf(f, buf, RETROLIBC__IONBF, RETROLIBC_BUFSIZ * 2), 0);
+  CU_ASSERT_PTR_NULL(f->prev);
+  CU_ASSERT_PTR_NULL(f->next);
+  CU_ASSERT_NOT_EQUAL(f->fd, -1);
+  CU_ASSERT_EQUAL(f->flags, FILE_FLAG_FREEABLE);
+  CU_ASSERT_EQUAL(f->pushed_char, -1);
+  CU_ASSERT_PTR_NULL(f->buf);
+  CU_ASSERT_EQUAL(f->buf_size, 0);
+  CU_ASSERT_EQUAL(f->cur_pos, 0);
+  CU_ASSERT_EQUAL(f->end_pos, 0);
+  CU_ASSERT_EQUAL(f->pid, -1);
+  close(f->fd);
+  free(f);
+  CU_ASSERT_FATAL(read_from_file("test.txt", s, RETROLIBC_BUFSIZ * 2));
+  CU_ASSERT_STRING_EQUAL(s, "abc");
+}
+
 static void test_ungetc_pushes_character_back(void)
 {
   retrolibc_FILE *f;
@@ -3611,8 +5115,47 @@ int add_file_suite(void)
   if(CU_add_test(suite, "__remove_file removes file for left", test___remove_file_removes_file_for_left) == NULL) return -1;
   if(CU_add_test(suite, "__remove_file removes file for center", test___remove_file_removes_file_for_center) == NULL) return -1;
   if(CU_add_test(suite, "__remove_file removes file for right", test___remove_file_removes_file_for_right) == NULL) return -1;
+  if(CU_add_test(suite, "__fflush_unlocked sets offset for FFLUSH_FLAG_CAN_SEEK", test___fflush_unlocked_sets_offset_for_fflush_flag_can_seek) == NULL) return -1;
+  if(CU_add_test(suite, "__fflush_unlocked doesn't set offset for 0", test___fflush_unlocked_does_not_set_offset_for_0) == NULL) return -1;
+  if(CU_add_test(suite, "__fflush_unlocked doesn't set offset for FFLUSH_FLAG_CAN_WRITE", test___fflush_unlocked_does_not_set_offset_for_fflush_flag_can_write) == NULL) return -1;
+  if(CU_add_test(suite, "__fflush_unlocked writes data for FFLUSH_FLAG_CAN_WRITE", test___fflush_unlocked_writes_data_for_fflush_flag_can_write) == NULL) return -1;
+  if(CU_add_test(suite, "__fflush_unlocked doesn't write data for 0", test___fflush_unlocked_does_not_write_data_for_0) == NULL) return -1;
+  if(CU_add_test(suite, "__fflush_unlocked doesn't write data for FFLUSH_FLAG_CAN_SEEK", test___fflush_unlocked_does_not_write_data_for_fflush_flag_can_seek) == NULL) return -1;
+  if(CU_add_test(suite, "__fflush_unlocked sets offset for fully readed buffer", test___fflush_unlocked_sets_offset_for_fully_readed_buffer) == NULL) return -1;
+  if(CU_add_test(suite, "__fflush_unlocked sets offset for empty buffer", test___fflush_unlocked_sets_offset_for_empty_buffer) == NULL) return -1;
+  if(CU_add_test(suite, "__fflush_unlocked doesn't set offset for unbuffered", test___fflush_unlocked_does_not_set_offset_for_unbuffered) == NULL) return -1;
+  if(CU_add_test(suite, "__fflush_unlocked writes data for empty buffer", test___fflush_unlocked_writes_data_for_empty_buffer) == NULL) return -1;
+  if(CU_add_test(suite, "__fflush_unlocked does not write data for unbuffered", test___fflush_unlocked_does_not_write_data_for_unbuffered) == NULL) return -1;
+  if(CU_add_test(suite, "__fflush_unlocked complains on bad fd for FFLUSH_FLAG_CAN_SEEK", test___fflush_unlocked_complains_on_bad_fd_for_fflush_flag_can_seek) == NULL) return -1;
+  if(CU_add_test(suite, "__fflush_unlocked complains on bad fd for FFLUSH_FLAG_CAN_WRITE", test___fflush_unlocked_complains_on_bad_fd_for_fflush_flag_can_write) == NULL) return -1;
+  if(CU_add_test(suite, "__fdclose_unlocked closes fd for file to read", test___fdclose_unlocked_closes_fd_for_file_to_read) == NULL) return -1;
+  if(CU_add_test(suite, "__fdclose_unlocked closes fd for file to write", test___fdclose_unlocked_closes_fd_for_file_to_write) == NULL) return -1;
+  if(CU_add_test(suite, "__fdclose_unlocked closes fd and waits for process for pipe", test___fdclose_unlocked_closes_fd_and_waits_for_process_for_pipe) == NULL) return -1;
+  if(CU_add_test(suite, "__fdclose_unlocked complains on bad fd", test___fdclose_unlocked_complains_on_bad_fd) == NULL) return -1;
+  if(CU_add_test(suite, "__init_file initializes file", test___init_file_initializes_file) == NULL) return -1;
   if(CU_add_test(suite, "__mode_to_oflags converts mode to open flags", test___mode_to_oflags_converts_mode_to_open_flags) == NULL) return -1;
   if(CU_add_test(suite, "__mode_to_oflags complains on invalid mode", test___mode_to_oflags_complains_on_invalid_mode) == NULL) return -1;
+  if(CU_add_test(suite, "clearerr clears 0", test_clearerr_clears_0) == NULL) return -1;
+  if(CU_add_test(suite, "clearerr clears EOF flag", test_clearerr_clears_eof_flag) == NULL) return -1;
+  if(CU_add_test(suite, "clearerr clears error flag", test_clearerr_clears_error_flag) == NULL) return -1;
+  if(CU_add_test(suite, "clearerr clears EOF flag and error flag", test_clearerr_clears_eof_flag_and_error_flag) == NULL) return -1;
+  if(CU_add_test(suite, "fclose closes file to read", test_fclose_closes_file_to_read) == NULL) return -1;
+  if(CU_add_test(suite, "fclose closes file to write", test_fclose_closes_file_to_write) == NULL) return -1;
+  if(CU_add_test(suite, "fclose closes flushes", test_fclose_flushes) == NULL) return -1;
+  if(CU_add_test(suite, "fclose complains on bad fd", test_fclose_complains_on_bad_fd) == NULL) return -1;
+  if(CU_add_test(suite, "fdopen opens file with fd to read", test_fdopen_opens_file_with_fd_to_read) == NULL) return -1;
+  if(CU_add_test(suite, "fdopen opens file with fd to read", test_fdopen_opens_file_with_fd_to_write) == NULL) return -1;
+  if(CU_add_test(suite, "feof returns 0", test_feof_returns_0) == NULL) return -1;
+  if(CU_add_test(suite, "feof returns 1", test_feof_returns_1) == NULL) return -1;
+  if(CU_add_test(suite, "feof returns 0 for error flag", test_feof_returns_0_for_error_flag) == NULL) return -1;
+  if(CU_add_test(suite, "ferror returns 0", test_ferror_returns_0) == NULL) return -1;
+  if(CU_add_test(suite, "ferror returns 1", test_ferror_returns_1) == NULL) return -1;
+  if(CU_add_test(suite, "ferror returns 0 for EOF flag", test_ferror_returns_0_for_eof_flag) == NULL) return -1;
+  if(CU_add_test(suite, "fflush sets offset", test_fflush_sets_offset) == NULL) return -1;
+  if(CU_add_test(suite, "fflush writes data", test_fflush_writes_data) == NULL) return -1;
+  if(CU_add_test(suite, "fflush flushes all files", test_fflush_flushes_all_files) == NULL) return -1;
+  if(CU_add_test(suite, "fileno returns fd", test_fileno_returns_fd) == NULL) return -1;
+  if(CU_add_test(suite, "fflush complains on bad fd", test_fflush_complains_on_bad_fd) == NULL) return -1;
   if(CU_add_test(suite, "fopen opens file to read", test_fopen_opens_file_to_read) == NULL) return -1;
   if(CU_add_test(suite, "fopen opens file to write", test_fopen_opens_file_to_write) == NULL) return -1;
   if(CU_add_test(suite, "fopen opens complains on not found", test_fopen_complains_on_not_found) == NULL) return -1;
@@ -3639,6 +5182,11 @@ int add_file_suite(void)
   if(CU_add_test(suite, "fread complains on bad fd", test_fread_complains_on_bad_fd) == NULL) return -1;
   if(CU_add_test(suite, "fread complains on bad fd for line buffered", test_fread_complains_on_bad_fd_for_line_buffered) == NULL) return -1;
   if(CU_add_test(suite, "fread complains on bad fd for unbuffered", test_fread_complains_on_bad_fd_for_unbuffered) == NULL) return -1;
+  if(CU_add_test(suite, "freopen closes old file and opens new file to read", test_freopen_closes_old_file_and_opens_new_file_to_read) == NULL) return -1;
+  if(CU_add_test(suite, "freopen closes old file and opens new file to write", test_freopen_closes_old_file_and_opens_new_file_to_write) == NULL) return -1;
+  if(CU_add_test(suite, "freopen flushes", test_freopen_flushes) == NULL) return -1;
+  if(CU_add_test(suite, "freopen complains on not found", test_freopen_complains_on_not_found) == NULL) return -1;
+  if(CU_add_test(suite, "freopen opens file after not found", test_freopen_opens_file_after_not_found) == NULL) return -1;
   if(CU_add_test(suite, "fseeko sets offset for SEEK_SET", test_fseeko_sets_offset_for_seek_set) == NULL) return -1;
   if(CU_add_test(suite, "fseeko sets offset for SEEK_CUR and positive", test_fseeko_sets_offset_for_seek_cur_and_positive) == NULL) return -1;
   if(CU_add_test(suite, "fseeko sets offset for SEEK_CUR and negative", test_fseeko_sets_offset_for_seek_cur_and_negative) == NULL) return -1;
@@ -3721,6 +5269,21 @@ int add_file_suite(void)
   if(CU_add_test(suite, "putc_unlocked complains on bad fd", test_putc_unlocked_complains_on_bad_fd) == NULL) return -1;
   if(CU_add_test(suite, "putc_unlocked complains on bad fd for line buffered", test_putc_unlocked_complains_on_bad_fd_for_line_buffered) == NULL) return -1;
   if(CU_add_test(suite, "putc_unlocked complains on bad fd for unbuffered", test_putc_unlocked_complains_on_bad_fd_for_unbuffered) == NULL) return -1;
+  if(CU_add_test(suite, "setvbuf sets static buffer", test_setvbuf_sets_static_buffer) == NULL) return -1;
+  if(CU_add_test(suite, "setvbuf sets static buffer with line buffered", test_setvbuf_sets_static_buffer_with_line_buffered) == NULL) return -1;
+  if(CU_add_test(suite, "setvbuf sets allocated buffer", test_setvbuf_sets_allocated_buffer) == NULL) return -1;
+  if(CU_add_test(suite, "setvbuf sets allocated buffer with line buffered", test_setvbuf_sets_allocated_buffer_with_line_buffered) == NULL) return -1;
+  if(CU_add_test(suite, "setvbuf unsets buffer", test_setvbuf_unsets_buffer) == NULL) return -1;
+  if(CU_add_test(suite, "setvbuf sets static buffer after setting static buffer", test_setvbuf_sets_static_buffer_after_setting_static_buffer) == NULL) return -1;
+  if(CU_add_test(suite, "setvbuf sets static buffer after unsetting buffer", test_setvbuf_sets_static_buffer_after_unsetting_buffer) == NULL) return -1;
+  if(CU_add_test(suite, "setvbuf sets static buffer after setting static buffer", test_setvbuf_sets_allocated_buffer_after_setting_static_buffer) == NULL) return -1;
+  if(CU_add_test(suite, "setvbuf sets static buffer after unsetting buffer", test_setvbuf_sets_allocated_buffer_after_unsetting_buffer) == NULL) return -1;
+  if(CU_add_test(suite, "setvbuf unsets buffer after setting static buffer", test_setvbuf_unsets_buffer_after_setting_static_buffer) == NULL) return -1;
+  if(CU_add_test(suite, "setvbuf unsets buffer after unsetting buffer", test_setvbuf_unsets_buffer_after_unsetting_buffer) == NULL) return -1;
+  if(CU_add_test(suite, "setvbuf sets offset for setting", test_setvbuf_sets_offset_for_setting) == NULL) return -1;
+  if(CU_add_test(suite, "setvbuf sets offset for unsetting", test_setvbuf_sets_offset_for_unsetting) == NULL) return -1;
+  if(CU_add_test(suite, "setvbuf flushes for setting", test_setvbuf_flushes_for_setting) == NULL) return -1;
+  if(CU_add_test(suite, "setvbuf flushes for unsetting", test_setvbuf_flushes_for_unsetting) == NULL) return -1;
   if(CU_add_test(suite, "ungetc pushes character back", test_ungetc_pushes_character_back) == NULL) return -1;
   if(CU_add_test(suite, "ungetc pushes character back 3 times", test_ungetc_pushes_character_back_3_times) == NULL) return -1;
   if(CU_add_test(suite, "ungetc stores character to pushed character", test_ungetc_stores_character_to_pushed_character) == NULL) return -1;

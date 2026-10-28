@@ -191,8 +191,8 @@ int retrolibc_ungetc(int c, retrolibc_FILE *f);
 #undef _IOLBF
 #undef _IONBF
 #define _IOFBF          RETROLIBC__IOFBF
-#define _IOLBF          RETROLIBC__IOFBF
-#define _IONBF          RETROLIBC__IOFBF
+#define _IOLBF          RETROLIBC__IOLBF
+#define _IONBF          RETROLIBC__IONBF
 
 #undef EOF
 #define EOF             RETROLIBC_EOF

@@ -157,7 +157,9 @@ int __fflush_unlocked(struct __FILE *f, int flags)
 int __fdclose_unlocked(struct __FILE *f)
 {
   int status = 0;
-  if(close(f->fd) == -1) return EOF;
+  if(f->fd != -1) {
+    if(close(f->fd) == -1) return EOF;
+  }
   if(f->pid != -1) {
     pid_t pid;
     int saved_errno = errno;
@@ -309,7 +311,7 @@ int fflush(FILE *f)
       if(__fflush_unlocked(f, FFLUSH_FLAG_CAN_SEEK | FFLUSH_FLAG_CAN_WRITE) == EOF) r = EOF;
       funlockfile(f);
     }
-    pthread_mutex_lock(&__file_list_mutex);
+    pthread_mutex_unlock(&__file_list_mutex);
     return r;
   }
 }
@@ -412,7 +414,7 @@ static FILE *freopen_unlocked(FILE *f, const char *filename, const char *mode)
     f->flags |= FILE_FLAG_ERROR;
     return NULL;
   }
-  return NULL;
+  return f;
 }
 
 FILE *freopen(FILE *f, const char *filename, const char *mode)
@@ -694,20 +696,24 @@ int putc_unlocked(int c, FILE *f)
 int setvbuf_unlocked(FILE *f, char *buf, int type, size_t size)
 {
   if(__fflush_unlocked(f, FFLUSH_FLAG_CAN_SEEK | FFLUSH_FLAG_CAN_WRITE) == EOF) return -1;
-  if(f->buf != NULL && (f->flags & FILE_FLAG_FREEABLE_BUFFER) != 0) free(f->buf);
   if(type == _IOFBF || type == _IOLBF) {
-    int flags = 0;
+    int flags = f->flags & ~FILE_FLAG_DATA_TO_WRITE;
     if(type == _IOLBF) flags |= FILE_FLAG_LINE_BUFFERED;
     if(buf == NULL) {
       buf = malloc(size);
       if(buf == NULL) return -1;
+      flags |= FILE_FLAG_FREEABLE_BUFFER;
+    } else {
+      flags &= ~FILE_FLAG_FREEABLE_BUFFER;
     }
-    f->flags |= flags;
+    if(f->buf != NULL && (f->flags & FILE_FLAG_FREEABLE_BUFFER) != 0) free(f->buf);
+    f->flags = flags;
     f->buf = buf;
     f->buf_size = size;
     f->cur_pos = f->end_pos = 0;
   } else {
-    f->flags &= ~FILE_FLAG_LINE_BUFFERED;
+    if(f->buf != NULL && (f->flags & FILE_FLAG_FREEABLE_BUFFER) != 0) free(f->buf);
+    f->flags &= ~(FILE_FLAG_FREEABLE_BUFFER | FILE_FLAG_LINE_BUFFERED);
     f->buf = NULL;
     f->buf_size = 0;
     f->cur_pos = f->end_pos = 0;
