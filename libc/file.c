@@ -614,7 +614,7 @@ int pclose(FILE *f)
 FILE *popen(const char *command, const char *mode)
 {
   FILE *f;
-  int oflags;
+  int oflags, is_writing = 0;
   int fds[2];
   int fd;
   pid_t pid;
@@ -624,29 +624,20 @@ FILE *popen(const char *command, const char *mode)
     errno = EINVAL;
     return NULL;
   }
+  if((oflags & O_ACCMODE) == O_WRONLY) is_writing = 1; 
   if(pipe(fds) == -1) return NULL;
   pid = fork();
   if(pid == 0) {
     /* child */
     char *const argv[]= { "sh", "-c", (char *) command, NULL };
-    if((oflags & O_ACCMODE) == O_RDONLY) {
-      close(fds[0]);
-      dup2(fds[1], STDOUT_FILENO);
-    } else {
-      close(fds[1]);
-      dup2(fds[0], STDIN_FILENO);
-    }
+    close(fds[is_writing]);
+    dup2(fds[1 ^ is_writing], is_writing ? STDIN_FILENO : STDOUT_FILENO);
     execv("/bin/sh", argv);
     _exit(127);
   } else if(pid != -1) {
     /* parent */
-    if((oflags & O_ACCMODE) == O_RDONLY) {
-      close(fds[1]);
-      fd = fds[0];
-    } else {
-      close(fds[0]);
-      fd = fds[1];
-    }
+    close(fds[1 ^ is_writing]);
+    fd = fds[is_writing];
   } else {
     return NULL;
   }
