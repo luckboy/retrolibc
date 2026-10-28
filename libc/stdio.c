@@ -57,7 +57,7 @@ char *fgets(char *s, int n, FILE *f)
       break;
     }
   }
-  *s = '\0';
+  if(r != NULL) *s = '\0';
   funlockfile(f);
   return r;
 }
@@ -136,7 +136,7 @@ char *gets(char *s)
     if(c == '\n') break;
     *s = c;
   }
-  *s = '\0';
+  if(r != NULL) *s = '\0';
   funlockfile(stdin);
   return r;
 }
