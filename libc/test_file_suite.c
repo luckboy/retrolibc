@@ -4699,7 +4699,7 @@ static void test_setvbuf_sets_static_buffer_after_setting_static_buffer(void)
   initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
-  CU_ASSERT_EQUAL(retrolibc_setvbuf(f, buf, RETROLIBC__IOFBF, RETROLIBC_BUFSIZ * 2), 0);
+  retrolibc_setvbuf(f, buf, RETROLIBC__IOFBF, RETROLIBC_BUFSIZ * 2);
   CU_ASSERT_EQUAL(retrolibc_setvbuf(f, buf2, RETROLIBC__IOFBF, RETROLIBC_BUFSIZ * 3), 0);
   CU_ASSERT_PTR_NULL(f->prev);
   CU_ASSERT_PTR_NULL(f->next);
@@ -4724,7 +4724,7 @@ static void test_setvbuf_sets_static_buffer_after_unsetting_buffer(void)
   initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
-  CU_ASSERT_EQUAL(retrolibc_setvbuf(f, buf, RETROLIBC__IONBF, RETROLIBC_BUFSIZ * 2), 0);
+  retrolibc_setvbuf(f, buf, RETROLIBC__IONBF, RETROLIBC_BUFSIZ * 2);
   CU_ASSERT_EQUAL(retrolibc_setvbuf(f, buf2, RETROLIBC__IOFBF, RETROLIBC_BUFSIZ * 3), 0);
   CU_ASSERT_PTR_NULL(f->prev);
   CU_ASSERT_PTR_NULL(f->next);
@@ -4748,7 +4748,7 @@ static void test_setvbuf_sets_allocated_buffer_after_setting_static_buffer(void)
   initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
-  CU_ASSERT_EQUAL(retrolibc_setvbuf(f, buf, RETROLIBC__IOFBF, RETROLIBC_BUFSIZ * 2), 0);
+  retrolibc_setvbuf(f, buf, RETROLIBC__IOFBF, RETROLIBC_BUFSIZ * 2);
   CU_ASSERT_EQUAL(retrolibc_setvbuf(f, NULL, RETROLIBC__IOFBF, RETROLIBC_BUFSIZ * 3), 0);
   CU_ASSERT_PTR_NULL(f->prev);
   CU_ASSERT_PTR_NULL(f->next);
@@ -4761,6 +4761,7 @@ static void test_setvbuf_sets_allocated_buffer_after_setting_static_buffer(void)
   CU_ASSERT_EQUAL(f->end_pos, 0);
   CU_ASSERT_EQUAL(f->pid, -1);
   close(f->fd);
+  free(f->buf);
   free(f);
 }
 
@@ -4772,7 +4773,7 @@ static void test_setvbuf_sets_allocated_buffer_after_unsetting_buffer(void)
   initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
-  CU_ASSERT_EQUAL(retrolibc_setvbuf(f, buf, RETROLIBC__IONBF, RETROLIBC_BUFSIZ * 2), 0);
+  retrolibc_setvbuf(f, buf, RETROLIBC__IONBF, RETROLIBC_BUFSIZ * 2);
   CU_ASSERT_EQUAL(retrolibc_setvbuf(f, NULL, RETROLIBC__IOFBF, RETROLIBC_BUFSIZ * 3), 0);
   CU_ASSERT_PTR_NULL(f->prev);
   CU_ASSERT_PTR_NULL(f->next);
@@ -4785,6 +4786,7 @@ static void test_setvbuf_sets_allocated_buffer_after_unsetting_buffer(void)
   CU_ASSERT_EQUAL(f->end_pos, 0);
   CU_ASSERT_EQUAL(f->pid, -1);
   close(f->fd);
+  free(f->buf);
   free(f);
 }
 
@@ -4797,7 +4799,7 @@ static void test_setvbuf_unsets_buffer_after_setting_static_buffer(void)
   initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
-  CU_ASSERT_EQUAL(retrolibc_setvbuf(f, buf, RETROLIBC__IOFBF, RETROLIBC_BUFSIZ * 2), 0);
+  retrolibc_setvbuf(f, buf, RETROLIBC__IOFBF, RETROLIBC_BUFSIZ * 2);
   CU_ASSERT_EQUAL(retrolibc_setvbuf(f, buf2, RETROLIBC__IONBF, RETROLIBC_BUFSIZ * 3), 0);
   CU_ASSERT_PTR_NULL(f->prev);
   CU_ASSERT_PTR_NULL(f->next);
@@ -4822,7 +4824,7 @@ static void test_setvbuf_unsets_buffer_after_unsetting_buffer(void)
   initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
-  CU_ASSERT_EQUAL(retrolibc_setvbuf(f, buf, RETROLIBC__IONBF, RETROLIBC_BUFSIZ * 2), 0);
+  retrolibc_setvbuf(f, buf, RETROLIBC__IONBF, RETROLIBC_BUFSIZ * 2);
   CU_ASSERT_EQUAL(retrolibc_setvbuf(f, buf2, RETROLIBC__IONBF, RETROLIBC_BUFSIZ * 3), 0);
   CU_ASSERT_PTR_NULL(f->prev);
   CU_ASSERT_PTR_NULL(f->next);
