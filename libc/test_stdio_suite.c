@@ -138,6 +138,19 @@ static void test_fputs_writes_string(void)
   CU_ASSERT_STRING_EQUAL(s, "abcdefghi");
 }
 
+static void test_fputs_writes_empty_string(void)
+{
+  static char s[100];
+  FILE *f;
+  clean_current_dir();
+  initialize_mock();
+  f = fopen("test.txt", "w");
+  CU_ASSERT_EQUAL(retrolibc_fputs("", f), 0);
+  fclose(f);
+  CU_ASSERT_FATAL(read_from_file("test.txt", s, 100));
+  CU_ASSERT_STRING_EQUAL(s, "");
+}
+
 static void test_fseek_sets_offset_for_seek_set(void)
 {
   FILE *f;
@@ -504,6 +517,7 @@ int add_stdio_suite(void)
   if(CU_add_test(suite, "fgets returns null", test_fgets_returns_null) == NULL) return -1;
   if(CU_add_test(suite, "fputc writes character", test_fputc_writes_character) == NULL) return -1;
   if(CU_add_test(suite, "fputs writes string", test_fputs_writes_string) == NULL) return -1;
+  if(CU_add_test(suite, "fputs writes empty string", test_fputs_writes_empty_string) == NULL) return -1;
   if(CU_add_test(suite, "fseek sets offset for SEEK_SET", test_fseek_sets_offset_for_seek_set) == NULL) return -1;
   if(CU_add_test(suite, "fseek sets offset for SEEK_CUR and positive", test_fseek_sets_offset_for_seek_cur_and_positive) == NULL) return -1;
   if(CU_add_test(suite, "fseek sets offset for SEEK_CUR and negative", test_fseek_sets_offset_for_seek_cur_and_negative) == NULL) return -1;
