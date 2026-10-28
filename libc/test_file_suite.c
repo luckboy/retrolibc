@@ -16,7 +16,7 @@
 #include "priv_file.h"
 #include "test_file_helpers.h"
 
-static void initalize_retrolibc_file(void)
+static void initialize_retrolibc_file(void)
 {
   retrolibc___first_file = NULL;
   retrolibc___last_file = NULL;
@@ -38,7 +38,7 @@ static void test___add_file_adds_file(void)
 {
   retrolibc_FILE f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   retrolibc___add_file(&f);
   CU_ASSERT_PTR_NULL(f.prev);
   CU_ASSERT_PTR_NULL(f.next);
@@ -52,7 +52,7 @@ static void test___add_file_adds_file_3_times(void)
   retrolibc_FILE f2;
   retrolibc_FILE f3;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   retrolibc___add_file(&f);
   CU_ASSERT_PTR_NULL(f.prev);
   CU_ASSERT_PTR_NULL(f.next);
@@ -80,7 +80,7 @@ static void test___remove_file_removes_file(void)
 {
   retrolibc_FILE f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   retrolibc___add_file(&f);
   retrolibc___remove_file(&f);
   CU_ASSERT_PTR_NULL(f.prev);
@@ -95,7 +95,7 @@ static void test___remove_file_removes_file_for_left(void)
   retrolibc_FILE f2;
   retrolibc_FILE f3;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   retrolibc___add_file(&f);
   retrolibc___add_file(&f2);
   retrolibc___add_file(&f3);
@@ -114,7 +114,7 @@ static void test___remove_file_removes_file_for_center(void)
   retrolibc_FILE f2;
   retrolibc_FILE f3;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   retrolibc___add_file(&f);
   retrolibc___add_file(&f2);
   retrolibc___add_file(&f3);
@@ -133,7 +133,7 @@ static void test___remove_file_removes_file_for_right(void)
   retrolibc_FILE f2;
   retrolibc_FILE f3;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   retrolibc___add_file(&f);
   retrolibc___add_file(&f2);
   retrolibc___add_file(&f3);
@@ -149,7 +149,7 @@ static void test___remove_file_removes_file_for_right(void)
 static void test___mode_to_oflags_converts_mode_to_open_flags(void)
 {
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_EQUAL(retrolibc___mode_to_oflags("r"), O_RDONLY);
   CU_ASSERT_EQUAL(retrolibc___mode_to_oflags("rb"), O_RDONLY);
   CU_ASSERT_EQUAL(retrolibc___mode_to_oflags("w"), O_WRONLY | O_CREAT | O_TRUNC);
@@ -170,7 +170,7 @@ static void test___mode_to_oflags_converts_mode_to_open_flags(void)
 static void test___mode_to_oflags_complains_on_invalid_mode(void)
 {
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   errno = 0;
   CU_ASSERT_EQUAL(retrolibc___mode_to_oflags("rw"), -1);
   CU_ASSERT_EQUAL(errno, EINVAL);
@@ -189,7 +189,7 @@ static void test_fopen_opens_file_to_read(void)
 {
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   CU_ASSERT_PTR_NOT_NULL(f);
@@ -213,7 +213,7 @@ static void test_fopen_opens_file_to_write(void)
   static char s[RETROLIBC_BUFSIZ * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   f = retrolibc_fopen("test.txt", "w");
   CU_ASSERT_PTR_NOT_NULL(f);
   CU_ASSERT_PTR_NULL(f->prev);
@@ -237,7 +237,7 @@ static void test_fopen_complains_on_not_found(void)
 {
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   errno = 0;
   f = retrolibc_fopen("test.txt", "r");
   CU_ASSERT_PTR_NULL(f);
@@ -249,7 +249,7 @@ static void test_fread_reads_blocks(void)
   static char blocks[3 * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdefghi"));
   f = retrolibc_fopen("test.txt", "r");
   CU_ASSERT_EQUAL(retrolibc_fread(blocks, 3, 2, f), 2);
@@ -274,7 +274,7 @@ static void test_fread_reads_blocks_for_newlines(void)
   static char blocks[4 * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abc\ndef\nghi\n"));
   f = retrolibc_fopen("test.txt", "r");
   CU_ASSERT_EQUAL(retrolibc_fread(blocks, 4, 2, f), 2);
@@ -299,7 +299,7 @@ static void test_fread_reads_blocks_after_getc_unlocked(void)
   static char blocks[3 * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdefghijkl"));
   f = retrolibc_fopen("test.txt", "r");
   retrolibc_getc_unlocked(f);
@@ -328,7 +328,7 @@ static void test_fread_reads_blocks_after_getc_unlocked_for_newlines(void)
   static char blocks[4 * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abc\ndef\nghi\njkl\n"));
   f = retrolibc_fopen("test.txt", "r");
   retrolibc_getc_unlocked(f);
@@ -359,7 +359,7 @@ static void test_fread_reads_blocks_after_getc_unlocked_buffer_size_minus_1_time
   size_t i;
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   for(i = 0; i < (RETROLIBC_BUFSIZ + 5) / 6; i++) strcpy(buf + i * 6, "abcdef");
   CU_ASSERT_FATAL(write_to_file("test.txt", buf));
   f = retrolibc_fopen("test.txt", "r");
@@ -386,7 +386,7 @@ static void test_fread_reads_1_block_of_2_blocks(void)
   static char blocks[3 * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcde"));
   f = retrolibc_fopen("test.txt", "r");
   CU_ASSERT_EQUAL(retrolibc_fread(blocks, 3, 2, f), 1);
@@ -411,7 +411,7 @@ static void test_fread_reads_blocks_for_line_buffered(void)
   static char blocks[3 * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdefghi"));
   f = retrolibc_fopen("test.txt", "r");
   f->flags |= FILE_FLAG_LINE_BUFFERED;
@@ -437,7 +437,7 @@ static void test_fread_reads_blocks_for_newlines_and_line_buffered(void)
   static char blocks[4 * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abc\ndef\nghi\n"));
   f = retrolibc_fopen("test.txt", "r");
   f->flags |= FILE_FLAG_LINE_BUFFERED;
@@ -463,7 +463,7 @@ static void test_fread_reads_blocks_after_getc_unlocked_for_line_buffered(void)
   static char blocks[3 * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdefghijkl"));
   f = retrolibc_fopen("test.txt", "r");
   f->flags |= FILE_FLAG_LINE_BUFFERED;
@@ -493,7 +493,7 @@ static void test_fread_reads_blocks_after_getc_unlocked_for_newlines_and_line_bu
   static char blocks[4 * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abc\ndef\nghi\njkl\n"));
   f = retrolibc_fopen("test.txt", "r");
   f->flags |= FILE_FLAG_LINE_BUFFERED;
@@ -524,7 +524,7 @@ static void test_fread_reads_blocks_after_getc_unlocked_buffer_size_minus_1_time
   size_t i;
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   for(i = 0; i < (RETROLIBC_BUFSIZ + 5) / 6; i++) strcpy(buf + i * 6, "abcdef");
   CU_ASSERT_FATAL(write_to_file("test.txt", buf));
   f = retrolibc_fopen("test.txt", "r");
@@ -552,7 +552,7 @@ static void test_fread_reads_1_block_of_2_blocks_for_line_buffered(void)
   static char blocks[3 * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcde"));
   f = retrolibc_fopen("test.txt", "r");
   f->flags |= FILE_FLAG_LINE_BUFFERED;
@@ -578,7 +578,7 @@ static void test_fread_reads_blocks_for_unbuffered(void)
   static char blocks[3 * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdefghi"));
   f = retrolibc_fopen("test.txt", "r");
   free(f->buf);
@@ -606,7 +606,7 @@ static void test_fread_reads_blocks_for_newlines_and_unbuffered(void)
   static char blocks[4 * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abc\ndef\nghi\n"));
   f = retrolibc_fopen("test.txt", "r");
   free(f->buf);
@@ -634,7 +634,7 @@ static void test_fread_reads_1_block_of_2_blocks_for_unbuffered(void)
   static char blocks[3 * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcde"));
   f = retrolibc_fopen("test.txt", "r");
   free(f->buf);
@@ -663,7 +663,7 @@ static void test_fread_reads_blocks_after_putc_unlocked(void)
   static char s[RETROLIBC_BUFSIZ * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdefghi"));
   f = retrolibc_fopen("test.txt", "r+");
   retrolibc_putc_unlocked('A', f);
@@ -696,7 +696,7 @@ static void test_fread_reads_block_after_putc_unlocked_buffer_size_plus_1_times(
   size_t i;
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   for(i = 0; i < (RETROLIBC_BUFSIZ + 5) / 6; i++) strcpy(buf + i * 6, "abcdef");
   CU_ASSERT_FATAL(write_to_file("test.txt", buf));
   f = retrolibc_fopen("test.txt", "r+");
@@ -725,7 +725,7 @@ static void test_fread_reads_blocks_after_storing_to_pushed_character(void)
   static char blocks[3 * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   retrolibc_ungetc('A', f);
@@ -751,7 +751,7 @@ static void test_fread_returns_0_because_eof_flag(void)
   static char blocks[3 * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   f->flags |= FILE_FLAG_EOF;
@@ -778,7 +778,7 @@ static void test_fread_returns_0_because_error_flag(void)
   static char blocks[3 * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   f->flags |= FILE_FLAG_ERROR;
@@ -805,7 +805,7 @@ static void test_fread_complains_on_bad_fd(void)
   static char blocks[3 * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   close(f->fd);
@@ -831,7 +831,7 @@ static void test_fread_complains_on_bad_fd_for_line_buffered(void)
   static char blocks[3 * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   close(f->fd);
@@ -857,7 +857,7 @@ static void test_fread_complains_on_bad_fd_for_unbuffered(void)
   static char blocks[3 * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   f->flags &= ~FILE_FLAG_FREEABLE_BUFFER;
@@ -884,7 +884,7 @@ static void test_fseeko_sets_offset_for_seek_set(void)
 {
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdefghi"));
   f = retrolibc_fopen("test.txt", "r");
   free(f->buf);
@@ -912,7 +912,7 @@ static void test_fseeko_sets_offset_for_seek_cur_and_positive(void)
 {
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdefghi"));
   f = retrolibc_fopen("test.txt", "r");
   free(f->buf);
@@ -940,7 +940,7 @@ static void test_fseeko_sets_offset_for_seek_cur_and_negative(void)
 {
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdefghi"));
   f = retrolibc_fopen("test.txt", "r");
   free(f->buf);
@@ -968,7 +968,7 @@ static void test_fseeko_sets_offset_for_seek_end(void)
 {
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdefghi"));
   f = retrolibc_fopen("test.txt", "r");
   free(f->buf);
@@ -996,7 +996,7 @@ static void test_fseeko_sets_offset_after_getc_unlocked(void)
 {
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdefghi"));
   f = retrolibc_fopen("test.txt", "r");
   retrolibc_getc_unlocked(f);
@@ -1026,7 +1026,7 @@ static void test_fseeko_sets_offset_after_getc_unlocked_buffer_size_plus_1_times
   size_t i;
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   for(i = 0; i < (RETROLIBC_BUFSIZ + 5) / 6; i++) strcpy(buf + i * 6, "abcdef");
   CU_ASSERT_FATAL(write_to_file("test.txt", buf));
   f = retrolibc_fopen("test.txt", "r");
@@ -1053,7 +1053,7 @@ static void test_fseeko_sets_offset_after_putc_unlocked(void)
   static char s[RETROLIBC_BUFSIZ * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdefghi"));
   f = retrolibc_fopen("test.txt", "r+");
   retrolibc_putc_unlocked('A', f);
@@ -1086,7 +1086,7 @@ static void test_fseeko_sets_offset_after_putc_unlocked_buffer_size_plus_1_times
   size_t i;
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   for(i = 0; i < (RETROLIBC_BUFSIZ + 5) / 6; i++) strcpy(buf + i * 6, "abcdef");
   CU_ASSERT_FATAL(write_to_file("test.txt", buf));
   f = retrolibc_fopen("test.txt", "r+");
@@ -1114,7 +1114,7 @@ static void test_fseeko_complains_on_bad_fd(void)
 {
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   close(f->fd);
@@ -1139,7 +1139,7 @@ static void test_ftello_returns_offset(void)
 {
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   free(f->buf);
@@ -1166,7 +1166,7 @@ static void test_ftello_returns_offset_after_getc_unlocked(void)
 {
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   retrolibc_getc_unlocked(f);
@@ -1196,7 +1196,7 @@ static void test_ftello_returns_offset_after_getc_unlocked_buffer_size_plus_1_ti
   size_t i;
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   for(i = 0; i < (RETROLIBC_BUFSIZ + 5) / 6; i++) strcpy(buf + i * 6, "abcdef");
   CU_ASSERT_FATAL(write_to_file("test.txt", buf));
   f = retrolibc_fopen("test.txt", "r");
@@ -1223,7 +1223,7 @@ static void test_ftello_returns_offset_after_putc_unlocked(void)
   static char s[RETROLIBC_BUFSIZ * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r+");
   retrolibc_putc_unlocked('A', f);
@@ -1256,7 +1256,7 @@ static void test_ftello_returns_offset_after_putc_unlocked_buffer_size_plus_1_ti
   size_t i;
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   for(i = 0; i < (RETROLIBC_BUFSIZ + 5) / 6; i++) strcpy(buf + i * 6, "abcdef");
   CU_ASSERT_FATAL(write_to_file("test.txt", buf));
   f = retrolibc_fopen("test.txt", "r+");
@@ -1285,7 +1285,7 @@ static void test_ftello_complains_on_bad_fd(void)
 {
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   close(f->fd);
@@ -1311,7 +1311,7 @@ static void test_fwrite_writes_blocks(void)
   static char s[RETROLIBC_BUFSIZ * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   f = retrolibc_fopen("test.txt", "w");
   CU_ASSERT_EQUAL(retrolibc_fwrite("abcdef", 3, 2, f), 2);
   CU_ASSERT_PTR_NULL(f->prev);
@@ -1337,7 +1337,7 @@ static void test_fwrite_writes_blocks_for_newlines(void)
   static char s[RETROLIBC_BUFSIZ * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   f = retrolibc_fopen("test.txt", "w");
   CU_ASSERT_EQUAL(retrolibc_fwrite("abc\ndef\n", 4, 2, f), 2);
   CU_ASSERT_PTR_NULL(f->prev);
@@ -1363,7 +1363,7 @@ static void test_fwrite_writes_blocks_after_putc_unlocked(void)
   static char s[RETROLIBC_BUFSIZ * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   f = retrolibc_fopen("test.txt", "w");
   retrolibc_putc_unlocked('a', f);
   retrolibc_putc_unlocked('b', f);
@@ -1392,7 +1392,7 @@ static void test_fwrite_writes_blocks_after_putc_unlocked_for_newlines(void)
   static char s[RETROLIBC_BUFSIZ * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   f = retrolibc_fopen("test.txt", "w");
   retrolibc_putc_unlocked('a', f);
   retrolibc_putc_unlocked('b', f);
@@ -1423,7 +1423,7 @@ static void test_fwrite_writes_blocks_after_putc_unlocked_buffer_size_minus_1_ti
   size_t i;
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   for(i = 0; i < (RETROLIBC_BUFSIZ + 5) / 6; i++) strcpy(buf + i * 6, "abcdef");
   CU_ASSERT_FATAL(write_to_file("test.txt", buf));
   f = retrolibc_fopen("test.txt", "w");
@@ -1453,7 +1453,7 @@ static void test_fwrite_writes_blocks_for_line_buffered(void)
   static char s[RETROLIBC_BUFSIZ * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   f = retrolibc_fopen("test.txt", "w");
   f->flags |= FILE_FLAG_LINE_BUFFERED;
   CU_ASSERT_EQUAL(retrolibc_fwrite("abcdef", 3, 2, f), 2);
@@ -1480,7 +1480,7 @@ static void test_fwrite_writes_blocks_for_newlines_and_line_buffered(void)
   static char s[RETROLIBC_BUFSIZ * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   f = retrolibc_fopen("test.txt", "w");
   f->flags |= FILE_FLAG_LINE_BUFFERED;
   CU_ASSERT_EQUAL(retrolibc_fwrite("abc\ndef\n", 4, 2, f), 2);
@@ -1506,7 +1506,7 @@ static void test_fwrite_writes_blocks_after_putc_unlocked_for_line_buffered(void
   static char s[RETROLIBC_BUFSIZ * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   f = retrolibc_fopen("test.txt", "w");
   f->flags |= FILE_FLAG_LINE_BUFFERED;
   retrolibc_putc_unlocked('a', f);
@@ -1536,7 +1536,7 @@ static void test_fwrite_writes_blocks_after_putc_unlocked_for_newlines_and_line_
   static char s[RETROLIBC_BUFSIZ * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   f = retrolibc_fopen("test.txt", "w");
   f->flags |= FILE_FLAG_LINE_BUFFERED;
   retrolibc_putc_unlocked('a', f);
@@ -1567,7 +1567,7 @@ static void test_fwrite_writes_blocks_after_putc_unlocked_buffer_size_minus_1_ti
   size_t i;
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   for(i = 0; i < (RETROLIBC_BUFSIZ + 5) / 6; i++) strcpy(buf + i * 6, "abcdef");
   CU_ASSERT_FATAL(write_to_file("test.txt", buf));
   f = retrolibc_fopen("test.txt", "w");
@@ -1598,7 +1598,7 @@ static void test_fwrite_writes_blocks_for_unbuffered(void)
   static char s[RETROLIBC_BUFSIZ * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   f = retrolibc_fopen("test.txt", "w");
   free(f->buf);
   f->flags &= ~FILE_FLAG_FREEABLE_BUFFER;
@@ -1626,7 +1626,7 @@ static void test_fwrite_writes_blocks_for_newlines_and_unbuffered(void)
   static char s[RETROLIBC_BUFSIZ * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   f = retrolibc_fopen("test.txt", "w");
   free(f->buf);
   f->flags &= ~FILE_FLAG_FREEABLE_BUFFER;
@@ -1654,7 +1654,7 @@ static void test_fwrite_writes_blocks_after_getc_unlocked(void)
   static char s[RETROLIBC_BUFSIZ * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r+");
   retrolibc_getc_unlocked(f);
@@ -1687,7 +1687,7 @@ static void test_fwrite_writes_blocks_after_getc_unlocked_buffer_size_plus_1_tim
   size_t i;
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   for(i = 0; i < (RETROLIBC_BUFSIZ + 5) / 6; i++) strcpy(buf + i * 6, "abcdef");
   CU_ASSERT_FATAL(write_to_file("test.txt", buf));
   f = retrolibc_fopen("test.txt", "r+");
@@ -1719,7 +1719,7 @@ static void test_fwrite_writes_blocks_with_buffer_size_div_2_after_getc_unlocked
   size_t i;
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   for(i = 0; i < (RETROLIBC_BUFSIZ + 5) / 6; i++) strcpy(buf + i * 6, "abcdef");
   CU_ASSERT_FATAL(write_to_file("test.txt", buf));
   f = retrolibc_fopen("test.txt", "r+");
@@ -1751,7 +1751,7 @@ static void test_fwrite_returns_0_because_error_flag(void)
   static char s[RETROLIBC_BUFSIZ * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   f = retrolibc_fopen("test.txt", "w");
   f->flags |= FILE_FLAG_ERROR;
   errno = 0;
@@ -1781,7 +1781,7 @@ static void test_fwrite_complains_on_bad_fd(void)
   size_t i;
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   for(i = 0; i < (RETROLIBC_BUFSIZ + 5) / 6; i++) strcpy(buf + i * 6, "abcdef");
   f = retrolibc_fopen("test.txt", "w");
   close(f->fd);
@@ -1812,7 +1812,7 @@ static void test_fwrite_complains_on_bad_fd_for_line_buffered(void)
   size_t i;
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   for(i = 0; i < (RETROLIBC_BUFSIZ + 5) / 6; i++) strcpy(buf + i * 6, "abcdef");
   f = retrolibc_fopen("test.txt", "w");
   close(f->fd);
@@ -1841,7 +1841,7 @@ static void test_fwrite_complains_on_bad_fd_for_unbuffered(void)
   static char s[RETROLIBC_BUFSIZ * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   f = retrolibc_fopen("test.txt", "w");
   f->flags &= ~FILE_FLAG_FREEABLE_BUFFER;
   f->buf = NULL;
@@ -1870,7 +1870,7 @@ static void test_getc_unlocked_reads_character(void)
   retrolibc_FILE *f;
   int c;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   c = retrolibc_getc_unlocked(f);
@@ -1896,7 +1896,7 @@ static void test_getc_unlocked_reads_character_3_times(void)
   retrolibc_FILE *f;
   int c;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   c = retrolibc_getc_unlocked(f);
@@ -1948,7 +1948,7 @@ static void test_getc_unlocked_reads_character_for_newlines(void)
   retrolibc_FILE *f;
   int c;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abc\ndef\n"));
   f = retrolibc_fopen("test.txt", "r");
   c = retrolibc_getc_unlocked(f);
@@ -1976,7 +1976,7 @@ static void test_getc_unlocked_reads_character_for_larger_file_than_buffer(void)
   retrolibc_FILE *f;
   int c;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   for(i = 0; i < (RETROLIBC_BUFSIZ + 5) / 6; i++) strcpy(buf + i * 6, "abcdef");
   CU_ASSERT_FATAL(write_to_file("test.txt", buf));
   f = retrolibc_fopen("test.txt", "r");
@@ -2005,7 +2005,7 @@ static void test_getc_unlocked_reads_character_buffer_size_times(void)
   retrolibc_FILE *f;
   int c;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   for(i = 0; i < (RETROLIBC_BUFSIZ + 5) / 6; i++) strcpy(buf + i * 6, "abcdef");
   CU_ASSERT_FATAL(write_to_file("test.txt", buf));
   f = retrolibc_fopen("test.txt", "r");
@@ -2034,7 +2034,7 @@ static void test_getc_unlocked_reads_character_buffer_size_plus_1_times(void)
   retrolibc_FILE *f;
   int c;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   for(i = 0; i < (RETROLIBC_BUFSIZ + 5) / 6; i++) strcpy(buf + i * 6, "abcdef");
   CU_ASSERT_FATAL(write_to_file("test.txt", buf));
   f = retrolibc_fopen("test.txt", "r");
@@ -2061,7 +2061,7 @@ static void test_getc_unlocked_does_not_read_character_because_eof(void)
   retrolibc_FILE *f;
   int c;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   retrolibc_getc_unlocked(f);
@@ -2094,7 +2094,7 @@ static void test_getc_unlocked_reads_character_for_line_buffered(void)
   retrolibc_FILE *f;
   int c;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   f->flags |= FILE_FLAG_LINE_BUFFERED;
@@ -2121,7 +2121,7 @@ static void test_getc_unlocked_reads_character_3_times_for_line_buffered(void)
   retrolibc_FILE *f;
   int c;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   f->flags |= FILE_FLAG_LINE_BUFFERED;
@@ -2174,7 +2174,7 @@ static void test_getc_unlocked_reads_character_for_newlines_and_line_buffered(vo
   retrolibc_FILE *f;
   int c;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abc\ndef\n"));
   f = retrolibc_fopen("test.txt", "r");
   f->flags |= FILE_FLAG_LINE_BUFFERED;
@@ -2203,7 +2203,7 @@ static void test_getc_unlocked_reads_character_for_larger_file_than_buffer_and_l
   retrolibc_FILE *f;
   int c;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   for(i = 0; i < (RETROLIBC_BUFSIZ + 5) / 6; i++) strcpy(buf + i * 6, "abcdef");
   CU_ASSERT_FATAL(write_to_file("test.txt", buf));
   f = retrolibc_fopen("test.txt", "r");
@@ -2233,7 +2233,7 @@ static void test_getc_unlocked_reads_character_buffer_size_times_for_line_buffer
   retrolibc_FILE *f;
   int c;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   for(i = 0; i < (RETROLIBC_BUFSIZ + 5) / 6; i++) strcpy(buf + i * 6, "abcdef");
   CU_ASSERT_FATAL(write_to_file("test.txt", buf));
   f = retrolibc_fopen("test.txt", "r");
@@ -2263,7 +2263,7 @@ static void test_getc_unlocked_reads_character_buffer_size_plus_1_times_for_line
   retrolibc_FILE *f;
   int c;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   for(i = 0; i < (RETROLIBC_BUFSIZ + 5) / 6; i++) strcpy(buf + i * 6, "abcdef");
   CU_ASSERT_FATAL(write_to_file("test.txt", buf));
   f = retrolibc_fopen("test.txt", "r");
@@ -2291,7 +2291,7 @@ static void test_getc_unlocked_does_not_read_character_because_eof_for_line_buff
   retrolibc_FILE *f;
   int c;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   f->flags |= FILE_FLAG_LINE_BUFFERED;
@@ -2325,7 +2325,7 @@ static void test_getc_unlocked_reads_character_for_unbuffered(void)
   retrolibc_FILE *f;
   int c;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   free(f->buf);
@@ -2353,7 +2353,7 @@ static void test_getc_unlocked_reads_character_3_times_for_unbuffered(void)
   retrolibc_FILE *f;
   int c;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   free(f->buf);
@@ -2405,7 +2405,7 @@ static void test_getc_unlocked_reads_character_for_newlines_and_unbuffered(void)
   retrolibc_FILE *f;
   int c;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abc\ndef\n"));
   f = retrolibc_fopen("test.txt", "r");
   free(f->buf);
@@ -2433,7 +2433,7 @@ static void test_getc_unlocked_does_not_read_character_because_eof_for_unbuffere
   retrolibc_FILE *f;
   int c;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   free(f->buf);
@@ -2470,7 +2470,7 @@ static void test_getc_unlocked_reads_character_after_putc_unlocked(void)
   retrolibc_FILE *f;
   int c;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r+");
   retrolibc_putc_unlocked('A', f);
@@ -2504,7 +2504,7 @@ static void test_getc_unlocked_reads_character_after_putc_unlocked_buffer_size_p
   retrolibc_FILE *f;
   int c;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   for(i = 0; i < (RETROLIBC_BUFSIZ + 5) / 6; i++) strcpy(buf + i * 6, "abcdef");
   CU_ASSERT_FATAL(write_to_file("test.txt", buf));
   f = retrolibc_fopen("test.txt", "r+");
@@ -2534,7 +2534,7 @@ static void test_getc_unlocked_reads_character_after_storing_to_pushed_character
   retrolibc_FILE *f;
   int c;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   retrolibc_ungetc('A', f);
@@ -2560,7 +2560,7 @@ static void test_getc_unlocked_returns_eof_because_eof_flag(void)
   retrolibc_FILE *f;
   int c;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   f->flags |= FILE_FLAG_EOF;
@@ -2588,7 +2588,7 @@ static void test_getc_unlocked_complains_on_error_flag(void)
   retrolibc_FILE *f;
   int c;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   f->flags |= FILE_FLAG_ERROR;
@@ -2616,7 +2616,7 @@ static void test_getc_unlocked_complains_on_bad_fd(void)
   retrolibc_FILE *f;
   int c;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   close(f->fd);
@@ -2643,7 +2643,7 @@ static void test_getc_unlocked_complains_on_bad_fd_for_line_buffered(void)
   retrolibc_FILE *f;
   int c;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   f->flags |= FILE_FLAG_LINE_BUFFERED;
@@ -2672,7 +2672,7 @@ static void test_getc_unlocked_complains_on_bad_fd_for_unbuffered(void)
   retrolibc_FILE *f;
   int c;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   free(f->buf);
@@ -2703,7 +2703,7 @@ static void test_popen_opens_pipe_and_fread_reads_and_fclose_closes(void)
   char block[7];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   f = retrolibc_popen("echo abcdef", "r");
   CU_ASSERT_PTR_NOT_NULL(f);
   CU_ASSERT_PTR_NULL(f->prev);
@@ -2736,7 +2736,7 @@ static void test_popen_opens_pipe_and_fwrite_writes_and_fclose_closes(void)
   char s[RETROLIBC_BUFSIZ * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   f = retrolibc_popen("cat > test.txt", "w");
   CU_ASSERT_PTR_NOT_NULL(f);
   CU_ASSERT_PTR_NULL(f->prev);
@@ -2770,7 +2770,7 @@ static void test_putc_unlocked_writes_character(void)
   static char s[RETROLIBC_BUFSIZ * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   f = retrolibc_fopen("test.txt", "w");
   CU_ASSERT_EQUAL(retrolibc_putc_unlocked('a', f), 0);
   CU_ASSERT_PTR_NULL(f->prev);
@@ -2796,7 +2796,7 @@ static void test_putc_unlocked_writes_character_3_times(void)
   static char s[RETROLIBC_BUFSIZ * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   f = retrolibc_fopen("test.txt", "w");
   CU_ASSERT_EQUAL(retrolibc_putc_unlocked('a', f), 0);
   CU_ASSERT_PTR_NULL(f->prev);
@@ -2846,7 +2846,7 @@ static void test_putc_unlocked_writes_character_for_newline(void)
   static char s[RETROLIBC_BUFSIZ * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   f = retrolibc_fopen("test.txt", "w");
   retrolibc_putc_unlocked('a', f);
   retrolibc_putc_unlocked('b', f);
@@ -2878,7 +2878,7 @@ static void test_putc_unlocked_writes_character_buffer_size_times(void)
   retrolibc_FILE *f;
   int r;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   for(i = 0; i < (RETROLIBC_BUFSIZ + 5) / 6; i++) strcpy(buf + i * 6, "abcdef");
   CU_ASSERT_FATAL(write_to_file("test.txt", buf));
   f = retrolibc_fopen("test.txt", "w");
@@ -2911,7 +2911,7 @@ static void test_putc_unlocked_writes_character_buffer_size_plus_1_times(void)
   retrolibc_FILE *f;
   int r;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   for(i = 0; i < (RETROLIBC_BUFSIZ + 5) / 6; i++) strcpy(buf + i * 6, "abcdef");
   CU_ASSERT_FATAL(write_to_file("test.txt", buf));
   f = retrolibc_fopen("test.txt", "w");
@@ -2941,7 +2941,7 @@ static void test_putc_unlocked_writes_character_for_line_buffered(void)
   static char s[RETROLIBC_BUFSIZ * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   f = retrolibc_fopen("test.txt", "w");
   f->flags |= FILE_FLAG_LINE_BUFFERED;
   CU_ASSERT_EQUAL(retrolibc_putc_unlocked('a', f), 0);
@@ -2968,7 +2968,7 @@ static void test_putc_unlocked_writes_character_3_times_for_line_buffered(void)
   static char s[RETROLIBC_BUFSIZ * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   f = retrolibc_fopen("test.txt", "w");
   f->flags |= FILE_FLAG_LINE_BUFFERED;
   CU_ASSERT_EQUAL(retrolibc_putc_unlocked('a', f), 0);
@@ -3019,7 +3019,7 @@ static void test_putc_unlocked_writes_character_for_newline_and_line_buffered(vo
   static char s[RETROLIBC_BUFSIZ * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   f = retrolibc_fopen("test.txt", "w");
   f->flags |= FILE_FLAG_LINE_BUFFERED;
   retrolibc_putc_unlocked('a', f);
@@ -3051,7 +3051,7 @@ static void test_putc_unlocked_writes_character_buffer_size_times_for_line_buffe
   retrolibc_FILE *f;
   int r;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   for(i = 0; i < (RETROLIBC_BUFSIZ + 5) / 6; i++) strcpy(buf + i * 6, "abcdef");
   CU_ASSERT_FATAL(write_to_file("test.txt", buf));
   f = retrolibc_fopen("test.txt", "w");
@@ -3085,7 +3085,7 @@ static void test_putc_unlocked_writes_character_buffer_size_plus_1_times_for_lin
   retrolibc_FILE *f;
   int r;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   for(i = 0; i < (RETROLIBC_BUFSIZ + 5) / 6; i++) strcpy(buf + i * 6, "abcdef");
   CU_ASSERT_FATAL(write_to_file("test.txt", buf));
   f = retrolibc_fopen("test.txt", "w");
@@ -3116,7 +3116,7 @@ static void test_putc_unlocked_writes_character_for_unbuffered(void)
   static char s[RETROLIBC_BUFSIZ * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   f = retrolibc_fopen("test.txt", "w");
   free(f->buf);
   f->flags &= ~FILE_FLAG_FREEABLE_BUFFER;
@@ -3144,7 +3144,7 @@ static void test_putc_unlocked_writes_character_3_times_for_unbuffered(void)
   static char s[RETROLIBC_BUFSIZ * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   f = retrolibc_fopen("test.txt", "w");
   free(f->buf);
   f->flags &= ~FILE_FLAG_FREEABLE_BUFFER;
@@ -3194,7 +3194,7 @@ static void test_putc_unlocked_writes_character_for_newline_and_unbuffered(void)
   static char s[RETROLIBC_BUFSIZ * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   f = retrolibc_fopen("test.txt", "w");
   free(f->buf);
   f->flags &= ~FILE_FLAG_FREEABLE_BUFFER;
@@ -3225,7 +3225,7 @@ static void test_putc_unlocked_writes_character_after_getc_unlocked(void)
   static char s[RETROLIBC_BUFSIZ * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r+");
   retrolibc_getc_unlocked(f);
@@ -3258,7 +3258,7 @@ static void test_putc_unlocked_writes_character_after_getc_unlocked_buffer_size_
   size_t i;
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   for(i = 0; i < (RETROLIBC_BUFSIZ + 5) / 6; i++) strcpy(buf + i * 6, "abcdef");
   CU_ASSERT_FATAL(write_to_file("test.txt", buf));
   f = retrolibc_fopen("test.txt", "r+");
@@ -3291,7 +3291,7 @@ static void test_putc_unlocked_writes_character_buffer_size_times_after_getc_unl
   retrolibc_FILE *f;
   int r;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   for(i = 0; i < (RETROLIBC_BUFSIZ + 5) / 6; i++) strcpy(buf + i * 6, "abcdef");
   CU_ASSERT_FATAL(write_to_file("test.txt", buf));
   f = retrolibc_fopen("test.txt", "r+");
@@ -3323,7 +3323,7 @@ static void test_putc_unlocked_complains_on_error_flag(void)
 {
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   f->flags |= FILE_FLAG_ERROR;
@@ -3353,7 +3353,7 @@ static void test_putc_unlocked_complains_on_bad_fd(void)
   retrolibc_FILE *f;
   int r;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   for(i = 0; i < (RETROLIBC_BUFSIZ + 5) / 6; i++) strcpy(buf + i * 6, "abcdef");
   f = retrolibc_fopen("test.txt", "w");
   close(f->fd);
@@ -3386,7 +3386,7 @@ static void test_putc_unlocked_complains_on_bad_fd_for_line_buffered(void)
   retrolibc_FILE *f;
   int r;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   for(i = 0; i < (RETROLIBC_BUFSIZ + 5) / 6; i++) strcpy(buf + i * 6, "abcdef");
   f = retrolibc_fopen("test.txt", "w");
   f->flags |= FILE_FLAG_LINE_BUFFERED;
@@ -3418,7 +3418,7 @@ static void test_putc_unlocked_complains_on_bad_fd_for_unbuffered(void)
   static char s[RETROLIBC_BUFSIZ * 2];
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   f = retrolibc_fopen("test.txt", "w");
   free(f->buf);
   f->flags &= ~FILE_FLAG_FREEABLE_BUFFER;
@@ -3448,7 +3448,7 @@ static void test_ungetc_pushes_character_back(void)
 {
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   retrolibc_getc_unlocked(f);
@@ -3475,7 +3475,7 @@ static void test_ungetc_pushes_character_back_3_times(void)
 {
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   retrolibc_getc_unlocked(f);
@@ -3526,7 +3526,7 @@ static void test_ungetc_stores_character_to_pushed_character(void)
 {
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   retrolibc_getc_unlocked(f);
@@ -3552,7 +3552,7 @@ static void test_ungetc_does_not_push_character_back_for_eof(void)
 {
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   retrolibc_getc_unlocked(f);
@@ -3578,7 +3578,7 @@ static void test_ungetc_does_not_store_character_to_pushed_character_after_stori
 {
   retrolibc_FILE *f;
   clean_current_dir();
-  initalize_retrolibc_file();
+  initialize_retrolibc_file();
   CU_ASSERT_FATAL(write_to_file("test.txt", "abcdef"));
   f = retrolibc_fopen("test.txt", "r");
   retrolibc_getc_unlocked(f);
