@@ -26,11 +26,29 @@ int read_from_file(const char *filename, char *s, size_t max_size)
   return 1;
 }
 
+int read_word_from_file(const char *filename, int *w)
+{
+  FILE *f = fopen(filename, "r");
+  if(f == NULL) return 0;
+  if(fread(w, sizeof(int), 1, f) == 0) return 0;
+  fclose(f);
+  return 1;
+}
+
 int write_to_file(const char *filename, const char *s)
 {
   FILE *f = fopen(filename, "w");
   if(f == NULL) return 0;
   if(fwrite(s, 1, strlen(s), f) == 0) return 0;
+  fclose(f);
+  return 1;
+}
+
+int write_word_to_file(const char *filename, int w)
+{
+  FILE *f = fopen(filename, "w");
+  if(f == NULL) return 0;
+  if(fwrite(&w, sizeof(int), 1, f) == 0) return 0;
   fclose(f);
   return 1;
 }

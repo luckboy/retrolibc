@@ -171,6 +171,29 @@ TEST_FILE_OBJS = \
 	$(TEST_BUILD_DIR)/file_putc_unlocked.o \
 	$(TEST_BUILD_DIR)/file_setvbuf.o \
 	$(TEST_BUILD_DIR)/file_ungetc.o
+
+TEST_STDIO_OBJS = \
+	$(TEST_BUILD_DIR)/stdio_fgetc.o \
+	$(TEST_BUILD_DIR)/stdio_fgets.o \
+	$(TEST_BUILD_DIR)/stdio_fgetpos.o \
+	$(TEST_BUILD_DIR)/stdio_fputc.o \
+	$(TEST_BUILD_DIR)/stdio_fputs.o \
+	$(TEST_BUILD_DIR)/stdio_fseek.o \
+	$(TEST_BUILD_DIR)/stdio_fsetpos.o \
+	$(TEST_BUILD_DIR)/stdio_ftell.o \
+	$(TEST_BUILD_DIR)/stdio_getc.o \
+	$(TEST_BUILD_DIR)/stdio_getchar.o \
+	$(TEST_BUILD_DIR)/stdio_getchar_unlocked.o \
+	$(TEST_BUILD_DIR)/stdio_gets.o \
+	$(TEST_BUILD_DIR)/stdio_getw.o \
+	$(TEST_BUILD_DIR)/stdio_perror.o \
+	$(TEST_BUILD_DIR)/stdio_putc.o \
+	$(TEST_BUILD_DIR)/stdio_putchar.o \
+	$(TEST_BUILD_DIR)/stdio_putchar_unlocked.o \
+	$(TEST_BUILD_DIR)/stdio_puts.o \
+	$(TEST_BUILD_DIR)/stdio_putw.o \
+	$(TEST_BUILD_DIR)/stdio_rewind.o \
+	$(TEST_BUILD_DIR)/stdio_setbuf.o
 	
 TEST_STDLIB_OBJS = \
 	$(TEST_BUILD_DIR)/stdlib_atoi.o \
@@ -209,6 +232,8 @@ TEST_OBJS = \
 	$(TEST_BUILD_DIR)/test_ctype_suite.o \
 	$(TEST_FILE_OBJS) \
 	$(TEST_BUILD_DIR)/test_file_suite.o \
+	$(TEST_STDIO_OBJS) \
+	$(TEST_BUILD_DIR)/test_stdio_suite.o \
 	$(TEST_STDLIB_OBJS) \
 	$(TEST_BUILD_DIR)/test_stdlib_suite.o \
 	$(TEST_STRING_OBJS) \
@@ -271,6 +296,9 @@ $(TEST_BUILD_DIR)/ctype_%.o: ctype.c $(TEST_BUILD_DIR)/.empty
 $(TEST_BUILD_DIR)/file_%.o: file.c $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -c -o $@ $<
 
+$(TEST_BUILD_DIR)/stdio_%.o: stdio.c $(TEST_BUILD_DIR)/.empty
+	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -c -o $@ $<
+
 $(TEST_BUILD_DIR)/stdlib_%.o: stdlib.c $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -c -o $@ $<
 
@@ -283,6 +311,9 @@ $(TEST_BUILD_DIR)/ctype_%.o.d: ctype.c $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -MM -MT $(TEST_BUILD_DIR)/ctype_$*.o $< > $@
 
 $(TEST_BUILD_DIR)/file_%.o.d: file.c $(TEST_BUILD_DIR)/.empty
+	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -MM -MT $(TEST_BUILD_DIR)/stdlib_$*.o $< > $@
+
+$(TEST_BUILD_DIR)/stdio_%.o.d: file.c $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -MM -MT $(TEST_BUILD_DIR)/stdlib_$*.o $< > $@
 
 $(TEST_BUILD_DIR)/stdlib_%.o.d: stdlib.c $(TEST_BUILD_DIR)/.empty

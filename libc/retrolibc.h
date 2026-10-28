@@ -54,6 +54,74 @@ int retrolibc_toupper(int c);
 #define toupper retrolibc_toupper
 #endif
 
+/* stdio.c */
+
+typedef struct
+{
+  off_t __offset;
+} retrolibc_fpos_t;
+
+extern FILE *mock_stdin;
+extern FILE *mock_stdout;
+extern FILE *mock_stderr;
+
+int retrolibc_fgetc(FILE *f);
+int retrolibc_fgetpos(FILE *f, retrolibc_fpos_t *pos);
+char *retrolibc_fgets(char *s, int n, FILE *f);
+int retrolibc_fputc(int c, FILE *f);
+int retrolibc_fputs(const char *s, FILE *f);
+long retrolibc_ftell(FILE *f);
+int retrolibc_fseek(FILE *f, long offset, int whence);
+int retrolibc_fsetpos(FILE *f, const retrolibc_fpos_t *pos);
+int retrolibc_getc(FILE *f);
+int retrolibc_getchar(void);
+int retrolibc_getchar_unlocked(void);
+char *retrolibc_gets(char *s);
+int retrolibc_getw(FILE *f);
+void retrolibc_perror(const char *s);
+int retrolibc_putc(int c, FILE *f);
+int retrolibc_putchar(int c);
+int retrolibc_putchar_unlocked(int c);
+int retrolibc_puts(const char *s);
+int retrolibc_putw(int w, FILE *f);
+void retrolibc_rewind(FILE *f);
+void retrolibc_setbuf(FILE *f, char *buf);
+
+#ifdef RETROLIBC_STDIO
+
+#define fpos_t retrolibc_fpos_t
+
+#undef stdin
+#undef stdout
+#undef stderr
+#define stdin mock_stdin
+#define stdout mock_stdout
+#define stderr mock_stderr
+
+#define fgetc retrolibc_fgetc
+#define fgetpos retrolibc_fgetpos
+#define fgets retrolibc_fgets
+#define fputc retrolibc_fputc
+#define fputs retrolibc_fputs
+#define ftell retrolibc_ftell
+#define fseek retrolibc_fseek
+#define fsetpos retrolibc_fsetpos
+#define getc retrolibc_getc
+#define getchar retrolibc_getchar
+#define getchar_unlocked retrolibc_getchar_unlocked
+#define gets retrolibc_gets
+#define getw retrolibc_getw
+#define perror retrolibc_perror
+#define putc retrolibc_putc
+#define putchar retrolibc_putchar
+#define putchar_unlocked retrolibc_putchar_unlocked
+#define puts retrolibc_puts
+#define putw retrolibc_putw
+#define rewind retrolibc_rewind
+#define setbuf retrolibc_setbuf
+
+#endif
+
 /* stdlib.c */
 
 int retrolibc_atoi(const char *s);

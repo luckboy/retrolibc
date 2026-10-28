@@ -12,7 +12,9 @@
 
 void clean_current_dir(void);
 int read_from_file(const char *filename, char *s, size_t max_size);
+int read_word_from_file(const char *filename, int *w);
 int write_to_file(const char *filename, const char *s);
+int write_word_to_file(const char *filename, int w);
 off_t get_file_pos(int fd);
 int set_file_pos(int fd, off_t offset);
 

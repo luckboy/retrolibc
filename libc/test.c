@@ -22,6 +22,7 @@ unsigned test_seed(void)
 { return static_test_seed; }
 
 int add_ctype_suite(void);
+int add_stdio_suite(void);
 int add_stdlib_suite(void);
 int add_string_suite(void);
 int add_bsearch_suite(void);
@@ -44,6 +45,10 @@ int main(int argc, char **argv)
   printf("test seed: %x\n", static_test_seed);
   if(CU_initialize_registry() != CUE_SUCCESS) return CU_get_error();
   if(add_ctype_suite() == -1) {
+    CU_cleanup_registry();
+    return CU_get_error();
+  }
+  if(add_stdio_suite() == -1) {
     CU_cleanup_registry();
     return CU_get_error();
   }

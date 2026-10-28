@@ -8,7 +8,12 @@
 #include <errno.h>
 #include <limits.h>
 #include <string.h>
+#ifndef TEST
 #include <stdio.h>
+#else
+#define RETROLIBC_STDIO
+#include "retrolibc.h"
+#endif
 
 #ifdef L_fclose
 int fclose(FILE *f)
@@ -44,7 +49,7 @@ char *fgets(char *s, int n, FILE *f)
   for(n--; n > 0; s++, n--) {
     int c = getc_unlocked(f);
     if(c == EOF) {
-      r = NULL;
+      if(s == r) r = NULL;
       break;
     }
     if((*s = c) == '\n') {
@@ -125,7 +130,7 @@ char *gets(char *s)
   for(;; s++) {
     int c = getc_unlocked(stdin);
     if(c == EOF) {
-      r = NULL;
+      if(s == r) r = NULL;
       break;
     }
     if(c == '\n') break;
@@ -150,7 +155,7 @@ int getw(FILE *f)
 void perror(const char *s)
 {
   flockfile(stderr);
-  if(s == NULL || *s == '\0') {
+  if(s != NULL && *s != '\0') {
     fputs(s, stderr);
     fputs(": ", stderr);
   }
