@@ -118,6 +118,7 @@ OBJS = \
 	$(BUILD_DIR)/malloc.o \
 	$(BUILD_DIR)/qsort.o \
 	$(BUILD_DIR)/strerror.o \
+	$(BUILD_DIR)/strtod.o \
 	$(BUILD_DIR)/strtol.o \
 	$(BUILD_DIR)/sys_errlist.o
 
