@@ -8,7 +8,12 @@
 #include <ctype.h>
 #include <errno.h>
 #include <math.h>
+#ifndef TEST 
 #include <stdlib.h>
+#else
+#define RETROLIBC_STRTOD
+#include "retrolibc.h"
+#endif
 
 double strtod(const char *s, char **endptr)
 {
@@ -49,7 +54,7 @@ double strtod(const char *s, char **endptr)
     const char *t = s + 1;
     if(*t == '+') {
       t++;
-    } else if(*s == '-') {
+    } else if(*t == '-') {
       exp_sign = -1.0;
       t++;
     }

@@ -342,6 +342,14 @@ void retrolibc_qsort(void *base, size_t n, size_t size, int (*cmp)(const void *,
 #define qsort retrolibc_qsort
 #endif
 
+/* strtod.c */
+
+double retrolibc_strtod(const char *s, char **endptr);
+
+#ifdef RETROLIBC_STRTOD
+#define strtod retrolibc_strtod
+#endif
+
 /* strtol.c */
 
 long retrolibc_strtol(const char *s, char **endptr, int base);

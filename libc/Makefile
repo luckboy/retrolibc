@@ -245,6 +245,8 @@ TEST_OBJS = \
 	$(TEST_BUILD_DIR)/test_malloc_suite.o \
 	$(TEST_BUILD_DIR)/qsort.o \
 	$(TEST_BUILD_DIR)/test_qsort_suite.o \
+	$(TEST_BUILD_DIR)/strtod.o \
+	$(TEST_BUILD_DIR)/test_strtod_suite.o \
 	$(TEST_BUILD_DIR)/strtol.o \
 	$(TEST_BUILD_DIR)/test_strtol_suite.o \
 	$(TEST_BUILD_DIR)/test.o

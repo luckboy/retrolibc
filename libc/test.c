@@ -29,6 +29,7 @@ int add_bsearch_suite(void);
 int add_file_suite(void);
 int add_malloc_suite(void);
 int add_qsort_suite(void);
+int add_strtod_suite(void);
 int add_strtol_suite(void);
 
 int main(int argc, char **argv)
@@ -73,6 +74,10 @@ int main(int argc, char **argv)
     return CU_get_error();
   }
   if(add_qsort_suite() == -1) {
+    CU_cleanup_registry();
+    return CU_get_error();
+  }
+  if(add_strtod_suite() == -1) {
     CU_cleanup_registry();
     return CU_get_error();
   }
