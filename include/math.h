@@ -14,6 +14,7 @@
 extern "C" {
 #endif
 
+double floor(double x);
 double log10(double x);
 double pow(double x, double y);
 

@@ -9,5 +9,6 @@
 #define _PRIV_STDLIB_H
 
 char *__ulltostr(char *buf, unsigned long long n, int base, int is_uppercase);
+char *__efcvt(double n, int ndigits, int *decpt, int *sign, char *buf, int max_ndigits, int is_ecvt);
 
 #endif
