@@ -28,6 +28,11 @@ char *__efcvt(double n, int ndigits, int *decpt, int *sign, char *buf, int max_n
     n = -n;
     tmp_sign = 1;
   }
+  if(n >= HUGE_VAL) {
+    *decpt = 0;
+    *sign = tmp_sign;
+    return (char *) "inf";
+  }
   exp10 = (n != 0.0 ? floor(log10(n)) : 0.0);
   n /= pow(10.0, exp10);
   if(n >= 10.0) {
