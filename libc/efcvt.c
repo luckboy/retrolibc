@@ -43,6 +43,12 @@ char *__efcvt(double n, int ndigits, int *decpt, int *sign, char *buf, int max_n
     if(tmp_decpt > 0 && ndigits > INT_MAX - tmp_decpt) return NULL;
     ndigits += tmp_decpt;
   }
+  n += 5.0 * pow(10.0, -ndigits); /* rounding */
+  if(n >= 10.0) {
+    n /= 10.0;
+    if(!is_ecvt) ndigits++;
+    tmp_decpt++;
+  }
   for(s = buf; max_ndigits > 0 && ndigits > 0; s++, max_ndigits--, ndigits--) {
     if(!must_be_nine) {
       double d = floor(n);

@@ -77,6 +77,24 @@ static void test___efcvt_converts_number_to_string_for_sign(void)
   CU_ASSERT_EQUAL(sign, 1);
 }
 
+static void test___efcvt_converts_number_to_string_for_rounding(void)
+{
+  char buf[501];
+  int decpt, sign;
+  CU_ASSERT_STRING_EQUAL(retrolibc___efcvt(1234.566, 6, &decpt, &sign, buf, 500, 1), "123457");
+  CU_ASSERT_EQUAL(decpt, 4);
+  CU_ASSERT_EQUAL(sign, 0);
+  CU_ASSERT_STRING_EQUAL(retrolibc___efcvt(3456.544, 6, &decpt, &sign, buf, 500, 1), "345654");
+  CU_ASSERT_EQUAL(decpt, 4);
+  CU_ASSERT_EQUAL(sign, 0);
+  CU_ASSERT_STRING_EQUAL(retrolibc___efcvt(1234.445, 6, &decpt, &sign, buf, 500, 1), "123445");
+  CU_ASSERT_EQUAL(decpt, 4);
+  CU_ASSERT_EQUAL(sign, 0);
+  CU_ASSERT_STRING_EQUAL(retrolibc___efcvt(999.9996, 6, &decpt, &sign, buf, 500, 1), "100000");
+  CU_ASSERT_EQUAL(decpt, 4);
+  CU_ASSERT_EQUAL(sign, 0);
+}
+
 static void test___efcvt_converts_number_to_string_for_fcvt(void)
 {
   char buf[501];
@@ -86,6 +104,24 @@ static void test___efcvt_converts_number_to_string_for_fcvt(void)
   CU_ASSERT_EQUAL(sign, 0);
   CU_ASSERT_STRING_EQUAL(retrolibc___efcvt(0.0123, 5, &decpt, &sign, buf, 500, 0), "1230");
   CU_ASSERT_EQUAL(decpt, -1);
+  CU_ASSERT_EQUAL(sign, 0);
+}
+
+static void test___efcvt_converts_number_to_string_for_rounding_and_fcvt(void)
+{
+  char buf[501];
+  int decpt, sign;
+  CU_ASSERT_STRING_EQUAL(retrolibc___efcvt(1234.566, 2, &decpt, &sign, buf, 500, 0), "123457");
+  CU_ASSERT_EQUAL(decpt, 4);
+  CU_ASSERT_EQUAL(sign, 0);
+  CU_ASSERT_STRING_EQUAL(retrolibc___efcvt(3456.544, 2, &decpt, &sign, buf, 500, 0), "345654");
+  CU_ASSERT_EQUAL(decpt, 4);
+  CU_ASSERT_EQUAL(sign, 0);
+  CU_ASSERT_STRING_EQUAL(retrolibc___efcvt(1234.445, 2, &decpt, &sign, buf, 500, 0), "123445");
+  CU_ASSERT_EQUAL(decpt, 4);
+  CU_ASSERT_EQUAL(sign, 0);
+  CU_ASSERT_STRING_EQUAL(retrolibc___efcvt(999.996, 2, &decpt, &sign, buf, 500, 0), "100000");
+  CU_ASSERT_EQUAL(decpt, 4);
   CU_ASSERT_EQUAL(sign, 0);
 }
 
@@ -109,7 +145,9 @@ int add_efcvt_suite(void)
   if(CU_add_test(suite, "__efcvt converts number to string for dot", test___efcvt_converts_number_to_string_for_dot) == NULL) return -1;
   if(CU_add_test(suite, "__efcvt converts number to string for exponent", test___efcvt_converts_number_to_string_for_exponent) == NULL) return -1;
   if(CU_add_test(suite, "__efcvt converts number to string for sign", test___efcvt_converts_number_to_string_for_sign) == NULL) return -1;
+  if(CU_add_test(suite, "__efcvt converts number to string for rounding", test___efcvt_converts_number_to_string_for_rounding) == NULL) return -1;
   if(CU_add_test(suite, "__efcvt converts number to string for fcvt", test___efcvt_converts_number_to_string_for_fcvt) == NULL) return -1;
+  if(CU_add_test(suite, "__efcvt converts number to string for rounding and fcvt", test___efcvt_converts_number_to_string_for_rounding_and_fcvt) == NULL) return -1;
   if(CU_add_test(suite, "__efcvt converts number to string for max number of digits", test___efcvt_converts_number_to_string_for_max_number_of_digits) == NULL) return -1;
   return 0;
 }
