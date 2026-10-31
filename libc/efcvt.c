@@ -13,9 +13,10 @@
 char *__efcvt(double n, int ndigits, int *decpt, int *sign, char *buf, int max_ndigits, int is_ecvt)
 {
   char *s;
-  double exp10, d;
+  double exp10;
   int tmp_decpt;
   int tmp_sign = 0;
+  int must_be_nine = 0;
   if(ndigits < 0) ndigits = 0;
   if(n < 0.0) {
     n = -n;
@@ -35,11 +36,20 @@ char *__efcvt(double n, int ndigits, int *decpt, int *sign, char *buf, int max_n
     if(tmp_decpt > 0 && ndigits > INT_MAX - tmp_decpt) return NULL;
     ndigits += tmp_decpt;
   }
-  for(s = buf; max_ndigits > 0 && ndigits > 0; s++, max_ndigits--, ndigits--, n = (n - d) * 10.0) {
-    int digit;
-    d = floor(n);
-    digit = (d > 9.0 ? 9 : ((int) d));
-    *s = digit + '0';
+  for(s = buf; max_ndigits > 0 && ndigits > 0; s++, max_ndigits--, ndigits--) {
+    if(!must_be_nine) {
+      double d = floor(n);
+      if(d <= 9.0) {
+        int digit = (int) d;
+        *s = digit + '0';
+        n = (n - d) * 10.0;
+      } else {
+        *s = '9';
+        must_be_nine = 1;
+      }
+    } else {
+      *s = '9';
+    }
   }
   *s = '\0';
   *decpt = tmp_decpt;
