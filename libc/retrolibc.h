@@ -364,4 +364,12 @@ unsigned long long retrolibc_strtoull(const char *s, char **endptr, int base);
 #define strtoull retrolibc_strtoull
 #endif
 
+/* ulltostr.c */
+
+char *retrolibc___ulltostr(char *buf, unsigned long long n, int base, int is_uppercase);
+
+#ifdef RETROLIBC_ULLTOSTR
+#define __ulltostr retrolibc___ulltostr
+#endif
+
 #endif

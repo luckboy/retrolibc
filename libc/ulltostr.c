@@ -6,7 +6,12 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 #include <stddef.h>
+#ifndef TEST
 #include "priv_stdlib.h"
+#else
+#define RETROLIBC_ULLTOSTR
+#include "retrolibc.h"
+#endif
 
 char *__ulltostr(char *buf, unsigned long long n, int base, int is_uppercase)
 {

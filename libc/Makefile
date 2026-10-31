@@ -251,6 +251,8 @@ TEST_OBJS = \
 	$(TEST_BUILD_DIR)/test_strtod_suite.o \
 	$(TEST_BUILD_DIR)/strtol.o \
 	$(TEST_BUILD_DIR)/test_strtol_suite.o \
+	$(TEST_BUILD_DIR)/ulltostr.o \
+	$(TEST_BUILD_DIR)/test_ulltostr_suite.o \
 	$(TEST_BUILD_DIR)/test.o
 
 TEST_DEPS = $(addsuffix .d, $(TEST_OBJS))
