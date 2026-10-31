@@ -23,6 +23,11 @@ char *__efcvt(double n, int ndigits, int *decpt, int *sign, char *buf, int max_n
   int tmp_decpt;
   int tmp_sign = 0;
   int must_be_nine = 0;
+  if(isnan(n)) {
+    *decpt = 0;
+    *sign = 0;
+    return (char *) "nan";
+  }
   if(ndigits < 0) ndigits = 0;
   if(n < 0.0) {
     n = -n;

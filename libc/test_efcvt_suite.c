@@ -138,6 +138,15 @@ static void test___efcvt_converts_huge_val_to_string(void)
   CU_ASSERT_EQUAL(sign, 1);
 }
 
+static void test___efcvt_converts_nan_to_string(void)
+{
+  char buf[501];
+  int decpt, sign;
+  CU_ASSERT_STRING_EQUAL(retrolibc___efcvt(NAN, 6, &decpt, &sign, buf, 500, 1), "nan");
+  CU_ASSERT_EQUAL(decpt, 0);
+  CU_ASSERT_EQUAL(sign, 0);
+}
+
 static void test___efcvt_converts_number_to_string_for_max_number_of_digits(void)
 {
   char buf[501];
@@ -162,6 +171,7 @@ int add_efcvt_suite(void)
   if(CU_add_test(suite, "__efcvt converts number to string for fcvt", test___efcvt_converts_number_to_string_for_fcvt) == NULL) return -1;
   if(CU_add_test(suite, "__efcvt converts number to string for rounding and fcvt", test___efcvt_converts_number_to_string_for_rounding_and_fcvt) == NULL) return -1;
   if(CU_add_test(suite, "__efcvt converts HUGE_VAL to string", test___efcvt_converts_huge_val_to_string) == NULL) return -1;
+  if(CU_add_test(suite, "__efcvt converts NAN to string", test___efcvt_converts_nan_to_string) == NULL) return -1;
   if(CU_add_test(suite, "__efcvt converts number to string for max number of digits", test___efcvt_converts_number_to_string_for_max_number_of_digits) == NULL) return -1;
   return 0;
 }
