@@ -26,6 +26,7 @@ int add_stdio_suite(void);
 int add_stdlib_suite(void);
 int add_string_suite(void);
 int add_bsearch_suite(void);
+int add_efcvt_suite(void);
 int add_file_suite(void);
 int add_malloc_suite(void);
 int add_qsort_suite(void);
@@ -63,6 +64,10 @@ int main(int argc, char **argv)
     return CU_get_error();
   }
   if(add_bsearch_suite() == -1) {
+    CU_cleanup_registry();
+    return CU_get_error();
+  }
+  if(add_efcvt_suite() == -1) {
     CU_cleanup_registry();
     return CU_get_error();
   }

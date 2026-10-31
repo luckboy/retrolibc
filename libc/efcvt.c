@@ -5,10 +5,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+#include <float.h>
 #include <limits.h>
 #include <math.h>
 #include <stddef.h>
+#ifndef TEST
 #include "priv_stdlib.h"
+#else
+#define RETROLIBC_EFCVT
+#include "retrolibc.h"
+#endif
  
 char *__efcvt(double n, int ndigits, int *decpt, int *sign, char *buf, int max_ndigits, int is_ecvt)
 {
@@ -27,10 +33,11 @@ char *__efcvt(double n, int ndigits, int *decpt, int *sign, char *buf, int max_n
   if(n >= 10.0) {
     n /= 10.0;
     exp10 += 1.0;
-  } else if(n < 1.0) {
+  } else if(n < 1.0 && n > 0.0) {
     n *= 10.0;
     exp10 -= 1.0;
   }
+  n += n * DBL_EPSILON; /* correction */
   tmp_decpt = exp10 + 1;
   if(!is_ecvt) {
     if(tmp_decpt > 0 && ndigits > INT_MAX - tmp_decpt) return NULL;

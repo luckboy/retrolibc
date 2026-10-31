@@ -197,6 +197,14 @@ void *retrolibc_bsearch(const void *key, const void *base, size_t n, size_t widt
 #define bsearch retrolibc_bsearch
 #endif
 
+/* efcvt.c */
+
+char *retrolibc___efcvt(double n, int ndigits, int *decpt, int *sign, char *buf, int max_ndigits, int is_ecvt);
+
+#ifdef RETROLIBC_EFCVT
+#define __efcvt retrolibc___efcvt
+#endif
+
 /* file.c */
 
 #define RETROLIBC_BUFSIZ        2048

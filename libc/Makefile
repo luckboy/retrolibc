@@ -243,6 +243,8 @@ TEST_OBJS = \
 	$(TEST_BUILD_DIR)/test_string_suite.o \
 	$(TEST_BUILD_DIR)/bsearch.o \
 	$(TEST_BUILD_DIR)/test_bsearch_suite.o \
+	$(TEST_BUILD_DIR)/efcvt.o \
+	$(TEST_BUILD_DIR)/test_efcvt_suite.o \
 	$(TEST_BUILD_DIR)/malloc.o \
 	$(TEST_BUILD_DIR)/test_malloc_suite.o \
 	$(TEST_BUILD_DIR)/qsort.o \
