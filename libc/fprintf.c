@@ -142,7 +142,7 @@ static void xconv_dioux(struct xwriter *xw, union arg *x, int conv_spec, int fla
   if(!is_signed) flags &= ~(FLAG_PLUS | FLAG_SPACE);
   if((flags & (FLAG_PLUS | FLAG_SPACE)) != 0 || is_sign) len++;
   /* prefix */
-  if(*buf == '\0' && prec == 0) flags &= ~FLAG_HASH;
+  if(*buf == '\0' && (base != 16 || prec == 0)) flags &= ~FLAG_HASH;
   if((flags & FLAG_HASH) != 0) len += (int) strlen(prefix);
   /* number */
   prec = (buf_len > prec ? buf_len : prec);
