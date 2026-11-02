@@ -189,7 +189,7 @@ static void xconv_f(struct xwriter *xw, double x, int flags, int width, int prec
   int i, n, len = 0;
   s = __efcvt(x, prec, &decpt, &is_sign, buf, DBL_DIG, is_g);
   if(is_g) {
-    for(i = strlen(buf) - 1; i > 0 && buf[i] == '0'; i--);
+    for(i = ((int) strlen(buf)) - 1; i > 0 && buf[i] == '0'; i--);
     i++;
     buf[i] = '\0';
   }
@@ -206,7 +206,7 @@ static void xconv_f(struct xwriter *xw, double x, int flags, int width, int prec
     } else {
       digits = (buf_len > decpt ? buf_len : decpt);
     }
-    len += digits;
+    len = (digits < INT_MAX - len ? len + digits : INT_MAX);
     if((flags & FLAG_ZERO) != 0) flags &= ~FLAG_MINUS;
   } else {
     len += strlen(s);
@@ -261,6 +261,7 @@ static void xconv_e(struct xwriter *xw, double x, int conv_spec, int flags, int 
   int decpt;
   int is_sign;
   int digits = 0;
+  int exp_digits;
   int exp = 0;
   int i, n, len = 0;
   if(isupper(conv_spec)) is_uppercase = 1;
@@ -269,7 +270,7 @@ static void xconv_e(struct xwriter *xw, double x, int conv_spec, int flags, int 
   }
   s = __efcvt(x, prec, &decpt, &is_sign, buf, DBL_DIG, 1);
   if(is_g) {
-    for(i = strlen(buf) - 1; i > 0 && buf[i] == '0'; i--);
+    for(i = ((int) strlen(buf)) - 1; i > 0 && buf[i] == '0'; i--);
     i++;
     buf[i] = '\0';
   }
@@ -282,13 +283,14 @@ static void xconv_e(struct xwriter *xw, double x, int conv_spec, int flags, int 
     if(buf_len > 1) len++;
     /* number */
     digits = (!is_g ? prec : buf_len);
-    len += digits;
+    len = (digits < INT_MAX - len ? len + digits : INT_MAX);
     /* exponent */
     buf_len += 2;
     exp = decpt - 1;
     __ulltostr(exp_buf, (unsigned long long) (exp >= 0 ? exp : -exp), 10, 0);
-    exp_buf_len = strlen(exp_buf);
-    len += (exp_buf_len >= 2 ? exp_buf_len : 2);
+    exp_buf_len = (int) strlen(exp_buf);
+    exp_digits = (exp_buf_len >= 2 ? exp_buf_len : 2);
+    len = (len < INT_MAX - exp_digits ? len + exp_digits : INT_MAX);
     if((flags & FLAG_ZERO) != 0) flags &= ~FLAG_MINUS;
   } else {
     len += strlen(s);
