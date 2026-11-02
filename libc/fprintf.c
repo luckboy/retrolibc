@@ -142,7 +142,7 @@ static void xconv_dioux(struct xwriter *xw, union arg *x, int conv_spec, int fla
   if(!is_signed) flags &= ~(FLAG_PLUS | FLAG_SPACE);
   if((flags & (FLAG_PLUS | FLAG_SPACE)) != 0 || is_sign) len++;
   /* prefix */
-  if(*buf == '\0') flags &= ~FLAG_HASH;
+  if(*buf == '\0' && prec == 0) flags &= ~FLAG_HASH;
   if((flags & FLAG_HASH) != 0) len += (int) strlen(prefix);
   /* number */
   prec = (buf_len > prec ? buf_len : prec);
@@ -490,10 +490,10 @@ static void xprintf(struct xwriter *xw, const char *format, va_list ap)
         if(*format == 'd' || *format == 'i') {
           switch(len_mod) {
           case LEN_MOD_HH:
-            arg.i = va_arg(ap, int);
+            arg.i = (signed char) va_arg(ap, int);
             break;
           case LEN_MOD_H:
-            arg.i = va_arg(ap, int);
+            arg.i = (short) va_arg(ap, int);
             break;
           case LEN_MOD_L:
             arg.i = va_arg(ap, long);
@@ -509,10 +509,10 @@ static void xprintf(struct xwriter *xw, const char *format, va_list ap)
         } else {
           switch(len_mod) {
           case LEN_MOD_HH:
-            arg.u = va_arg(ap, unsigned);
+            arg.u = (unsigned char) va_arg(ap, unsigned);
             break;
           case LEN_MOD_H:
-            arg.u = va_arg(ap, unsigned);
+            arg.u = (unsigned short) va_arg(ap, unsigned);
             break;
           case LEN_MOD_L:
             arg.u = va_arg(ap, unsigned long);
