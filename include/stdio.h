@@ -34,6 +34,11 @@ typedef struct
   off_t __offset;
 } fpos_t;
 
+#ifndef _VA_LIST
+#define _VA_LIST
+typedef __builtin_va_list va_list;
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -63,6 +68,13 @@ int puts(const char *s);
 int putw(int w, FILE *f);
 void rewind(FILE *f);
 void setbuf(FILE *f, char *buf);
+
+int fprintf(FILE *f, const char *format, ...);
+int snprintf(char *s, size_t n, const char *format, ...);
+int sprintf(char *s, const char *format, ...);
+int vfprintf(FILE *f, const char *format, va_list ap);
+int vsnprintf(char *s, size_t n, const char *format, va_list ap);
+int vsprintf(char *s, const char *format, va_list ap);
 
 void clearerr(FILE *f);
 int fclose(FILE *f);
