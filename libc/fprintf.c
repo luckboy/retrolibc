@@ -44,7 +44,7 @@ struct xwriter
   int n;
 };
 
-static int xputc(int c, struct xwriter *xw)
+static void xputc(int c, struct xwriter *xw)
 {
   int r = c;
   switch(xw->type) {
@@ -70,10 +70,7 @@ static int xputc(int c, struct xwriter *xw)
     xw->u.s.s++;
     break;
   }
-  if(r != EOF) {
-    if(xw->n < INT_MAX) xw->n++;
-  }
-  return r;
+  if(r != EOF && xw->n < INT_MAX) xw->n++;
 }
 
 #define FLAG_MINUS      (1 << 0)
