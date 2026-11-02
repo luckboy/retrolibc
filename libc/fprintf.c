@@ -94,7 +94,7 @@ union arg
   unsigned long long u;
 };
 
-static void xconv_dioux(struct xwriter *xw, union arg *x, int conv_spec, int flags, int width, int prec, int is_signed)
+static void xconv_dioux(struct xwriter *xw, const union arg *x, int conv_spec, int flags, int width, int prec, int is_signed)
 {
   char buf[23];
   int buf_len;
