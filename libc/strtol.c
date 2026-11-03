@@ -44,7 +44,7 @@ static unsigned long long strtoull_for_max(const char *s, char **endptr, int bas
     }
   } else {
     if(base == 16) {
-      if(*s =='0' && (s[1] == 'X' || s[1] == 'x')) {
+      if(*s == '0' && (s[1] == 'X' || s[1] == 'x')) {
         base = 16;
         s += 2;
       }
