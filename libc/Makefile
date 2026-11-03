@@ -117,6 +117,7 @@ OBJS = \
 	$(BUILD_DIR)/bsearch.o \
 	$(BUILD_DIR)/efcvt.o \
 	$(BUILD_DIR)/fprintf.o \
+	$(BUILD_DIR)/fscanf.o \
 	$(BUILD_DIR)/malloc.o \
 	$(BUILD_DIR)/qsort.o \
 	$(BUILD_DIR)/strerror.o \

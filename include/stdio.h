@@ -76,6 +76,11 @@ int vfprintf(FILE *f, const char *format, va_list ap);
 int vsnprintf(char *s, size_t n, const char *format, va_list ap);
 int vsprintf(char *s, const char *format, va_list ap);
 
+int fscanf(FILE *f, const char *format, ...);
+int sscanf(const char *s, const char *format, ...);
+int vfscanf(FILE *f, const char *format, va_list ap);
+int vsscanf(const char *s, const char *format, va_list ap);
+
 void clearerr(FILE *f);
 int fclose(FILE *f);
 FILE *fdopen(int fd, const char *mode);
