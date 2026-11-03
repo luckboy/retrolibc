@@ -105,7 +105,7 @@ union arg
   unsigned long long *llu;
 };
 
-static int xconv_dioux(struct xreader *xr, const union arg *x, int conv_spec, int width, enum len_mod len_mod, int is_signed)
+static int xconv_dioux(struct xreader *xr, const union arg *xp, int conv_spec, int width, enum len_mod len_mod, int is_signed)
 {
   int base;
   unsigned long long n, max_div_base, max_mod_base, max, min;
@@ -247,44 +247,44 @@ static int xconv_dioux(struct xreader *xr, const union arg *x, int conv_spec, in
   switch(len_mod) {
   case LEN_MOD_HH:
     if(is_signed) {
-      if(x->hhi != NULL) *(x->hhi) = (signed char) n;
+      if(xp->hhi != NULL) *(xp->hhi) = (signed char) n;
     } else {
-      if(x->hhu != NULL) *(x->hhu) = (unsigned char) n;
+      if(xp->hhu != NULL) *(xp->hhu) = (unsigned char) n;
     }
     break;
   case LEN_MOD_H:
     if(is_signed) {
-      if(x->hi != NULL) *(x->hi) = (short) n;
+      if(xp->hi != NULL) *(xp->hi) = (short) n;
     } else {
-      if(x->hu != NULL) *(x->hu) = (unsigned short) n;
+      if(xp->hu != NULL) *(xp->hu) = (unsigned short) n;
     }
     break;
   case LEN_MOD_L:
     if(is_signed) {
-      if(x->li != NULL) *(x->li) = (long) n;
+      if(xp->li != NULL) *(xp->li) = (long) n;
     } else {
-      if(x->lu != NULL) *(x->lu) = (unsigned long) n;
+      if(xp->lu != NULL) *(xp->lu) = (unsigned long) n;
     }
     break;
   case LEN_MOD_LL:
     if(is_signed) {
-      if(x->lli != NULL) *(x->lli) = (long long) n;
+      if(xp->lli != NULL) *(xp->lli) = (long long) n;
     } else {
-      if(x->llu != NULL) *(x->llu) = n;
+      if(xp->llu != NULL) *(xp->llu) = n;
     }
     break;
   default:
     if(is_signed) {
-      if(x->i != NULL) *(x->i) = (int) n;
+      if(xp->i != NULL) *(xp->i) = (int) n;
     } else {
-      if(x->u != NULL) *(x->u) = (unsigned) n;
+      if(xp->u != NULL) *(xp->u) = (unsigned) n;
     }
     break;
   }
   return 0;
 }
 
-static int xconv_efg(struct xreader *xr, double *x, int width)
+static int xconv_efg(struct xreader *xr, double *xp, int width)
 {
   double n, d;
   double sign = 1.0;
@@ -368,7 +368,7 @@ static int xconv_efg(struct xreader *xr, double *x, int width)
     }
   }
   /* Stores number */
-  if(x != NULL) *x = n;
+  if(xp != NULL) *xp = n;
   return 0;
 }
 
@@ -434,26 +434,26 @@ static int xconv_bracket(struct xreader *xr, char *s, const char *set, int width
   return 0;
 }
 
-static int xconv_c(struct xreader *xr, char *c, int width)
+static int xconv_c(struct xreader *xr, char *cp, int width)
 {
-  int d;
+  int c;
   /* Reads characters. */
   /* characters */
-  for(; (width == -1 || width > 0) && (d = xgetc(xr)) != EOF; c++) {
+  for(; (width == -1 || width > 0) && (c = xgetc(xr)) != EOF; cp++) {
     width--;
-    *c = d;
+    *cp = c;
   }
   return 0;
 }
 
 
-static int xconv_p(struct xreader *xr, void **p, int width)
+static int xconv_p(struct xreader *xr, void **pp, int width)
 {
   union arg arg;
   unsigned long x;
   arg.lu = &x;
   if(xconv_dioux(xr, &arg, 'p', width, LEN_MOD_L, 0) == -1) return -1;
-  *p = (void *) x;
+  *pp = (void *) x;
   return 0;
 }
 
