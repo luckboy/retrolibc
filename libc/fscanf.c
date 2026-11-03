@@ -421,7 +421,7 @@ static int xconv_bracket(struct xreader *xr, char *s, const char *set, int width
       *s = c;
     } else {
       xungetc(c, xr);
-      width++;
+      if(width != -1) width++;
       break;
     }
   }
