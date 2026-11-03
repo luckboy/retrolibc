@@ -358,7 +358,7 @@ static int xconv_efg(struct xreader *xr, double *xp, int width)
       n *= sign * pow(10.0, exp);
     }
   }
-  /* Stores number */
+  /* Stores number. */
   if(xp != NULL) *xp = n;
   return 0;
 }
@@ -425,7 +425,7 @@ static int xconv_bracket(struct xreader *xr, char *s, const char *set, int width
 static int xconv_c(struct xreader *xr, char *cp, int width)
 {
   int c;
-  for(; (c = xgetc_with_width(xr, &width)) != EOF;) {
+  while((c = xgetc_with_width(xr, &width)) != EOF) {
     if(cp != NULL) {
       *cp = c;
       cp++;
@@ -433,7 +433,6 @@ static int xconv_c(struct xreader *xr, char *cp, int width)
   }
   return 0;
 }
-
 
 static int xconv_p(struct xreader *xr, void **pp, int width)
 {
