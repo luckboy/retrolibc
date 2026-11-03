@@ -16,16 +16,16 @@
 #include <stdio.h>
 #include "priv_stdlib.h"
 
-enum xtype
+enum xwriter_type
 {
-  XTYPE_F,
-  XTYPE_SN,
-  XTYPE_S
+  XWRITER_TYPE_F,
+  XWRITER_TYPE_SN,
+  XWRITER_TYPE_S
 };
 
 struct xwriter
 {
-  enum xtype type;
+  enum xwriter_type type;
   union {
     struct {
       FILE *f;
@@ -48,7 +48,7 @@ static void xputc(int c, struct xwriter *xw)
 {
   int r = c;
   switch(xw->type) {
-  case XTYPE_F:
+  case XWRITER_TYPE_F:
     if(xw->u.f.is_stopped) {
       r = putc_unlocked(c, xw->u.f.f);
       if(r == EOF) xw->u.f.is_stopped = 1;
@@ -56,7 +56,7 @@ static void xputc(int c, struct xwriter *xw)
       r = EOF;
     }
     break;
-  case XTYPE_SN:
+  case XWRITER_TYPE_SN:
     if(xw->u.sn.n > 1) {
       *(xw->u.sn.s) = c;
       xw->u.sn.s++;
@@ -601,7 +601,7 @@ int vfprintf(FILE *f, const char *format, va_list ap)
 {
   struct xwriter xw;
   int r;
-  xw.type = XTYPE_F;
+  xw.type = XWRITER_TYPE_F;
   xw.u.f.f = f;
   xw.u.f.is_stopped = 0;
   xw.n = 0;
@@ -616,7 +616,7 @@ int vsnprintf(char *s, size_t n, const char *format, va_list ap)
 {
   struct xwriter xw;
   int r;
-  xw.type = XTYPE_SN;
+  xw.type = XWRITER_TYPE_SN;
   xw.u.sn.s = s;
   xw.u.sn.n = n;
   xw.n = 0;
@@ -630,7 +630,7 @@ int vsprintf(char *s, const char *format, va_list ap)
 {
   struct xwriter xw;
   int r;
-  xw.type = XTYPE_S;
+  xw.type = XWRITER_TYPE_S;
   xw.u.s.s = s;
   xw.n = 0;
   xprintf(&xw, format, ap);
