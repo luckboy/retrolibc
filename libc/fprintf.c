@@ -132,7 +132,7 @@ static void xconv_dioux(struct xwriter *xw, const union arg *x, int conv_spec, i
   } else {
     __ulltostr(buf, x->u, base, is_uppercase);
   }
-  if(strcmp(buf, "0") == 0) *buf = '\0';
+  if(*buf == '0' && buf[1] == '\0') *buf = '\0';
   buf_len = (int) strlen(buf);
   /* Calculates length. */ 
   /* sign */
