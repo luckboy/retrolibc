@@ -6,7 +6,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 #include <ctype.h>
-#include <errno.h>
 #include <float.h>
 #include <limits.h>
 #include <math.h>
