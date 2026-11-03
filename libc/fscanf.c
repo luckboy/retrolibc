@@ -82,6 +82,21 @@ static void xungetc(int c, struct xreader *xr)
   xr->n--;
 }
 
+static int xgetc_with_width(struct xreader *xr, int *width)
+{
+  int c;
+  if(*width != -1 && *width <= 0) return EOF;
+  c = xgetc(xr);
+  if(c != EOF && *width > 0) (*width)--;
+  return c;
+}
+
+static void xungetc_with_width(int c, struct xreader *xr, int *width)
+{
+  xungetc(c, xr);
+  if(c != EOF && *width != -1) (*width)++;
+}
+
 enum len_mod
 {
   LEN_MOD_HH,
@@ -151,49 +166,39 @@ static int xconv_dioux(struct xreader *xr, const union arg *xp, int conv_spec, i
   while((c = xgetc(xr)) != EOF && isspace(c));
   xungetc(c, xr);
   /* sign */
-  c = ((width == -1 || width > 0) ? xgetc(xr) : EOF);
-  if(width > 0) width--;
+  c = xgetc_with_width(xr, &width);
   if(c == '+' || c == '-') {
     if(c == '-') sign = -1;
   } else {
-    xungetc(c, xr);
-    if(width != -1) width++;
+    xungetc_with_width(c, xr, &width);
   }
   /* base */
   if(base == 0) {
-    c = ((width == -1 || width > 0) ? xgetc(xr) : EOF);
-    if(width > 0) width--;
+    c = xgetc_with_width(xr, &width);
     if(c == '0') {
-      c = ((width == -1 || width > 0) ? xgetc(xr) : EOF);
-      if(width > 0) width--;
+      c = xgetc_with_width(xr, &width);
       if(c == 'X' || c == 'x') {
         base = 16;
       } else {
         base = 8;
         is_digit = 1;
-        xungetc(c, xr);
-        if(width != -1) width++;
+        xungetc_with_width(c, xr, &width);
       }
     } else {
       base = 10;
-      xungetc(c, xr);
-      if(width != -1) width++;
+      xungetc_with_width(c, xr, &width);
     }
   } else {
-    c = ((width == -1 || width > 0) ? xgetc(xr) : EOF);
-    if(width > 0) width--;
+    c = xgetc_with_width(xr, &width);
     if(base == 16) {
-      c = ((width == -1 || width > 0) ? xgetc(xr) : EOF);
-      if(width > 0) width--;
+      c = xgetc_with_width(xr, &width);
       if(c == '0') {
-        c = ((width == -1 || width > 0) ? xgetc(xr) : EOF);
-        if(width > 0) width--;
+        c = xgetc_with_width(xr, &width);
         if(c == 'X' || c == 'x') {
           base = 16;
         } else {
           is_digit = 1;
-          xungetc(c, xr);
-          if(width != -1) width++;
+          xungetc_with_width(c, xr, &width);
         }
       }
     }
@@ -201,9 +206,8 @@ static int xconv_dioux(struct xreader *xr, const union arg *xp, int conv_spec, i
   max_div_base = ULLONG_MAX / base;
   max_mod_base = ULLONG_MAX % base;
   /* number */
-  for(n = 0; (width == -1 || width > 0) && (c = xgetc(xr)) != EOF;) {
+  for(n = 0; (c = xgetc_with_width(xr, &width)) != EOF;) {
     int digit;
-    if(width > 0) width--;
     if(c >= '0' && c <= (base >= 10 ? '9' : '0' + base - 1)) {
       digit = c - '0';
       is_digit = 1;
@@ -215,13 +219,11 @@ static int xconv_dioux(struct xreader *xr, const union arg *xp, int conv_spec, i
         digit = c - 'a' + 10;
         is_digit = 1;
       } else {
-        xungetc(c, xr);
-        if(width != -1) width++;
+        xungetc_with_width(c, xr, &width);
         break;
       }
     } else {
-      xungetc(c, xr);
-      if(width != -1) width++;
+      xungetc_with_width(c, xr, &width);
       break;
     }
     if(is_overflow) continue;
@@ -299,17 +301,14 @@ static int xconv_efg(struct xreader *xr, double *xp, int width)
   while((c = xgetc(xr)) != EOF && isspace(c));
   xungetc(c, xr);
   /* sign */
-  c = ((width == -1 || width > 0) ? xgetc(xr) : EOF);
-  if(width > 0) width--;
+  c = xgetc_with_width(xr, &width);
   if(c == '+' || c == '-') {
     if(c == '-') sign = -1;
   } else {
-    xungetc(c, xr);
-    if(width != -1) width++;
+    xungetc_with_width(c, xr, &width);
   }
   /* number */
-  for(n = 0.0; (width == -1 || width > 0) && (c = xgetc(xr)) != EOF;) {
-    if(width > 0) width--;
+  for(n = 0.0; (c = xgetc_with_width(xr, &width)) != EOF;) {
     if(isdigit(c)) {
       int digit = c - '0';
       if(c != '0') are_only_zeros = 0;
@@ -325,35 +324,27 @@ static int xconv_efg(struct xreader *xr, double *xp, int width)
       is_dot = 1;
       d = 10.0;
     } else {
-      xungetc(c, xr);
-      if(width != -1) width++;
+      xungetc_with_width(c, xr, &width);
       break;
     }
   }
   if(!is_digit) return -1;
   /* exponent */
-  c = ((width == -1 || width > 0) ? xgetc(xr) : EOF);
-  if(width > 0) width--;
+  c = xgetc_with_width(xr, &width);
   if(c == 'E' || c == 'e') {
     double exp_sign = 1.0;
-    c = ((width == -1 || width > 0) ? xgetc(xr) : EOF);
-    if(width > 0) width--;
+    c = xgetc_with_width(xr, &width);
     if(c == '+' || c == '-') {
       if(c == '-') exp_sign = -1.0;
     } else {
-      xungetc(c, xr);
-      if(width != -1) width++;
+      xungetc_with_width(c, xr, &width);
     }
-    c = ((width == -1 || width > 0) ? xgetc(xr) : EOF);
-    if(width > 0) width--;
-    for(; (width == -1 || width > 0) && (c = xgetc(xr)) != EOF; ) {
-      if(width > 0) width--;
+    for(; (c = xgetc_with_width(xr, &width)) != EOF; ) {
       if(isdigit(c)) {
         exp = exp * 10.0 + (c - '0');
         is_exp_digit = 1;
       } else {
-        xungetc(c, xr);
-        if(width != -1) width++;
+        xungetc_with_width(c, xr, &width);
         break;
       }
     }
@@ -381,14 +372,8 @@ static int xconv_s(struct xreader *xr, char *s, int width)
   while((c = xgetc(xr)) != EOF && isspace(c));
   xungetc(c, xr);
   /* string */
-  for(c = EOF; (width == -1 || width > 0) && (c = xgetc(xr)) != EOF && !isspace(c); s++) {
-    if(width > 0) width--;
-    *s = c;
-  }
-  if(c == EOF) {
-    xungetc(c, xr);
-    if(width != -1) width++;
-  }
+  for(c = EOF; (c = xgetc_with_width(xr, &width)) != EOF && !isspace(c); s++) *s = c;
+  xungetc_with_width(c, xr, &width);
   *s = '\0';
   if(s == t) return -1;
   return 0;
@@ -406,7 +391,7 @@ static int xconv_bracket(struct xreader *xr, char *s, const char *set, int width
     set++;
   }
   /* string */
-  for(c = EOF; (width == -1 || width > 0) && (c = xgetc(xr)) != EOF; s++) {
+  for(c = EOF; (c = xgetc_with_width(xr, &width)) != EOF; s++) {
     const char *tmp_set;
     int is_matched = 0;
     for(tmp_set = set; *tmp_set != ']'; tmp_set++) {
@@ -420,15 +405,10 @@ static int xconv_bracket(struct xreader *xr, char *s, const char *set, int width
     if(!is_caret ? is_matched : !is_matched) {
       *s = c;
     } else {
-      xungetc(c, xr);
-      if(width != -1) width++;
       break;
     }
   }
-  if(c != EOF) {
-    xungetc(c, xr);
-    if(width != -1) width++;
-  }
+  xungetc_with_width(c, xr, &width);
   *s = '\0';
   if(s == t) return -1;
   return 0;
@@ -437,10 +417,7 @@ static int xconv_bracket(struct xreader *xr, char *s, const char *set, int width
 static int xconv_c(struct xreader *xr, char *cp, int width)
 {
   int c;
-  for(; (width == -1 || width > 0) && (c = xgetc(xr)) != EOF; cp++) {
-    width--;
-    *cp = c;
-  }
+  for(; (c = xgetc_with_width(xr, &width)) != EOF; cp++) *cp = c;
   return 0;
 }
 
@@ -567,6 +544,7 @@ static int xscanf(struct xreader *xr, const char *format, va_list ap)
         }
         break;
       case 'c':
+        if(width == -1) width = 1;
         if(xconv_c(xr, va_arg(ap, char *), width) == -1) is_stop = 1;
         break;
       case 'p':
