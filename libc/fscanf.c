@@ -365,23 +365,28 @@ static int xconv_efg(struct xreader *xr, double *xp, int width)
 
 static int xconv_s(struct xreader *xr, char *s, int width)
 {
-  char *t = s;
+  int is_char = 0;
   int c;
   /* Reads string. */
   /* space padding */
   while((c = xgetc(xr)) != EOF && isspace(c));
   xungetc(c, xr);
   /* string */
-  for(c = EOF; (c = xgetc_with_width(xr, &width)) != EOF && !isspace(c); s++) *s = c;
+  for(c = EOF; (c = xgetc_with_width(xr, &width)) != EOF && !isspace(c); is_char = 1) {
+    if(s != NULL) {
+      *s = c;
+      s++;
+    }
+  }
   xungetc_with_width(c, xr, &width);
   *s = '\0';
-  if(s == t) return -1;
+  if(!is_char) return -1;
   return 0;
 }
 
 static int xconv_bracket(struct xreader *xr, char *s, const char *set, int width)
 {
-  char *t = s;
+  int is_char = 0;
   int is_caret = 0;
   int c;
   /* Reads string. */
@@ -391,33 +396,41 @@ static int xconv_bracket(struct xreader *xr, char *s, const char *set, int width
     set++;
   }
   /* string */
-  for(c = EOF; (c = xgetc_with_width(xr, &width)) != EOF; s++) {
+  for(c = EOF; (c = xgetc_with_width(xr, &width)) != EOF; is_char = 1) {
     const char *tmp_set;
     int is_matched = 0;
     for(tmp_set = set; *tmp_set != ']'; tmp_set++) {
       if(*tmp_set != ']' && tmp_set[1] == '-' && tmp_set[2] != ']') {
         is_matched |= (c >= *tmp_set && c <= *tmp_set);
-        t += 2;
+        tmp_set += 2;
       } else {
         is_matched |= (c == *tmp_set);
       }
     }
     if(!is_caret ? is_matched : !is_matched) {
-      *s = c;
+      if(s != NULL) {
+        *s = c;
+        s++;
+      }
     } else {
       break;
     }
   }
   xungetc_with_width(c, xr, &width);
   *s = '\0';
-  if(s == t) return -1;
+  if(!is_char) return -1;
   return 0;
 }
 
 static int xconv_c(struct xreader *xr, char *cp, int width)
 {
   int c;
-  for(; (c = xgetc_with_width(xr, &width)) != EOF; cp++) *cp = c;
+  for(; (c = xgetc_with_width(xr, &width)) != EOF;) {
+    if(cp != NULL) {
+      *cp = c;
+      cp++;
+    }
+  }
   return 0;
 }
 
@@ -428,7 +441,7 @@ static int xconv_p(struct xreader *xr, void **pp, int width)
   unsigned long x;
   arg.lu = &x;
   if(xconv_dioux(xr, &arg, 'p', width, LEN_MOD_L, 0) == -1) return -1;
-  *pp = (void *) x;
+  if(pp != NULL) *pp = (void *) x;
   return 0;
 }
 
@@ -528,15 +541,15 @@ static int xscanf(struct xreader *xr, const char *format, va_list ap)
       case 'e':
       case 'f':
       case 'g':
-        if(xconv_efg(xr, va_arg(ap, double *), width) == -1) is_stop = 1;
+        if(xconv_efg(xr, !is_skip ? va_arg(ap, double *) : NULL, width) == -1) is_stop = 1;
         break;
       case 's':
-        if(xconv_s(xr, va_arg(ap, char *), width) == -1) is_stop = 1;
+        if(xconv_s(xr, !is_skip ? va_arg(ap, char *) : NULL, width) == -1) is_stop = 1;
         break;
       case '[':
         tmp_s = strchr(format, ']');
         if(tmp_s != NULL) {
-          if(xconv_bracket(xr, va_arg(ap, char *), format + 1, width) == -1) is_stop = 1;
+          if(xconv_bracket(xr, !is_skip ? va_arg(ap, char *) : NULL, format + 1, width) == -1) is_stop = 1;
           format = tmp_s;
         } else {
           is_conv = 0;
@@ -545,15 +558,17 @@ static int xscanf(struct xreader *xr, const char *format, va_list ap)
         break;
       case 'c':
         if(width == -1) width = 1;
-        if(xconv_c(xr, va_arg(ap, char *), width) == -1) is_stop = 1;
+        if(xconv_c(xr, !is_skip ? va_arg(ap, char *) : NULL, width) == -1) is_stop = 1;
         break;
       case 'p':
-        if(xconv_p(xr, va_arg(ap, void **), width) == -1) is_stop = 1;
+        if(xconv_p(xr, !is_skip ? va_arg(ap, void **) : NULL, width) == -1) is_stop = 1;
         break;
       case 'n':
-        np = va_arg(ap, int *);
-        *np = xr->n;
-        is_n = 1;
+        if(!is_skip) {
+          np = va_arg(ap, int *);
+          *np = xr->n;
+          is_n = 1;
+        }
         break;
       default:
         is_conv = 0;
