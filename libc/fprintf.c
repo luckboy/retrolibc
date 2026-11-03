@@ -361,9 +361,9 @@ static void xconv_c(struct xwriter *xw, int c, int flags, int width)
 
 static void xconv_s(struct xwriter *xw, const char *s, int flags, int width, int prec)
 {
-  int n, len32;
+  int ni, leni;
   size_t s_len = strlen(s);
-  size_t m, len;
+  size_t n, len;
   /* Calculates length. */
   /* string */
   if(prec != -1) {
@@ -371,17 +371,17 @@ static void xconv_s(struct xwriter *xw, const char *s, int flags, int width, int
   } else {
     len = s_len;
   }
-  len32 = (len < ((size_t) INT_MAX) ? ((int) len) : INT_MAX);
+  leni = (len < ((size_t) INT_MAX) ? ((int) len) : INT_MAX);
   /* Prints string. */
   /* space padding */
   if((flags & FLAG_MINUS) == 0) {
-    for(n = width - len32; n > 0; n--) xputc(' ', xw);
+    for(ni = width - leni; ni > 0; ni--) xputc(' ', xw);
   }
   /* string */
-  for(m = len; m > 0 && *s != '\0'; m--) xputc((int) ((unsigned char) (*s)), xw);
+  for(n = len; n > 0 && *s != '\0'; n--) xputc((int) ((unsigned char) (*s)), xw);
   /* space padding */
   if((flags & FLAG_MINUS) != 0) {
-    for(n = width - len32; n > 0; n--) xputc(' ', xw);
+    for(ni = width - leni; ni > 0; ni--) xputc(' ', xw);
   }
 }
 
