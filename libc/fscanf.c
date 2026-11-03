@@ -437,8 +437,6 @@ static int xconv_bracket(struct xreader *xr, char *s, const char *set, int width
 static int xconv_c(struct xreader *xr, char *cp, int width)
 {
   int c;
-  /* Reads characters. */
-  /* characters */
   for(; (width == -1 || width > 0) && (c = xgetc(xr)) != EOF; cp++) {
     width--;
     *cp = c;
