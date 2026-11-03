@@ -27,7 +27,8 @@ struct xwriter
 {
   enum xwriter_type type;
   union {
-    struct {
+    struct
+    {
       FILE *f;
       int is_stopped;
     } f;
@@ -49,7 +50,7 @@ static void xputc(int c, struct xwriter *xw)
   int r = c;
   switch(xw->type) {
   case XWRITER_TYPE_F:
-    if(xw->u.f.is_stopped) {
+    if(!xw->u.f.is_stopped) {
       r = putc_unlocked(c, xw->u.f.f);
       if(r == EOF) xw->u.f.is_stopped = 1;
     } else {
@@ -514,7 +515,6 @@ static void xprintf(struct xwriter *xw, const char *format, va_list ap)
           case LEN_MOD_L:
             arg.u = va_arg(ap, unsigned long);
             break;
-            
           case LEN_MOD_LL:
             arg.u = va_arg(ap, unsigned long long);
             break;
