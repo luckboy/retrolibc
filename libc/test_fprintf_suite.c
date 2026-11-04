@@ -314,13 +314,13 @@ static void test_sprintf_formats_number_for_d_with_0_and_minus_and_width(void)
 {
   static char buf[100];
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-10d", 1234), 10);
-  CU_ASSERT_STRING_EQUAL(buf, "0000001234");
+  CU_ASSERT_STRING_EQUAL(buf, "1234      ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-10d", -3456), 10);
-  CU_ASSERT_STRING_EQUAL(buf, "-000003456");
+  CU_ASSERT_STRING_EQUAL(buf, "-3456     ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-10d", 123499), 10);
-  CU_ASSERT_STRING_EQUAL(buf, "0000123499");
+  CU_ASSERT_STRING_EQUAL(buf, "123499    ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-10d", 0), 10);
-  CU_ASSERT_STRING_EQUAL(buf, "0000000000");
+  CU_ASSERT_STRING_EQUAL(buf, "0         ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-3d", 1234), 4);
   CU_ASSERT_STRING_EQUAL(buf, "1234");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-3d", -3456), 5);
@@ -328,7 +328,7 @@ static void test_sprintf_formats_number_for_d_with_0_and_minus_and_width(void)
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-3d", 123499), 6);
   CU_ASSERT_STRING_EQUAL(buf, "123499");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-3d", 0), 3);
-  CU_ASSERT_STRING_EQUAL(buf, "000"); 
+  CU_ASSERT_STRING_EQUAL(buf, "0  ");
 }
 
 static void test_sprintf_formats_number_for_d_with_minus_and_width(void)
@@ -635,13 +635,13 @@ static void test_sprintf_formats_number_for_i_with_0_and_minus_and_width(void)
 {
   static char buf[100];
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-10i", 1234), 10);
-  CU_ASSERT_STRING_EQUAL(buf, "0000001234");
+  CU_ASSERT_STRING_EQUAL(buf, "1234      ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-10i", -3456), 10);
-  CU_ASSERT_STRING_EQUAL(buf, "-000003456");
+  CU_ASSERT_STRING_EQUAL(buf, "-3456     ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-10i", 123499), 10);
-  CU_ASSERT_STRING_EQUAL(buf, "0000123499");
+  CU_ASSERT_STRING_EQUAL(buf, "123499    ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-10i", 0), 10);
-  CU_ASSERT_STRING_EQUAL(buf, "0000000000");
+  CU_ASSERT_STRING_EQUAL(buf, "0         ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-3i", 1234), 4);
   CU_ASSERT_STRING_EQUAL(buf, "1234");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-3i", -3456), 5);
@@ -649,7 +649,6 @@ static void test_sprintf_formats_number_for_i_with_0_and_minus_and_width(void)
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-3i", 123499), 6);
   CU_ASSERT_STRING_EQUAL(buf, "123499");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-3i", 0), 3);
-  CU_ASSERT_STRING_EQUAL(buf, "000"); 
 }
 
 static void test_sprintf_formats_number_for_i_with_minus_and_width(void)
@@ -956,13 +955,13 @@ static void test_sprintf_formats_number_for_o_with_0_and_minus_and_width(void)
 {
   static char buf[100];
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-10o", 01234U), 10);
-  CU_ASSERT_STRING_EQUAL(buf, "0000001234");
+  CU_ASSERT_STRING_EQUAL(buf, "1234      ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-10o", 03456U), 10);
-  CU_ASSERT_STRING_EQUAL(buf, "0000003456");
+  CU_ASSERT_STRING_EQUAL(buf, "3456      ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-10o", 0123477U), 10);
-  CU_ASSERT_STRING_EQUAL(buf, "0000123477");
+  CU_ASSERT_STRING_EQUAL(buf, "123477    ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-10o", 0U), 10);
-  CU_ASSERT_STRING_EQUAL(buf, "0000000000");
+  CU_ASSERT_STRING_EQUAL(buf, "0         ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-3o", 01234U), 4);
   CU_ASSERT_STRING_EQUAL(buf, "1234");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-3o", 03456U), 4);
@@ -970,7 +969,7 @@ static void test_sprintf_formats_number_for_o_with_0_and_minus_and_width(void)
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-3o", 0123477U), 6);
   CU_ASSERT_STRING_EQUAL(buf, "123477");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-3o", 0U), 3);
-  CU_ASSERT_STRING_EQUAL(buf, "000"); 
+  CU_ASSERT_STRING_EQUAL(buf, "0  ");
 }
 
 static void test_sprintf_formats_number_for_o_with_minus_and_width(void)
@@ -1277,13 +1276,13 @@ static void test_sprintf_formats_number_for_u_with_0_and_minus_and_width(void)
 {
   static char buf[100];
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-10u", 1234U), 10);
-  CU_ASSERT_STRING_EQUAL(buf, "0000001234");
+  CU_ASSERT_STRING_EQUAL(buf, "1234      ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-10u", 3456U), 10);
-  CU_ASSERT_STRING_EQUAL(buf, "0000003456");
+  CU_ASSERT_STRING_EQUAL(buf, "3456      ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-10u", 123499U), 10);
-  CU_ASSERT_STRING_EQUAL(buf, "0000123499");
+  CU_ASSERT_STRING_EQUAL(buf, "123499    ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-10u", 0U), 10);
-  CU_ASSERT_STRING_EQUAL(buf, "0000000000");
+  CU_ASSERT_STRING_EQUAL(buf, "0         ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-3u", 1234U), 4);
   CU_ASSERT_STRING_EQUAL(buf, "1234");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-3u", 3456U), 4);
@@ -1291,7 +1290,7 @@ static void test_sprintf_formats_number_for_u_with_0_and_minus_and_width(void)
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-3u", 123499U), 6);
   CU_ASSERT_STRING_EQUAL(buf, "123499");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-3u", 0U), 3);
-  CU_ASSERT_STRING_EQUAL(buf, "000"); 
+  CU_ASSERT_STRING_EQUAL(buf, "0  ");
 }
 
 static void test_sprintf_formats_number_for_u_with_minus_and_width(void)
@@ -1598,13 +1597,13 @@ static void test_sprintf_formats_number_for_x_with_0_and_minus_and_width(void)
 {
   static char buf[100];
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-10x", 0x1234), 10);
-  CU_ASSERT_STRING_EQUAL(buf, "0000001234");
+  CU_ASSERT_STRING_EQUAL(buf, "1234      ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-10x", 0x12af), 10);
-  CU_ASSERT_STRING_EQUAL(buf, "00000012af");
+  CU_ASSERT_STRING_EQUAL(buf, "12af      ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-10x", 0xfa1299), 10);
-  CU_ASSERT_STRING_EQUAL(buf, "0000fa1299");
+  CU_ASSERT_STRING_EQUAL(buf, "fa1299    ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-10x", 0), 10);
-  CU_ASSERT_STRING_EQUAL(buf, "0000000000");
+  CU_ASSERT_STRING_EQUAL(buf, "0         ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-3x", 0x1234), 4);
   CU_ASSERT_STRING_EQUAL(buf, "1234");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-3x", 0x12af), 4);
@@ -1612,7 +1611,7 @@ static void test_sprintf_formats_number_for_x_with_0_and_minus_and_width(void)
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-3x", 0xfa1299), 6);
   CU_ASSERT_STRING_EQUAL(buf, "fa1299");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-3x", 0), 3);
-  CU_ASSERT_STRING_EQUAL(buf, "000");
+  CU_ASSERT_STRING_EQUAL(buf, "0  ");
 }
 
 static void test_sprintf_formats_number_for_x_with_minus_and_width(void)
@@ -1919,13 +1918,13 @@ static void test_sprintf_formats_number_for_uppercase_x_with_0_and_minus_and_wid
 {
   static char buf[100];
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-10X", 0x1234), 10);
-  CU_ASSERT_STRING_EQUAL(buf, "0000001234");
+  CU_ASSERT_STRING_EQUAL(buf, "1234      ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-10X", 0x12AF), 10);
-  CU_ASSERT_STRING_EQUAL(buf, "00000012AF");
+  CU_ASSERT_STRING_EQUAL(buf, "12AF      ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-10X", 0xFA1299), 10);
-  CU_ASSERT_STRING_EQUAL(buf, "0000FA1299");
+  CU_ASSERT_STRING_EQUAL(buf, "FA1299    ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-10X", 0), 10);
-  CU_ASSERT_STRING_EQUAL(buf, "0000000000");
+  CU_ASSERT_STRING_EQUAL(buf, "0         ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-3X", 0x1234), 4);
   CU_ASSERT_STRING_EQUAL(buf, "1234");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-3X", 0x12AF), 4);
@@ -1933,7 +1932,7 @@ static void test_sprintf_formats_number_for_uppercase_x_with_0_and_minus_and_wid
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-3X", 0xFA1299), 6);
   CU_ASSERT_STRING_EQUAL(buf, "FA1299");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-3X", 0), 3);
-  CU_ASSERT_STRING_EQUAL(buf, "000");
+  CU_ASSERT_STRING_EQUAL(buf, "0  ");
 }
 
 static void test_sprintf_formats_number_for_uppercase_x_with_minus_and_width(void)
@@ -2458,27 +2457,27 @@ static void test_sprintf_formats_number_for_f_with_0_and_minus_and_width(void)
 {
   static char buf[100];
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14f", 12.34), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "0000012.340000");
+  CU_ASSERT_STRING_EQUAL(buf, "12.340000     ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14f", -34.56), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "-000034.560000");
+  CU_ASSERT_STRING_EQUAL(buf, "-34.560000    ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14f", 123.499), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "0000123.499000");
+  CU_ASSERT_STRING_EQUAL(buf, "123.499000    ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14f", 0.123), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "0000000.123000");
+  CU_ASSERT_STRING_EQUAL(buf, "0.123000      ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14f", 12.34e9), 18);
   CU_ASSERT_STRING_EQUAL(buf, "12340000000.000000");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14f", -34.56e-12), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "-000000.000000");
+  CU_ASSERT_STRING_EQUAL(buf, "-0.000000     ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14f", 123.499e23), 33);
   CU_ASSERT_STRING_EQUAL(buf, "12349900000000000000000000.000000");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14f", 0.0), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "0000000.000000");
+  CU_ASSERT_STRING_EQUAL(buf, "0.000000      ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14f", HUGE_VAL), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "           inf");
+  CU_ASSERT_STRING_EQUAL(buf, "inf           ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14f", -HUGE_VAL), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "          -inf");
+  CU_ASSERT_STRING_EQUAL(buf, "-inf          ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14f", NAN), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "           nan");
+  CU_ASSERT_STRING_EQUAL(buf, "nan           ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-6f", 12.34), 9);
   CU_ASSERT_STRING_EQUAL(buf, "12.340000");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-6f", -34.56), 10);
@@ -2496,11 +2495,11 @@ static void test_sprintf_formats_number_for_f_with_0_and_minus_and_width(void)
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-6f", 0.0), 8);
   CU_ASSERT_STRING_EQUAL(buf, "0.000000");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-6f", HUGE_VAL), 6);
-  CU_ASSERT_STRING_EQUAL(buf, "   inf");
+  CU_ASSERT_STRING_EQUAL(buf, "inf   ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-6f", -HUGE_VAL), 6);
-  CU_ASSERT_STRING_EQUAL(buf, "  -inf");
+  CU_ASSERT_STRING_EQUAL(buf, "-inf  ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-6f", NAN), 6);
-  CU_ASSERT_STRING_EQUAL(buf, "   nan");
+  CU_ASSERT_STRING_EQUAL(buf, "nan   ");
 }
 
 static void test_sprintf_formats_number_for_f_with_minus_and_width(void)
@@ -2963,27 +2962,27 @@ static void test_sprintf_formats_number_for_e_with_0_and_minus_and_width(void)
 {
   static char buf[100];
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-16e", 12.34), 16);
-  CU_ASSERT_STRING_EQUAL(buf, "00001.234000e+01");
+  CU_ASSERT_STRING_EQUAL(buf, "1.234000e+01    ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-16e", -34.56), 16);
-  CU_ASSERT_STRING_EQUAL(buf, "-0003.456000e+01");
+  CU_ASSERT_STRING_EQUAL(buf, "-3.456000e+01   ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-16e", 123.499), 16);
-  CU_ASSERT_STRING_EQUAL(buf, "00001.234990e+02");
+  CU_ASSERT_STRING_EQUAL(buf, "1.234990e+02    ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-16e", 0.123), 16);
-  CU_ASSERT_STRING_EQUAL(buf, "00001.230000e-01");
+  CU_ASSERT_STRING_EQUAL(buf, "1.230000e-01    ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-16e", 12.34e9), 16);
-  CU_ASSERT_STRING_EQUAL(buf, "00001.234000e+10");
+  CU_ASSERT_STRING_EQUAL(buf, "1.234000e+10    ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-16e", -34.56e-12), 16);
-  CU_ASSERT_STRING_EQUAL(buf, "-0003.456000e-11");
+  CU_ASSERT_STRING_EQUAL(buf, "-3.456000e-11   ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-16e", 123.499e23), 16);
-  CU_ASSERT_STRING_EQUAL(buf, "00001.234990e+25");
+  CU_ASSERT_STRING_EQUAL(buf, "1.234990e+25    ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-16e", 0.0), 16);
-  CU_ASSERT_STRING_EQUAL(buf, "00000.000000e+00");
+  CU_ASSERT_STRING_EQUAL(buf, "0.000000e+00    ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-16e", HUGE_VAL), 16);
-  CU_ASSERT_STRING_EQUAL(buf, "             inf");
+  CU_ASSERT_STRING_EQUAL(buf, "inf             ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-16e", -HUGE_VAL), 16);
-  CU_ASSERT_STRING_EQUAL(buf, "            -inf");
+  CU_ASSERT_STRING_EQUAL(buf, "-inf            ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-16e", NAN), 16);
-  CU_ASSERT_STRING_EQUAL(buf, "             nan");
+  CU_ASSERT_STRING_EQUAL(buf, "nan             ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-6e", 12.34), 12);
   CU_ASSERT_STRING_EQUAL(buf, "1.234000e+01");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-6e", -34.56), 13);
@@ -3001,11 +3000,11 @@ static void test_sprintf_formats_number_for_e_with_0_and_minus_and_width(void)
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-6e", 0.0), 12);
   CU_ASSERT_STRING_EQUAL(buf, "0.000000e+00");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-6e", HUGE_VAL), 6);
-  CU_ASSERT_STRING_EQUAL(buf, "   inf");
+  CU_ASSERT_STRING_EQUAL(buf, "inf   ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-6e", -HUGE_VAL), 6);
-  CU_ASSERT_STRING_EQUAL(buf, "  -inf");
+  CU_ASSERT_STRING_EQUAL(buf, "-inf  ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-6e", NAN), 6);
-  CU_ASSERT_STRING_EQUAL(buf, "   nan");
+  CU_ASSERT_STRING_EQUAL(buf, "nan   ");
 }
 
 static void test_sprintf_formats_number_for_e_with_minus_and_width(void)
@@ -3468,27 +3467,27 @@ static void test_sprintf_formats_number_for_uppercase_e_with_0_and_minus_and_wid
 {
   static char buf[100];
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-16E", 12.34), 16);
-  CU_ASSERT_STRING_EQUAL(buf, "00001.234000E+01");
+  CU_ASSERT_STRING_EQUAL(buf, "1.234000E+01    ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-16E", -34.56), 16);
-  CU_ASSERT_STRING_EQUAL(buf, "-0003.456000E+01");
+  CU_ASSERT_STRING_EQUAL(buf, "-3.456000E+01   ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-16E", 123.499), 16);
-  CU_ASSERT_STRING_EQUAL(buf, "00001.234990E+02");
+  CU_ASSERT_STRING_EQUAL(buf, "1.234990E+02    ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-16E", 0.123), 16);
-  CU_ASSERT_STRING_EQUAL(buf, "00001.230000E-01");
+  CU_ASSERT_STRING_EQUAL(buf, "1.230000E-01    ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-16E", 12.34e9), 16);
-  CU_ASSERT_STRING_EQUAL(buf, "00001.234000E+10");
+  CU_ASSERT_STRING_EQUAL(buf, "1.234000E+10    ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-16E", -34.56e-12), 16);
-  CU_ASSERT_STRING_EQUAL(buf, "-0003.456000E-11");
+  CU_ASSERT_STRING_EQUAL(buf, "-3.456000E-11   ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-16E", 123.499e23), 16);
-  CU_ASSERT_STRING_EQUAL(buf, "00001.234990E+25");
+  CU_ASSERT_STRING_EQUAL(buf, "1.234990E+25    ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-16E", 0.0), 16);
-  CU_ASSERT_STRING_EQUAL(buf, "00000.000000E+00");
+  CU_ASSERT_STRING_EQUAL(buf, "0.000000E+00    ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-16E", HUGE_VAL), 16);
-  CU_ASSERT_STRING_EQUAL(buf, "             inf");
+  CU_ASSERT_STRING_EQUAL(buf, "inf             ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-16E", -HUGE_VAL), 16);
-  CU_ASSERT_STRING_EQUAL(buf, "            -inf");
+  CU_ASSERT_STRING_EQUAL(buf, "-inf            ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-16E", NAN), 16);
-  CU_ASSERT_STRING_EQUAL(buf, "             nan");
+  CU_ASSERT_STRING_EQUAL(buf, "nan             ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-6E", 12.34), 12);
   CU_ASSERT_STRING_EQUAL(buf, "1.234000E+01");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-6E", -34.56), 13);
@@ -3506,11 +3505,11 @@ static void test_sprintf_formats_number_for_uppercase_e_with_0_and_minus_and_wid
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-6E", 0.0), 12);
   CU_ASSERT_STRING_EQUAL(buf, "0.000000E+00");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-6E", HUGE_VAL), 6);
-  CU_ASSERT_STRING_EQUAL(buf, "   inf");
+  CU_ASSERT_STRING_EQUAL(buf, "inf   ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-6E", -HUGE_VAL), 6);
-  CU_ASSERT_STRING_EQUAL(buf, "  -inf");
+  CU_ASSERT_STRING_EQUAL(buf, "-inf  ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-6E", NAN), 6);
-  CU_ASSERT_STRING_EQUAL(buf, "   nan");
+  CU_ASSERT_STRING_EQUAL(buf, "nan   ");
 }
 
 static void test_sprintf_formats_number_for_uppercase_e_with_minus_and_width(void)
@@ -4011,27 +4010,27 @@ static void test_sprintf_formats_number_for_g_with_0_and_minus_and_width(void)
 {
   static char buf[100];
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14g", 12.34), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "00000000012.34");
+  CU_ASSERT_STRING_EQUAL(buf, "12.34         ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14g", -34.56), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "-0000000034.56");
+  CU_ASSERT_STRING_EQUAL(buf, "-34.56        ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14g", 123.499), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "0000000123.499");
+  CU_ASSERT_STRING_EQUAL(buf, "123.499       ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14g", 0.123), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "0000000000.123");
+  CU_ASSERT_STRING_EQUAL(buf, "0.123         ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14g", 12.34e9), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "000001.234e+10");
+  CU_ASSERT_STRING_EQUAL(buf, "1.234e+10     ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14g", -34.56e-12), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "-00003.456e-11");
+  CU_ASSERT_STRING_EQUAL(buf, "-3.456e-11    ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14g", 123.499e23), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "0001.23499e+25");
+  CU_ASSERT_STRING_EQUAL(buf, "1.23499e+25   ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14g", 0.0), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "00000000000000");
+  CU_ASSERT_STRING_EQUAL(buf, "0             ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14g", HUGE_VAL), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "           inf");
+  CU_ASSERT_STRING_EQUAL(buf, "inf           ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14g", -HUGE_VAL), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "          -inf");
+  CU_ASSERT_STRING_EQUAL(buf, "-inf          ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14g", NAN), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "           nan");
+  CU_ASSERT_STRING_EQUAL(buf, "nan           ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-4g", 12.34), 5);
   CU_ASSERT_STRING_EQUAL(buf, "12.34");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-4g", -34.56), 6);
@@ -4047,13 +4046,13 @@ static void test_sprintf_formats_number_for_g_with_0_and_minus_and_width(void)
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-4g", 123.499e23), 11);
   CU_ASSERT_STRING_EQUAL(buf, "1.23499e+25");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-4g", 0.0), 4);
-  CU_ASSERT_STRING_EQUAL(buf, "0000");
+  CU_ASSERT_STRING_EQUAL(buf, "0   ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-4g", HUGE_VAL), 4);
-  CU_ASSERT_STRING_EQUAL(buf, " inf");
+  CU_ASSERT_STRING_EQUAL(buf, "inf ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-4g", -HUGE_VAL), 4);
   CU_ASSERT_STRING_EQUAL(buf, "-inf");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-4g", NAN), 4);
-  CU_ASSERT_STRING_EQUAL(buf, " nan");
+  CU_ASSERT_STRING_EQUAL(buf, "nan ");
 }
 
 static void test_sprintf_formats_number_for_g_with_minus_and_width(void)
@@ -4572,27 +4571,27 @@ static void test_sprintf_formats_number_for_uppercase_g_with_0_and_minus_and_wid
 {
   static char buf[100];
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14G", 12.34), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "00000000012.34");
+  CU_ASSERT_STRING_EQUAL(buf, "12.34         ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14G", -34.56), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "-0000000034.56");
+  CU_ASSERT_STRING_EQUAL(buf, "-34.56        ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14G", 123.499), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "0000000123.499");
+  CU_ASSERT_STRING_EQUAL(buf, "123.499       ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14G", 0.123), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "0000000000.123");
+  CU_ASSERT_STRING_EQUAL(buf, "0.123         ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14G", 12.34e9), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "000001.234E+10");
+  CU_ASSERT_STRING_EQUAL(buf, "1.234E+10     ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14G", -34.56e-12), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "-00003.456E-11");
+  CU_ASSERT_STRING_EQUAL(buf, "-3.456E-11    ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14G", 123.499e23), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "0001.23499E+25");
+  CU_ASSERT_STRING_EQUAL(buf, "1.23499E+25   ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14G", 0.0), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "00000000000000");
+  CU_ASSERT_STRING_EQUAL(buf, "0             ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14G", HUGE_VAL), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "           inf");
+  CU_ASSERT_STRING_EQUAL(buf, "inf           ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14G", -HUGE_VAL), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "          -inf");
+  CU_ASSERT_STRING_EQUAL(buf, "-inf          ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-14G", NAN), 14);
-  CU_ASSERT_STRING_EQUAL(buf, "           nan");
+  CU_ASSERT_STRING_EQUAL(buf, "nan           ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-4G", 12.34), 5);
   CU_ASSERT_STRING_EQUAL(buf, "12.34");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-4G", -34.56), 6);
@@ -4608,13 +4607,13 @@ static void test_sprintf_formats_number_for_uppercase_g_with_0_and_minus_and_wid
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-4G", 123.499e23), 11);
   CU_ASSERT_STRING_EQUAL(buf, "1.23499E+25");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-4G", 0.0), 4);
-  CU_ASSERT_STRING_EQUAL(buf, "0000");
+  CU_ASSERT_STRING_EQUAL(buf, "0   ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-4G", HUGE_VAL), 4);
-  CU_ASSERT_STRING_EQUAL(buf, " inf");
+  CU_ASSERT_STRING_EQUAL(buf, "inf ");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-4G", -HUGE_VAL), 4);
   CU_ASSERT_STRING_EQUAL(buf, "-inf");
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%0-4G", NAN), 4);
-  CU_ASSERT_STRING_EQUAL(buf, " nan");
+  CU_ASSERT_STRING_EQUAL(buf, "nan ");
 }
 
 static void test_sprintf_formats_number_for_uppercase_g_with_minus_and_width(void)

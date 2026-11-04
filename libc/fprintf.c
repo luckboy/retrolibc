@@ -145,6 +145,7 @@ static void xconv_dioux(struct xwriter *xw, const union arg *x, int conv_spec, i
   buf_len = (int) strlen(buf);
   /* Calculates length. */ 
   /* sign */
+  
   if(!is_signed) flags &= ~(FLAG_PLUS | FLAG_SPACE);
   if((flags & (FLAG_PLUS | FLAG_SPACE)) != 0 || is_sign) len++;
   /* prefix */
@@ -152,9 +153,9 @@ static void xconv_dioux(struct xwriter *xw, const union arg *x, int conv_spec, i
   if((flags & FLAG_HASH) != 0) len += (int) strlen(prefix);
   /* number */
   prec = (buf_len > prec ? buf_len : prec);
+  if((flags & FLAG_MINUS) != 0) flags &= ~FLAG_ZERO;
   if((flags & FLAG_ZERO) != 0) {
     prec = (prec > width - len ? prec : width - len);
-    flags &= ~FLAG_MINUS;
   }
   /* again prefix */
   if((flags & FLAG_HASH) != 0 && (flags & FLAG_ZERO) == 0 && base == 8 && buf_len < prec) {
@@ -229,7 +230,7 @@ static void xconv_f(struct xwriter *xw, double x, int flags, int width, int prec
   } else {
     len += strlen(s);
   }
-  if((flags & FLAG_ZERO) != 0) flags &= ~FLAG_MINUS;
+  if((flags & FLAG_MINUS) != 0) flags &= ~FLAG_ZERO;
   /* Prints number. */
   /* space padding */
   if((flags & FLAG_MINUS) == 0 && ((flags & FLAG_ZERO) == 0 || (*s != '\0' && !isdigit(*s)))) {
@@ -328,7 +329,7 @@ static void xconv_e(struct xwriter *xw, double x, int conv_spec, int flags, int 
   } else {
     len += strlen(s);
   }
-  if((flags & FLAG_ZERO) != 0) flags &= ~FLAG_MINUS;
+  if((flags & FLAG_MINUS) != 0) flags &= ~FLAG_ZERO;
   /* Prints number. */
   /* space padding */
   if((flags & FLAG_MINUS) == 0 &&  ((flags & FLAG_ZERO) == 0 || (*s != '\0' && !isdigit(*s)))) {
