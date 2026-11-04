@@ -4105,6 +4105,24 @@ static void test_sprintf_formats_number_for_g_with_minus_and_width(void)
   CU_ASSERT_STRING_EQUAL(buf, "nan ");
 }
 
+static void test_sprintf_formats_number_for_g_and_f_conversion(void)
+{
+  static char buf[100];
+  CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%g", 0.0001), 6);
+  CU_ASSERT_STRING_EQUAL(buf, "0.0001");
+  CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%g", 9e5), 6);
+  CU_ASSERT_STRING_EQUAL(buf, "900000");
+}
+
+static void test_sprintf_formats_number_for_g_and_e_conversion(void)
+{
+  static char buf[100];
+  CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%g", 0.00009), 5);
+  CU_ASSERT_STRING_EQUAL(buf, "9e-05");
+  CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%g", 1e6), 5);
+  CU_ASSERT_STRING_EQUAL(buf, "1e+06");
+}
+
 static void test_sprintf_formats_number_for_uppercase_g(void)
 {
   static char buf[100];
@@ -4648,6 +4666,24 @@ static void test_sprintf_formats_number_for_uppercase_g_with_minus_and_width(voi
   CU_ASSERT_STRING_EQUAL(buf, "nan ");
 }
 
+static void test_sprintf_formats_number_for_uppercase_g_and_f_conversion(void)
+{
+  static char buf[100];
+  CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%G", 0.0001), 6);
+  CU_ASSERT_STRING_EQUAL(buf, "0.0001");
+  CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%G", 9e5), 6);
+  CU_ASSERT_STRING_EQUAL(buf, "900000");
+}
+
+static void test_sprintf_formats_number_for_uppercase_g_and_e_conversion(void)
+{
+  static char buf[100];
+  CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%G", 0.00009), 5);
+  CU_ASSERT_STRING_EQUAL(buf, "9E-05");
+  CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%G", 1e6), 5);
+  CU_ASSERT_STRING_EQUAL(buf, "1E+06");
+}
+
 static void test_sprintf_formats_character_for_c(void)
 {
   static char buf[100];
@@ -4965,6 +5001,8 @@ int add_fprintf_suite(void)
   if(CU_add_test(suite, "sprintf formats number for g with 0 and # and width", test_sprintf_formats_number_for_g_with_0_and_hash_and_width) == NULL) return -1;
   if(CU_add_test(suite, "sprintf formats number for g with 0 and - and width", test_sprintf_formats_number_for_g_with_0_and_minus_and_width) == NULL) return -1;
   if(CU_add_test(suite, "sprintf formats number for g with - and width", test_sprintf_formats_number_for_g_with_minus_and_width) == NULL) return -1;
+  if(CU_add_test(suite, "sprintf formats number for g and f conversion", test_sprintf_formats_number_for_g_and_f_conversion) == NULL) return -1;
+  if(CU_add_test(suite, "sprintf formats number for g and e conversion", test_sprintf_formats_number_for_g_and_e_conversion) == NULL) return -1;
   if(CU_add_test(suite, "sprintf formats number for G", test_sprintf_formats_number_for_uppercase_g) == NULL) return -1;
   if(CU_add_test(suite, "sprintf formats number for G witb '", test_sprintf_formats_number_for_uppercase_g_with_apostrophe) == NULL) return -1;
   if(CU_add_test(suite, "sprintf formats number for G with +", test_sprintf_formats_number_for_uppercase_g_with_plus) == NULL) return -1;
@@ -4980,6 +5018,8 @@ int add_fprintf_suite(void)
   if(CU_add_test(suite, "sprintf formats number for G with 0 and # and width", test_sprintf_formats_number_for_uppercase_g_with_0_and_hash_and_width) == NULL) return -1;
   if(CU_add_test(suite, "sprintf formats number for G with 0 and - and width", test_sprintf_formats_number_for_uppercase_g_with_0_and_minus_and_width) == NULL) return -1;
   if(CU_add_test(suite, "sprintf formats number for G with - and width", test_sprintf_formats_number_for_uppercase_g_with_minus_and_width) == NULL) return -1;
+  if(CU_add_test(suite, "sprintf formats number for G and f conversion", test_sprintf_formats_number_for_uppercase_g_and_f_conversion) == NULL) return -1;
+  if(CU_add_test(suite, "sprintf formats number for G and e conversion", test_sprintf_formats_number_for_uppercase_g_and_e_conversion) == NULL) return -1;
   if(CU_add_test(suite, "sprintf formats character for c", test_sprintf_formats_character_for_c) == NULL) return -1;
   if(CU_add_test(suite, "sprintf formats character for c with width", test_sprintf_formats_character_for_c_with_width) == NULL) return -1;
   if(CU_add_test(suite, "sprintf formats character for c with - and width", test_sprintf_formats_character_for_c_with_minus_and_width) == NULL) return -1;
