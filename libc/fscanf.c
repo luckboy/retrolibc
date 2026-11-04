@@ -569,6 +569,9 @@ static int xscanf(struct xreader *xr, const char *format, va_list ap)
           is_n = 1;
         }
         break;
+      case '%':
+        is_conv = 0;
+        break;
       default:
         is_conv = 0;
         format = saved_format;
