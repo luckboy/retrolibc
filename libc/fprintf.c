@@ -12,8 +12,17 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef TEST
 #include <stdio.h>
 #include "priv_stdlib.h"
+#else
+#define RETROLIBC_FPRINTF
+#include "retrolibc.h"
+#endif
+
+#ifndef LONG_BIT
+#define LONG_BIT        __WORDSIZE
+#endif
 
 enum xwriter_type
 {
@@ -147,6 +156,11 @@ static void xconv_dioux(struct xwriter *xw, const union arg *x, int conv_spec, i
     prec = (prec > width - len ? prec : width - len);
     flags &= ~FLAG_MINUS;
   }
+  /* again prefix */
+  if((flags & FLAG_HASH) != 0 && (flags & FLAG_ZERO) == 0 && base == 8 && buf_len < prec) {
+    prefix = "";
+    len--;
+  }
   len = (prec < INT_MAX - len ? len + prec : INT_MAX);
   /* Prints number. */
   /* space padding */
@@ -163,7 +177,7 @@ static void xconv_dioux(struct xwriter *xw, const union arg *x, int conv_spec, i
   }
   /* prefix */
   if((flags & FLAG_HASH) != 0) {
-    for(; prefix ; prefix++) xputc(*prefix, xw);
+    for(; *prefix != '\0'; prefix++) xputc(*prefix, xw);
   }
   /* number */
   for(n = prec - buf_len; n > 0; n--) xputc('0', xw);
@@ -194,23 +208,31 @@ static void xconv_f(struct xwriter *xw, double x, int flags, int width, int prec
   /* Calculates length. */ 
   /* sign */
   if((flags & (FLAG_PLUS | FLAG_SPACE)) != 0 || is_sign) len++;
-  if(isdigit(*s)) {
+  if(*s == '\0' || isdigit(*s)) {
     /* dot */
-    if((flags & FLAG_HASH) != 0 || prec > 0) len++;
+    if((flags & FLAG_HASH) != 0 || (prec > 0 && (!is_g || buf_len > decpt))) len++;
     /* number */
     if(!is_g) {
-      digits = (buf_len > decpt + prec ? buf_len : decpt + prec);
+      if(decpt > 0) {
+        digits = (buf_len > decpt + prec ? buf_len : decpt + prec);
+      } else {
+        digits = prec + 1;
+      }
     } else {
-      digits = (buf_len > decpt ? buf_len : decpt);
+      if(decpt > 0) {
+        digits = (buf_len > decpt ? buf_len : decpt);
+      } else {
+        digits = buf_len - decpt + 1;
+      }
     }
     len = (digits < INT_MAX - len ? len + digits : INT_MAX);
-    if((flags & FLAG_ZERO) != 0) flags &= ~FLAG_MINUS;
   } else {
     len += strlen(s);
   }
+  if((flags & FLAG_ZERO) != 0) flags &= ~FLAG_MINUS;
   /* Prints number. */
   /* space padding */
-  if((flags & FLAG_MINUS) == 0 && (flags & FLAG_ZERO) == 0) {
+  if((flags & FLAG_MINUS) == 0 && ((flags & FLAG_ZERO) == 0 || (*s != '\0' && !isdigit(*s)))) {
     for(n = width - len; n > 0; n--) xputc(' ', xw);
   }
   /* sign */
@@ -221,22 +243,37 @@ static void xconv_f(struct xwriter *xw, double x, int flags, int width, int prec
   } else if(is_sign) {
     xputc('-', xw);
   }
-  if(isdigit(*s)) {
+  if(*s == '\0' || isdigit(*s)) {
     /* zero padding */
     if((flags & FLAG_MINUS) == 0 && (flags & FLAG_ZERO) != 0) {
       for(n = width - len; n > 0; n--) xputc('0', xw);
     }
     /* number */
-    for(t = buf, i = 0; i < digits && *t != '\0'; t++, i++) {
-      if(i == decpt) xputc('.', xw);
-      xputc(*t, xw);
+    if(decpt > 0) {
+      for(t = buf, i = 0; i < digits && *t != '\0'; t++, i++) {
+        if(i == decpt) xputc('.', xw);
+        xputc(*t, xw);
+      }
+      for(; i < digits; i++) {
+        if(i == decpt) xputc('.', xw);
+        xputc('0', xw);
+      }
+      /* dot */
+      if((flags & FLAG_HASH) != 0 && i == decpt) xputc('.', xw);
+    } else {
+      for(i = 0, decpt--; i < digits && decpt < 0; i++, decpt++) {
+        if(i == 1) xputc('.', xw);
+        xputc('0', xw);
+      }
+      for(t = buf; i < digits && *t != '\0'; t++, i++) {
+        if(i == 1) xputc('.', xw);
+        xputc(*t, xw);
+      }
+      for(; i < digits; i++) {
+        if(i == decpt) xputc('.', xw);
+        xputc('0', xw);
+      }
     }
-    for(; i < digits; i++) {
-      if(i == decpt) xputc('.', xw);
-      xputc('0', xw);
-    }
-    /* dot */  
-    if((flags & FLAG_HASH) != 0 && i == decpt) xputc('.', xw);
   } else {
     for(; *s != '\0'; s++) xputc(*s, xw);
   }
@@ -275,26 +312,26 @@ static void xconv_e(struct xwriter *xw, double x, int conv_spec, int flags, int 
   /* Calculates length. */
   /* sign */
   if((flags & (FLAG_PLUS | FLAG_SPACE)) != 0 || is_sign) len++;
-  if(isdigit(*s)) {
+  if(*s == '\0' || isdigit(*s)) {
     /* dot */
     if(buf_len > 1) len++;
     /* number */
     digits = (!is_g ? prec : buf_len);
     len = (digits < INT_MAX - len ? len + digits : INT_MAX);
     /* exponent */
-    buf_len += 2;
+    len += 2;
     exp = decpt - 1;
     __ulltostr(exp_buf, (unsigned long long) (exp >= 0 ? exp : -exp), 10, 0);
     exp_buf_len = (int) strlen(exp_buf);
     exp_digits = (exp_buf_len >= 2 ? exp_buf_len : 2);
     len = (len < INT_MAX - exp_digits ? len + exp_digits : INT_MAX);
-    if((flags & FLAG_ZERO) != 0) flags &= ~FLAG_MINUS;
   } else {
     len += strlen(s);
   }
+  if((flags & FLAG_ZERO) != 0) flags &= ~FLAG_MINUS;
   /* Prints number. */
   /* space padding */
-  if((flags & FLAG_MINUS) == 0 && (flags & FLAG_ZERO) == 0) {
+  if((flags & FLAG_MINUS) == 0 &&  ((flags & FLAG_ZERO) == 0 || (*s != '\0' && !isdigit(*s)))) {
     for(n = width - len; n > 0; n--) xputc(' ', xw);
   }
   /* sign */
@@ -305,7 +342,7 @@ static void xconv_e(struct xwriter *xw, double x, int conv_spec, int flags, int 
   } else if(is_sign) {
     xputc('-', xw);
   }
-  if(isdigit(*s)) {
+  if(*s == '\0' || isdigit(*s)) {
     /* zero padding */
     if((flags & FLAG_MINUS) == 0 && (flags & FLAG_ZERO) != 0) {
       for(n = width - len; n > 0; n--) xputc('0', xw);
@@ -336,8 +373,8 @@ static void xconv_e(struct xwriter *xw, double x, int conv_spec, int flags, int 
 
 static void xconv_g(struct xwriter *xw, double x, int conv_spec, int flags, int width, int prec)
 {
-  double abs_x = (x >= 0 ? x : -x);
-  if(abs_x >= pow(10.0, (double) prec) || abs_x < 0.0001) {
+  double abs_x = ((isnan(x) || x >= 0.0) ? x : -x);
+  if(isnan(x) || abs_x >= pow(10.0, (double) prec) || (abs_x < 0.0001 && abs_x != 0.0)) {
     xconv_e(xw, x, conv_spec, flags, width, prec, 1);
   } else {
     xconv_f(xw, x, flags, width, prec, 1);
@@ -378,7 +415,7 @@ static void xconv_s(struct xwriter *xw, const char *s, int flags, int width, int
     for(ni = width - leni; ni > 0; ni--) xputc(' ', xw);
   }
   /* string */
-  for(n = len; n > 0 && *s != '\0'; n--) xputc((int) ((unsigned char) (*s)), xw);
+  for(n = len; n > 0 && *s != '\0'; s++, n--) xputc((int) ((unsigned char) (*s)), xw);
   /* space padding */
   if((flags & FLAG_MINUS) != 0) {
     for(ni = width - leni; ni > 0; ni--) xputc(' ', xw);
@@ -411,7 +448,7 @@ static void xprintf(struct xwriter *xw, const char *format, va_list ap)
       int is_signed;
       saved_format = format;
       format++;
-      for(is_stop = 0; !is_stop; format++) {\
+      for(is_stop = 0; 1; format++) {
         switch(*format) {
         case '\'':
           break;
@@ -434,6 +471,7 @@ static void xprintf(struct xwriter *xw, const char *format, va_list ap)
           is_stop = 1;
           break;
         }
+        if(is_stop) break;
       }
       if(isdigit(*format)) {
         long tmp = strtol(format, (char **) (&format), 10);
@@ -483,7 +521,7 @@ static void xprintf(struct xwriter *xw, const char *format, va_list ap)
       case 'u':
       case 'x':
       case 'X':
-        if(prec == -1) prec = 0;
+        if(prec == -1) prec = 1;
         if(*format == 'd' || *format == 'i') {
           switch(len_mod) {
           case LEN_MOD_HH:

@@ -9,6 +9,7 @@
 #define _RETROLIBC_H
 
 #include <inttypes.h>
+#include <stdarg.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -319,6 +320,29 @@ int retrolibc_ungetc(int c, retrolibc_FILE *f);
 
 #define fread_unlocked retrolibc_fread_unlocked
 #define fwrite_unlocked retrolibc_fwrite_unlocked
+
+#endif
+
+/* fprintf.c */
+
+int retrolibc_fprintf(FILE *f, const char *format, ...);
+int retrolibc_snprintf(char *s, size_t n, const char *format, ...);
+int retrolibc_sprintf(char *s, const char *format, ...);
+int retrolibc_vfprintf(FILE *f, const char *format, va_list ap);
+int retrolibc_vsnprintf(char *s, size_t n, const char *format, va_list ap);
+int retrolibc_vsprintf(char *s, const char *format, va_list ap);
+
+#ifdef RETROLIBC_FPRINTF
+
+#define fprintf retrolibc_fprintf
+#define snprintf retrolibc_snprintf
+#define sprintf retrolibc_sprintf
+#define vfprintf retrolibc_vfprintf
+#define vsnprintf retrolibc_vsnprintf
+#define vsprintf retrolibc_vsprintf
+
+#define __efcvt retrolibc___efcvt
+#define __ulltostr retrolibc___ulltostr
 
 #endif
 
