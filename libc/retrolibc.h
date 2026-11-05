@@ -346,6 +346,20 @@ int retrolibc_vsprintf(char *s, const char *format, va_list ap);
 
 #endif
 
+/* fscanf.c */
+
+int retrolibc_fscanf(FILE *f, const char *format, ...);
+int retrolibc_sscanf(const char *s, const char *format, ...);
+int retrolibc_vfscanf(FILE *f, const char *format, va_list ap);
+int retrolibc_vsscanf(const char *s, const char *format, va_list ap);
+
+#ifdef RETROLIBC_FSCANF
+#define fscanf retrolibc_fscanf
+#define sscanf retrolibc_sscanf
+#define vfscanf retrolibc_vfscanf
+#define vsscanf retrolibc_vsscanf
+#endif
+
 /* malloc.c */
 
 int mock_brk(void *addr);

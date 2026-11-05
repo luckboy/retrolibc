@@ -38,8 +38,10 @@ int read_word_from_file(const char *filename, int *w)
 int write_to_file(const char *filename, const char *s)
 {
   FILE *f = fopen(filename, "w");
+  size_t len;
   if(f == NULL) return 0;
-  if(fwrite(s, 1, strlen(s), f) == 0) return 0;
+  len = strlen(s);
+  if(fwrite(s, 1, len, f) == 0 && len > 0) return 0;
   fclose(f);
   return 1;
 }

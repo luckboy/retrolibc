@@ -11,7 +11,12 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef TEST
 #include <stdio.h>
+#else
+#define RETROLIBC_FSCANF
+#include "retrolibc.h"
+#endif
 
 enum xreader_type
 {
@@ -73,10 +78,10 @@ static void xungetc(int c, struct xreader *xr)
   if(c == EOF) return;
   switch(xr->type) {
   case XREADER_TYPE_F:
-    if(xr->u.f.is_stopped) ungetc(c, xr->u.f.f); 
+    if(!xr->u.f.is_stopped) ungetc(c, xr->u.f.f); 
     break;
   default:
-    if(*(xr->u.s.s) != '\0' && xr->u.s.pushed_char == -1) xr->u.s.pushed_char = (int) ((unsigned char) c);
+    if(xr->u.s.pushed_char == -1) xr->u.s.pushed_char = (int) ((unsigned char) c);
     break;
   }
   xr->n--;
@@ -138,6 +143,7 @@ static int xconv_dioux(struct xreader *xr, const union arg *xp, int conv_spec, i
     break;
   case 'p':
   case 'x':
+  case 'X':
     base = 16;
     break;
   default:
@@ -189,7 +195,6 @@ static int xconv_dioux(struct xreader *xr, const union arg *xp, int conv_spec, i
       xungetc_with_width(c, xr, &width);
     }
   } else {
-    c = xgetc_with_width(xr, &width);
     if(base == 16) {
       c = xgetc_with_width(xr, &width);
       if(c == '0') {
@@ -200,6 +205,8 @@ static int xconv_dioux(struct xreader *xr, const union arg *xp, int conv_spec, i
           is_digit = 1;
           xungetc_with_width(c, xr, &width);
         }
+      } else {
+        xungetc_with_width(c, xr, &width);
       }
     }
   }
@@ -350,6 +357,8 @@ static int xconv_efg(struct xreader *xr, double *xp, int width)
     }
     if(!is_exp_digit) return -1;
     exp *= exp_sign;
+  } else {
+    xungetc_with_width(c, xr, &width);
   }
   if(!are_only_zeros) {
     if(n >= HUGE_VAL || n == 0.0) {
@@ -379,7 +388,7 @@ static int xconv_s(struct xreader *xr, char *s, int width)
     }
   }
   xungetc_with_width(c, xr, &width);
-  *s = '\0';
+  if(s != NULL) *s = '\0';
   if(!is_char) return -1;
   return 0;
 }
@@ -401,7 +410,7 @@ static int xconv_bracket(struct xreader *xr, char *s, const char *set, int width
     int is_matched = 0;
     for(tmp_set = set; *tmp_set != ']'; tmp_set++) {
       if(*tmp_set != ']' && tmp_set[1] == '-' && tmp_set[2] != ']') {
-        is_matched |= (c >= *tmp_set && c <= *tmp_set);
+        is_matched |= (c >= *tmp_set && c <= tmp_set[2]);
         tmp_set += 2;
       } else {
         is_matched |= (c == *tmp_set);
@@ -417,20 +426,21 @@ static int xconv_bracket(struct xreader *xr, char *s, const char *set, int width
     }
   }
   xungetc_with_width(c, xr, &width);
-  *s = '\0';
+  if(s != NULL) *s = '\0';
   if(!is_char) return -1;
   return 0;
 }
 
 static int xconv_c(struct xreader *xr, char *cp, int width)
 {
-  int c;
-  while((c = xgetc_with_width(xr, &width)) != EOF) {
+  int c, is_char = 0;
+  for(; (c = xgetc_with_width(xr, &width)) != EOF; is_char = 1) {
     if(cp != NULL) {
       *cp = c;
       cp++;
     }
   }
+  if(width > 0 && !is_char) return -1;
   return 0;
 }
 
@@ -496,6 +506,7 @@ static int xscanf(struct xreader *xr, const char *format, va_list ap)
       case 'o':
       case 'u':
       case 'x':
+      case 'X':
         if(*format == 'd' || *format == 'i') {
           switch(len_mod) {
           case LEN_MOD_HH:
@@ -518,19 +529,19 @@ static int xscanf(struct xreader *xr, const char *format, va_list ap)
         } else {
           switch(len_mod) {
           case LEN_MOD_HH:
-            arg.hhu = va_arg(ap, unsigned char *);
+            arg.hhu = (!is_skip ? va_arg(ap, unsigned char *) : NULL);
             break;
           case LEN_MOD_H:
-            arg.hu = va_arg(ap, unsigned short *);
+            arg.hu = (!is_skip ? va_arg(ap, unsigned short *) : NULL);
             break;
           case LEN_MOD_L:
-            arg.lu = va_arg(ap, unsigned long *);
+            arg.lu = (!is_skip ? va_arg(ap, unsigned long *) : NULL);
             break;
           case LEN_MOD_LL:
-            arg.llu = va_arg(ap, unsigned long long *);
+            arg.llu = (!is_skip ? va_arg(ap, unsigned long long *) : NULL);
             break;
           default:
-            arg.u = va_arg(ap, unsigned *);
+            arg.u = (!is_skip ? va_arg(ap, unsigned *) : NULL);
             break;
           }
           is_signed = 0;
@@ -540,6 +551,8 @@ static int xscanf(struct xreader *xr, const char *format, va_list ap)
       case 'e':
       case 'f':
       case 'g':
+      case 'E':
+      case 'G':
         if(xconv_efg(xr, !is_skip ? va_arg(ap, double *) : NULL, width) == -1) is_stop = 1;
         break;
       case 's':
@@ -577,7 +590,9 @@ static int xscanf(struct xreader *xr, const char *format, va_list ap)
         format = saved_format;
         break;
       }
-      if(!is_stop && !is_skip && !is_n && matches < INT_MAX) matches++;
+      if(is_conv && !is_stop && !is_skip && !is_n && matches < INT_MAX) matches++;
+    } else {
+      is_conv = 0;
     }
     if(!is_conv) {
       if(isspace(*format)) {

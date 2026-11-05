@@ -249,6 +249,8 @@ TEST_OBJS = \
 	$(TEST_BUILD_DIR)/test_efcvt_suite.o \
 	$(TEST_BUILD_DIR)/fprintf.o \
 	$(TEST_BUILD_DIR)/test_fprintf_suite.o \
+	$(TEST_BUILD_DIR)/fscanf.o \
+	$(TEST_BUILD_DIR)/test_fscanf_suite.o \
 	$(TEST_BUILD_DIR)/malloc.o \
 	$(TEST_BUILD_DIR)/test_malloc_suite.o \
 	$(TEST_BUILD_DIR)/qsort.o \
