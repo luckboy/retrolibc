@@ -4814,6 +4814,33 @@ static void test_sprintf_formats_invlid_conversion_specificator(void)
   CU_ASSERT_STRING_EQUAL(buf, "%10");
 }
 
+static void test_sprintf_formats_number_for_width_as_argument(void)
+{
+  static char buf[100];
+  CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%*d", 10, 1234), 10);
+  CU_ASSERT_STRING_EQUAL(buf, "      1234");
+  CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%*d", 3, 1234), 4);
+  CU_ASSERT_STRING_EQUAL(buf, "1234");
+}
+
+static void test_sprintf_formats_number_for_precision_as_argument(void)
+{
+  static char buf[100];
+  CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%.*d", 10, 1234), 10);
+  CU_ASSERT_STRING_EQUAL(buf, "0000001234");
+  CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%.*d", 3, 1234), 4);
+  CU_ASSERT_STRING_EQUAL(buf, "1234");
+}
+
+static void test_sprintf_formats_number_for_width_and_precision_as_arguments(void)
+{
+  static char buf[100];
+  CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%*.*d", 10, 5, 1234), 10);
+  CU_ASSERT_STRING_EQUAL(buf, "     01234");
+  CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%*.*d", 5, 10, 1234), 10);
+  CU_ASSERT_STRING_EQUAL(buf, "0000001234");
+}
+
 static void test_snprintf_formats_values(void)
 {
   static char buf[100];
@@ -5031,6 +5058,9 @@ int add_fprintf_suite(void)
   if(CU_add_test(suite, "sprintf stores number of written bytes to variable", test_sprintf_stores_number_of_written_bytes_to_variable) == NULL) return -1;
   if(CU_add_test(suite, "sprintf formats % for %", test_sprintf_formats_percent_for_percent) == NULL) return -1;
   if(CU_add_test(suite, "sprintf formats invalid conversion specificator", test_sprintf_formats_invlid_conversion_specificator) == NULL) return -1;
+  if(CU_add_test(suite, "sprintf formats number for width as argument", test_sprintf_formats_number_for_width_as_argument) == NULL) return -1;
+  if(CU_add_test(suite, "sprintf formats number for precision as argument", test_sprintf_formats_number_for_precision_as_argument) == NULL) return -1;
+  if(CU_add_test(suite, "sprintf formats number for width and precision as arguments", test_sprintf_formats_number_for_width_and_precision_as_arguments) == NULL) return -1;
   if(CU_add_test(suite, "snprintf formats values", test_snprintf_formats_values) == NULL) return -1;
   if(CU_add_test(suite, "fprintf prints values to file", test_fprintf_prints_values_to_file) == NULL) return -1;
   return 0;
