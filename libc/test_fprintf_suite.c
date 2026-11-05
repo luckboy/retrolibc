@@ -4805,7 +4805,7 @@ static void test_sprintf_formats_percent_for_percent(void)
   CU_ASSERT_STRING_EQUAL(buf, "abc%def");
 }
 
-static void test_sprintf_formats_invlid_conversion_specificator(void)
+static void test_sprintf_formats_invalid_conversion_specificator(void)
 {
   static char buf[100];
   CU_ASSERT_EQUAL(retrolibc_sprintf(buf, "%k"), 2);
@@ -5057,7 +5057,7 @@ int add_fprintf_suite(void)
   if(CU_add_test(suite, "sprintf formats pointer for p", test_sprintf_formats_pointer_for_p) == NULL) return -1;
   if(CU_add_test(suite, "sprintf stores number of written bytes to variable", test_sprintf_stores_number_of_written_bytes_to_variable) == NULL) return -1;
   if(CU_add_test(suite, "sprintf formats % for %", test_sprintf_formats_percent_for_percent) == NULL) return -1;
-  if(CU_add_test(suite, "sprintf formats invalid conversion specificator", test_sprintf_formats_invlid_conversion_specificator) == NULL) return -1;
+  if(CU_add_test(suite, "sprintf formats invalid conversion specificator", test_sprintf_formats_invalid_conversion_specificator) == NULL) return -1;
   if(CU_add_test(suite, "sprintf formats number for width as argument", test_sprintf_formats_number_for_width_as_argument) == NULL) return -1;
   if(CU_add_test(suite, "sprintf formats number for precision as argument", test_sprintf_formats_number_for_precision_as_argument) == NULL) return -1;
   if(CU_add_test(suite, "sprintf formats number for width and precision as arguments", test_sprintf_formats_number_for_width_and_precision_as_arguments) == NULL) return -1;
