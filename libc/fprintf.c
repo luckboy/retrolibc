@@ -154,9 +154,7 @@ static void xconv_dioux(struct xwriter *xw, const union arg *x, int conv_spec, i
   /* number */
   prec = (buf_len > prec ? buf_len : prec);
   if((flags & FLAG_MINUS) != 0) flags &= ~FLAG_ZERO;
-  if((flags & FLAG_ZERO) != 0) {
-    prec = (prec > width - len ? prec : width - len);
-  }
+  if((flags & FLAG_ZERO) != 0) prec = (prec > width - len ? prec : width - len);
   /* again prefix */
   if((flags & FLAG_HASH) != 0 && (flags & FLAG_ZERO) == 0 && base == 8 && buf_len < prec) {
     prefix = "";
