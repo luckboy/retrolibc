@@ -122,7 +122,7 @@ int __fflush_unlocked(struct __FILE *f, int flags)
     if(f->cur_pos < f->end_pos) {
       int is_epipe = 0;
       int saved_errno = errno;
-      if(lseek(f->fd,  f->cur_pos - f->end_pos, SEEK_CUR) == -1) {
+      if(lseek(f->fd, ((off_t) (f->cur_pos)) - ((off_t) (f->end_pos)), SEEK_CUR) == -1) {
         if(errno == EPIPE) {
           is_epipe = 1;
         } else {
