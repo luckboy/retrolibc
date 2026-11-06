@@ -328,7 +328,7 @@ $(TEST_BUILD_DIR)/ctype_%.o.d: ctype.c $(TEST_BUILD_DIR)/.empty
 $(TEST_BUILD_DIR)/file_%.o.d: file.c $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -MM -MT $(TEST_BUILD_DIR)/stdlib_$*.o $< > $@
 
-$(TEST_BUILD_DIR)/stdio_%.o.d: file.c $(TEST_BUILD_DIR)/.empty
+$(TEST_BUILD_DIR)/stdio_%.o.d: stdio.c $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -MM -MT $(TEST_BUILD_DIR)/stdlib_$*.o $< > $@
 
 $(TEST_BUILD_DIR)/stdlib_%.o.d: stdlib.c $(TEST_BUILD_DIR)/.empty
