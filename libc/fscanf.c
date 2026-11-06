@@ -310,7 +310,7 @@ static int xconv_efg(struct xreader *xr, double *xp, int width)
   /* sign */
   c = xgetc_with_width(xr, &width);
   if(c == '+' || c == '-') {
-    if(c == '-') sign = -1;
+    if(c == '-') sign = -1.0;
   } else {
     xungetc_with_width(c, xr, &width);
   }
@@ -643,7 +643,7 @@ int vfscanf(FILE *f, const char *format, va_list ap)
   xr.n = 0;
   flockfile(f);
   r = xscanf(&xr, format, ap);
-  if(r == 0 && (feof(f) || ferror(f))) r = -1; 
+  if(r == 0 && (feof(f) || ferror(f))) r = EOF; 
   funlockfile(f);
   return r;
 }
