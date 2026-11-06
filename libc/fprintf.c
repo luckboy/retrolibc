@@ -249,30 +249,24 @@ static void xconv_f(struct xwriter *xw, double x, int flags, int width, int prec
     }
     /* number */
     if(decpt > 0) {
-      for(t = buf, i = 0; i < digits && *t != '\0'; t++, i++) {
-        if(i == decpt) xputc('.', xw);
-        xputc(*t, xw);
-      }
-      for(; i < digits; i++) {
-        if(i == decpt) xputc('.', xw);
-        xputc('0', xw);
-      }
-      /* dot */
-      if((flags & FLAG_HASH) != 0 && i == decpt) xputc('.', xw);
+      i = 0;
     } else {
       for(i = 0, decpt--; i < digits && decpt < 0; i++, decpt++) {
         if(i == 1) xputc('.', xw);
         xputc('0', xw);
       }
-      for(t = buf; i < digits && *t != '\0'; t++, i++) {
-        if(i == 1) xputc('.', xw);
-        xputc(*t, xw);
-      }
-      for(; i < digits; i++) {
-        if(i == decpt) xputc('.', xw);
-        xputc('0', xw);
-      }
+      decpt = 1;
     }
+    for(t = buf; i < digits && *t != '\0'; t++, i++) {
+      if(i == decpt) xputc('.', xw);
+      xputc(*t, xw);
+    }
+    for(; i < digits; i++) {
+      if(i == decpt) xputc('.', xw);
+      xputc('0', xw);
+    }
+    /* dot */
+    if((flags & FLAG_HASH) != 0 && i == decpt) xputc('.', xw);
   } else {
     for(; *s != '\0'; s++) xputc(*s, xw);
   }
