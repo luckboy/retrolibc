@@ -27,7 +27,7 @@ static void test_gmtime_r_returns_year(void)
   time_t t;
   int y, max_y;
 #if LONG_BIT == 64
-   max_y = 2300;
+   max_y = 2500;
 #else
    max_y = 2038;
 #endif
@@ -51,7 +51,7 @@ static void test_mktime_returns_seconds_for_year(void)
   time_t t;
   int y, max_y;
 #if LONG_BIT == 64
-   max_y = 2300;
+   max_y = 2500;
 #else
    max_y = 2038;
 #endif
