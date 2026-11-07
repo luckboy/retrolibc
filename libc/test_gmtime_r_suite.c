@@ -335,6 +335,64 @@ static void test_mktime_returns_seconds_for_hour_and_minute_and_second(void)
   CU_ASSERT_EQUAL(retrolibc_mktime(&tm), t);
 }
 
+static void test_mktime_returns_seconds_for_month_greater_than_in_year(void)
+{
+  static struct retrolibc_tm tm;
+  time_t t;
+  int y, mon, mday, is_stop;
+  for(y = 1970, t = 0; y < 2003; y++) {
+    t += 365 * 24 * 60 * 60;
+    if(is_leap_year(y)) t += 24 * 60 * 60;
+  }
+  t += 365 * 24 * 60 * 60;
+  for(mon = 12; mon < 12 + 12; mon++) {
+    for(mday = 1; mday <= tab_month_days_for_leap[mon - 12]; mday++) {
+      is_stop = 1;
+      tm.tm_year = y - 1900;
+      tm.tm_sec = 0;
+      tm.tm_min = 0;
+      tm.tm_hour = 0;
+      tm.tm_mday = mday;
+      tm.tm_mon = mon;
+      tm.tm_gmtoff = 0;
+      if(retrolibc_mktime(&tm) != t) break;
+      is_stop = 0;
+      t += 24 * 60 * 60;
+    }
+    if(is_stop) break;
+  }
+  CU_ASSERT_EQUAL(is_stop, 0);
+}
+
+static void test_mktime_returns_seconds_for_negative_month(void)
+{
+  static struct retrolibc_tm tm;
+  time_t t;
+  int y, mon, mday, is_stop;
+  for(y = 1970, t = 0; y < 2003; y++) {
+    t += 365 * 24 * 60 * 60;
+    if(is_leap_year(y)) t += 24 * 60 * 60;
+  }
+  t -= 365 * 24 * 60 * 60;
+  for(mon = -12; mon < 0; mon++) {
+    for(mday = 1; mday <= tab_month_days_for_no_leap[mon + 12]; mday++) {
+      is_stop = 1;
+      tm.tm_year = y - 1900;
+      tm.tm_sec = 0;
+      tm.tm_min = 0;
+      tm.tm_hour = 0;
+      tm.tm_mday = mday;
+      tm.tm_mon = mon;
+      tm.tm_gmtoff = 0;
+      if(retrolibc_mktime(&tm) != t) break;
+      is_stop = 0;
+      t += 24 * 60 * 60;
+    }
+    if(is_stop) break;
+  }
+  CU_ASSERT_EQUAL(is_stop, 0);
+}
+
 int add_gmtime_r_suite(void)
 {
   CU_pSuite suite;
@@ -351,5 +409,7 @@ int add_gmtime_r_suite(void)
   if(CU_add_test(suite, "mktime returns seconds for month and month day and leap", test_mktime_returns_seconds_for_month_and_month_day_and_leap) == NULL) return -1;
   if(CU_add_test(suite, "mktime returns seconds for month and month day and no leap", test_mktime_returns_seconds_for_month_and_month_day_and_no_leap) == NULL) return -1;
   if(CU_add_test(suite, "mktime returns seconds for hour and minute and second", test_mktime_returns_seconds_for_hour_and_minute_and_second) == NULL) return -1;
+  if(CU_add_test(suite, "mktime returns seconds for month greater than in year", test_mktime_returns_seconds_for_month_greater_than_in_year) == NULL) return -1;
+  if(CU_add_test(suite, "mktime returns seconds for negative month", test_mktime_returns_seconds_for_negative_month) == NULL) return -1;
   return 0;
 }
