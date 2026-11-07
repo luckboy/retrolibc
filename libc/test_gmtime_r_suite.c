@@ -67,13 +67,16 @@ static void test_gmtime_r_returns_year(void)
   max_y = 2038;
 #endif
   for(y = 1970, t = 0; y <= max_y; y++) {
-    retrolibc_gmtime_r(&t, &tm);
+    if(retrolibc_gmtime_r(&t, &tm) != &tm) break; 
     if(tm.tm_year + 1900 != y) break;
     if(tm.tm_sec != 0) break;
     if(tm.tm_min != 0) break;
     if(tm.tm_hour != 0) break;
     if(tm.tm_mday != 1) break;
     if(tm.tm_mon != 0) break;
+    if(tm.tm_isdst != -1) break;
+    if(tm.tm_gmtoff != 0) break;
+    if(tm.tm_zone != NULL) break;
     t += 365 * 24 * 60 * 60;
     if(is_leap_year(y)) t += 24 * 60 * 60;
   }
@@ -91,7 +94,7 @@ static void test_gmtime_r_returns_month_and_month_day_for_leap(void)
   }
   for(mon = 0; mon < 12; mon++) {
     for(mday = 1; mday <= tab_month_days_for_leap[mon]; mday++) {
-      retrolibc_gmtime_r(&t, &tm);
+      if(retrolibc_gmtime_r(&t, &tm) != &tm) break; 
       is_stop = 1;
       if(tm.tm_year + 1900 != y) break;
       if(tm.tm_sec != 0) break;
@@ -99,6 +102,9 @@ static void test_gmtime_r_returns_month_and_month_day_for_leap(void)
       if(tm.tm_hour != 0) break;
       if(tm.tm_mday != mday) break;
       if(tm.tm_mon != mon) break;
+      if(tm.tm_isdst != -1) break;
+      if(tm.tm_gmtoff != 0) break;
+      if(tm.tm_zone != NULL) break;
       is_stop = 0;
       t += 24 * 60 * 60;
     }
@@ -118,7 +124,7 @@ static void test_gmtime_r_returns_month_and_month_day_for_no_leap(void)
   }
   for(mon = 0; mon < 12; mon++) {
     for(mday = 1; mday <= tab_month_days_for_no_leap[mon]; mday++) {
-      retrolibc_gmtime_r(&t, &tm);
+      if(retrolibc_gmtime_r(&t, &tm) != &tm) break; 
       is_stop = 1;
       if(tm.tm_year + 1900 != y) break;
       if(tm.tm_sec != 0) break;
@@ -126,6 +132,9 @@ static void test_gmtime_r_returns_month_and_month_day_for_no_leap(void)
       if(tm.tm_hour != 0) break;
       if(tm.tm_mday != mday) break;
       if(tm.tm_mon != mon) break;
+      if(tm.tm_isdst != -1) break;
+      if(tm.tm_gmtoff != 0) break;
+      if(tm.tm_zone != NULL) break;
       is_stop = 0;
       t += 24 * 60 * 60;
     }
@@ -151,13 +160,16 @@ static void test_gmtime_r_returns_hour_and_minute_and_second(void)
   min = rand() / (RAND_MAX * 1.0) * 59.0;
   sec = rand() / (RAND_MAX * 1.0) * 59.0;
   t += hour * 60 * 60 + min * 60 + sec;
-  retrolibc_gmtime_r(&t, &tm);
+  CU_ASSERT_PTR_EQUAL(retrolibc_gmtime_r(&t, &tm), &tm);
   CU_ASSERT_EQUAL(tm.tm_sec, sec);
   CU_ASSERT_EQUAL(tm.tm_min, min);
   CU_ASSERT_EQUAL(tm.tm_hour, hour);
   CU_ASSERT_EQUAL(tm.tm_mday, 5);
   CU_ASSERT_EQUAL(tm.tm_mon, 4);
   CU_ASSERT_EQUAL(tm.tm_year, 2003 - 1900);
+  CU_ASSERT_EQUAL(tm.tm_isdst, -1);
+  CU_ASSERT_EQUAL(tm.tm_gmtoff, 0);
+  CU_ASSERT_PTR_NULL(tm.tm_zone);
 }
 
 static void test_gmtime_r_returns_year_day_for_leap(void)
@@ -247,6 +259,15 @@ static void test_mktime_returns_seconds_for_year(void)
     tm.tm_mon = 0;
     tm.tm_gmtoff = 0;
     if(retrolibc_mktime(&tm) != t) break;
+    if(tm.tm_year + 1900 != y) break;
+    if(tm.tm_sec != 0) break;
+    if(tm.tm_min != 0) break;
+    if(tm.tm_hour != 0) break;
+    if(tm.tm_mday != 1) break;
+    if(tm.tm_mon != 0) break;
+    if(tm.tm_isdst != -1) break;
+    if(tm.tm_gmtoff != 0) break;
+    if(tm.tm_zone != NULL) break;
     t += 365 * 24 * 60 * 60;
     if(is_leap_year(y)) t += 24 * 60 * 60;
   }
@@ -273,6 +294,15 @@ static void test_mktime_returns_seconds_for_month_and_month_day_and_leap(void)
       tm.tm_mon = mon;
       tm.tm_gmtoff = 0;
       if(retrolibc_mktime(&tm) != t) break;
+      if(tm.tm_year + 1900 != y) break;
+      if(tm.tm_sec != 0) break;
+      if(tm.tm_min != 0) break;
+      if(tm.tm_hour != 0) break;
+      if(tm.tm_mday != mday) break;
+      if(tm.tm_mon != mon) break;
+      if(tm.tm_isdst != -1) break;
+      if(tm.tm_gmtoff != 0) break;
+      if(tm.tm_zone != NULL) break;
       is_stop = 0;
       t += 24 * 60 * 60;
     }
@@ -301,6 +331,15 @@ static void test_mktime_returns_seconds_for_month_and_month_day_and_no_leap(void
       tm.tm_mon = mon;
       tm.tm_gmtoff = 0;
       if(retrolibc_mktime(&tm) != t) break;
+      if(tm.tm_year + 1900 != y) break;
+      if(tm.tm_sec != 0) break;
+      if(tm.tm_min != 0) break;
+      if(tm.tm_hour != 0) break;
+      if(tm.tm_mday != mday) break;
+      if(tm.tm_mon != mon) break;
+      if(tm.tm_isdst != -1) break;
+      if(tm.tm_gmtoff != 0) break;
+      if(tm.tm_zone != NULL) break;
       is_stop = 0;
       t += 24 * 60 * 60;
     }
@@ -333,6 +372,15 @@ static void test_mktime_returns_seconds_for_hour_and_minute_and_second(void)
   tm.tm_mon = 4;
   tm.tm_year = 2003 - 1900;
   CU_ASSERT_EQUAL(retrolibc_mktime(&tm), t);
+  CU_ASSERT_EQUAL(tm.tm_sec, sec);
+  CU_ASSERT_EQUAL(tm.tm_min, min);
+  CU_ASSERT_EQUAL(tm.tm_hour, hour);
+  CU_ASSERT_EQUAL(tm.tm_mday, 5);
+  CU_ASSERT_EQUAL(tm.tm_mon, 4);
+  CU_ASSERT_EQUAL(tm.tm_year, 2003 - 1900);
+  CU_ASSERT_EQUAL(tm.tm_isdst, -1);
+  CU_ASSERT_EQUAL(tm.tm_gmtoff, 0);
+  CU_ASSERT_PTR_NULL(tm.tm_zone);
 }
 
 static void test_mktime_returns_seconds_for_month_greater_than_in_year(void)
@@ -356,6 +404,15 @@ static void test_mktime_returns_seconds_for_month_greater_than_in_year(void)
       tm.tm_mon = mon;
       tm.tm_gmtoff = 0;
       if(retrolibc_mktime(&tm) != t) break;
+      if(tm.tm_year + 1900 != y + 1) break;
+      if(tm.tm_sec != 0) break;
+      if(tm.tm_min != 0) break;
+      if(tm.tm_hour != 0) break;
+      if(tm.tm_mday != mday) break;
+      if(tm.tm_mon != mon - 12) break;
+      if(tm.tm_isdst != -1) break;
+      if(tm.tm_gmtoff != 0) break;
+      if(tm.tm_zone != NULL) break;
       is_stop = 0;
       t += 24 * 60 * 60;
     }
@@ -385,6 +442,15 @@ static void test_mktime_returns_seconds_for_negative_month(void)
       tm.tm_mon = mon;
       tm.tm_gmtoff = 0;
       if(retrolibc_mktime(&tm) != t) break;
+      if(tm.tm_year + 1900 != y - 1) break;
+      if(tm.tm_sec != 0) break;
+      if(tm.tm_min != 0) break;
+      if(tm.tm_hour != 0) break;
+      if(tm.tm_mday != mday) break;
+      if(tm.tm_mon != mon + 12) break;
+      if(tm.tm_isdst != -1) break;
+      if(tm.tm_gmtoff != 0) break;
+      if(tm.tm_zone != NULL) break;
       is_stop = 0;
       t += 24 * 60 * 60;
     }
