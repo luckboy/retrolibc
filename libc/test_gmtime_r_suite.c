@@ -42,8 +42,13 @@ static const int tab_month_days_for_leap[12] = {
   31  /* Decembder */
 };
 
+unsigned test_seed(void);
+
 static int initialize_gmtime_r(void)
-{ return 0; }
+{
+  srand(test_seed());
+  return 0;
+}
 
 static int cleanup_gmtime_r(void)
 { return 0; }
@@ -129,6 +134,100 @@ static void test_gmtime_r_returns_month_and_month_day_for_no_leap(void)
   CU_ASSERT_EQUAL(is_stop, 0);
 }
 
+static void test_gmtime_r_returns_hour_and_minute_and_second(void)
+{
+  static struct retrolibc_tm tm;
+  time_t t;
+  int y, mon, hour, min, sec;
+  for(y = 1970, t = 0; y < 2003; y++) {
+    t += 365 * 24 * 60 * 60;
+    if(is_leap_year(y)) t += 24 * 60 * 60;
+  }
+  for(mon = 0; mon < 4; mon++) {
+    t += tab_month_days_for_no_leap[mon] * 24 * 60 * 60;
+  }
+  t += (5 - 1) * 24 * 60 * 60;
+  hour = rand() / (RAND_MAX * 1.0) * 23.0;
+  min = rand() / (RAND_MAX * 1.0) * 59.0;
+  sec = rand() / (RAND_MAX * 1.0) * 59.0;
+  t += hour * 60 * 60 + min * 60 + sec;
+  retrolibc_gmtime_r(&t, &tm);
+  CU_ASSERT_EQUAL(tm.tm_sec, sec);
+  CU_ASSERT_EQUAL(tm.tm_min, min);
+  CU_ASSERT_EQUAL(tm.tm_hour, hour);
+  CU_ASSERT_EQUAL(tm.tm_mday, 5);
+  CU_ASSERT_EQUAL(tm.tm_mon, 4);
+  CU_ASSERT_EQUAL(tm.tm_year, 2003 - 1900);
+}
+
+static void test_gmtime_r_returns_year_day_for_leap(void)
+{
+  static struct retrolibc_tm tm;
+  time_t t;
+  int y, yday;
+  for(y = 1970, t = 0; y < 2000; y++) {
+    t += 365 * 24 * 60 * 60;
+    if(is_leap_year(y)) t += 24 * 60 * 60;
+  }
+  for(yday = 0; yday < 366; yday++) {
+    retrolibc_gmtime_r(&t, &tm);
+    if(tm.tm_yday != yday) break;
+    t += 24 * 60 * 60;
+  }
+  CU_ASSERT_EQUAL(yday, 366);
+}
+
+static void test_gmtime_r_returns_year_day_for_no_leap(void)
+{
+  static struct retrolibc_tm tm;
+  time_t t;
+  int y, yday;
+  for(y = 1970, t = 0; y < 2003; y++) {
+    t += 365 * 24 * 60 * 60;
+    if(is_leap_year(y)) t += 24 * 60 * 60;
+  }
+  for(yday = 0; yday < 365; yday++) {
+    retrolibc_gmtime_r(&t, &tm);
+    if(tm.tm_yday != yday) break;
+    t += 24 * 60 * 60;
+  }
+  CU_ASSERT_EQUAL(yday, 365);
+}
+
+static void test_gmtime_r_returns_week_day_for_leap(void)
+{
+  static struct retrolibc_tm tm;
+  time_t t;
+  int y, yday, wday;
+  for(y = 1970, t = 0; y < 2000; y++) {
+    t += 365 * 24 * 60 * 60;
+    if(is_leap_year(y)) t += 24 * 60 * 60;
+  }
+  for(yday = 0, wday = 6; yday < 366; yday++, wday = (wday + 1) % 7) {
+    retrolibc_gmtime_r(&t, &tm);
+    if(tm.tm_wday != wday) break;
+    t += 24 * 60 * 60;
+  }
+  CU_ASSERT_EQUAL(yday, 366);
+}
+
+static void test_gmtime_r_returns_week_day_for_no_leap(void)
+{
+  static struct retrolibc_tm tm;
+  time_t t;
+  int y, yday, wday;
+  for(y = 1970, t = 0; y < 2003; y++) {
+    t += 365 * 24 * 60 * 60;
+    if(is_leap_year(y)) t += 24 * 60 * 60;
+  }
+  for(yday = 0, wday = 3; yday < 365; yday++, wday = (wday + 1) % 7) {
+    retrolibc_gmtime_r(&t, &tm);
+    if(tm.tm_wday != wday) break;
+    t += 24 * 60 * 60;
+  }
+  CU_ASSERT_EQUAL(yday, 365);
+}
+
 static void test_mktime_returns_seconds_for_year(void)
 {
   static struct retrolibc_tm tm;
@@ -210,6 +309,32 @@ static void test_mktime_returns_seconds_for_month_and_month_day_and_no_leap(void
   CU_ASSERT_EQUAL(is_stop, 0);
 }
 
+static void test_mktime_returns_seconds_for_hour_and_minute_and_second(void)
+{
+  static struct retrolibc_tm tm;
+  time_t t;
+  int y, mon, hour, min, sec;
+  for(y = 1970, t = 0; y < 2003; y++) {
+    t += 365 * 24 * 60 * 60;
+    if(is_leap_year(y)) t += 24 * 60 * 60;
+  }
+  for(mon = 0; mon < 4; mon++) {
+    t += tab_month_days_for_no_leap[mon] * 24 * 60 * 60;
+  }
+  t += (5 - 1) * 24 * 60 * 60;
+  hour = rand() / (RAND_MAX * 1.0) * 23.0;
+  min = rand() / (RAND_MAX * 1.0) * 59.0;
+  sec = rand() / (RAND_MAX * 1.0) * 59.0;
+  t += hour * 60 * 60 + min * 60 + sec;
+  tm.tm_sec = sec;
+  tm.tm_min = min;
+  tm.tm_hour = hour;
+  tm.tm_mday = 5;
+  tm.tm_mon = 4;
+  tm.tm_year = 2003 - 1900;
+  CU_ASSERT_EQUAL(retrolibc_mktime(&tm), t);
+}
+
 int add_gmtime_r_suite(void)
 {
   CU_pSuite suite;
@@ -217,8 +342,14 @@ int add_gmtime_r_suite(void)
   if(CU_add_test(suite, "gmtime_r returns year", test_gmtime_r_returns_year) == NULL) return -1;
   if(CU_add_test(suite, "gmtime_r returns month and month day for leap", test_gmtime_r_returns_month_and_month_day_for_leap) == NULL) return -1;
   if(CU_add_test(suite, "gmtime_r returns month and month day for no leap", test_gmtime_r_returns_month_and_month_day_for_no_leap) == NULL) return -1;
+  if(CU_add_test(suite, "gmtime_r returns hour and minute and second", test_gmtime_r_returns_hour_and_minute_and_second) == NULL) return -1;
+  if(CU_add_test(suite, "gmtime_r returns year day for leap", test_gmtime_r_returns_year_day_for_leap) == NULL) return -1;
+  if(CU_add_test(suite, "gmtime_r returns year day for no leap", test_gmtime_r_returns_year_day_for_no_leap) == NULL) return -1;
+  if(CU_add_test(suite, "gmtime_r returns week day for leap", test_gmtime_r_returns_week_day_for_leap) == NULL) return -1;
+  if(CU_add_test(suite, "gmtime_r returns week day for no leap", test_gmtime_r_returns_week_day_for_no_leap) == NULL) return -1;
   if(CU_add_test(suite, "mktime returns seconds for year", test_mktime_returns_seconds_for_year) == NULL) return -1;
   if(CU_add_test(suite, "mktime returns seconds for month and month day and leap", test_mktime_returns_seconds_for_month_and_month_day_and_leap) == NULL) return -1;
   if(CU_add_test(suite, "mktime returns seconds for month and month day and no leap", test_mktime_returns_seconds_for_month_and_month_day_and_no_leap) == NULL) return -1;
+  if(CU_add_test(suite, "mktime returns seconds for hour and minute and second", test_mktime_returns_seconds_for_hour_and_minute_and_second) == NULL) return -1;
   return 0;
 }
