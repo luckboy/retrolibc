@@ -12,6 +12,36 @@
 #define LONG_BIT        __WORDSIZE
 #endif
 
+static const int tab_month_days_for_no_leap[12] = {
+  31, /* January */
+  28, /* February */
+  31, /* March */
+  30, /* April */
+  31, /* May */
+  30, /* June */
+  31, /* July */
+  31, /* August */
+  30, /* September */
+  31, /* October */
+  30, /* Novamber */
+  31  /* Decembder */
+};
+
+static const int tab_month_days_for_leap[12] = {
+  31, /* January */
+  29, /* February */
+  31, /* March */
+  30, /* April */
+  31, /* May */
+  30, /* June */
+  31, /* July */
+  31, /* August */
+  30, /* September */
+  31, /* October */
+  30, /* Novamber */
+  31  /* Decembder */
+};
+
 static int initialize_gmtime_r(void)
 { return 0; }
 
@@ -45,6 +75,60 @@ static void test_gmtime_r_returns_year(void)
   CU_ASSERT_EQUAL(y, max_y + 1);
 }
 
+static void test_gmtime_r_returns_month_and_month_day_for_leap(void)
+{
+  static struct retrolibc_tm tm;
+  time_t t;
+  int y, mon, mday, is_stop;
+  for(y = 1970, t = 0; y < 2000; y++) {
+    t += 365 * 24 * 60 * 60;
+    if(is_leap(y)) t += 24 * 60 * 60;
+  }
+  for(mon = 0; mon < 12; mon++) {
+    for(mday = 1; mday <= tab_month_days_for_leap[mon]; mday++) {
+      retrolibc_gmtime_r(&t, &tm);
+      is_stop = 1;
+      if(tm.tm_year + 1900 != y) break;
+      if(tm.tm_sec != 0) break;
+      if(tm.tm_min != 0) break;
+      if(tm.tm_hour != 0) break;
+      if(tm.tm_mday != mday) break;
+      if(tm.tm_mon != mon) break;
+      is_stop = 0;
+      t += 24 * 60 * 60;
+    }
+    if(is_stop) break;
+  }
+  CU_ASSERT_EQUAL(is_stop, 0);
+}
+
+static void test_gmtime_r_returns_month_and_month_day_for_no_leap(void)
+{
+  static struct retrolibc_tm tm;
+  time_t t;
+  int y, mon, mday, is_stop;
+  for(y = 1970, t = 0; y < 2003; y++) {
+    t += 365 * 24 * 60 * 60;
+    if(is_leap(y)) t += 24 * 60 * 60;
+  }
+  for(mon = 0; mon < 12; mon++) {
+    for(mday = 1; mday <= tab_month_days_for_no_leap[mon]; mday++) {
+      retrolibc_gmtime_r(&t, &tm);
+      is_stop = 1;
+      if(tm.tm_year + 1900 != y) break;
+      if(tm.tm_sec != 0) break;
+      if(tm.tm_min != 0) break;
+      if(tm.tm_hour != 0) break;
+      if(tm.tm_mday != mday) break;
+      if(tm.tm_mon != mon) break;
+      is_stop = 0;
+      t += 24 * 60 * 60;
+    }
+    if(is_stop) break;
+  }
+  CU_ASSERT_EQUAL(is_stop, 0);
+}
+
 static void test_mktime_returns_seconds_for_year(void)
 {
   static struct retrolibc_tm tm;
@@ -70,11 +154,71 @@ static void test_mktime_returns_seconds_for_year(void)
   CU_ASSERT_EQUAL(y, max_y + 1);
 }
 
+static void test_mktime_returns_seconds_for_month_and_month_day_and_leap(void)
+{
+  static struct retrolibc_tm tm;
+  time_t t;
+  int y, mon, mday, is_stop;
+  for(y = 1970, t = 0; y < 2000; y++) {
+    t += 365 * 24 * 60 * 60;
+    if(is_leap(y)) t += 24 * 60 * 60;
+  }
+  for(mon = 0; mon < 12; mon++) {
+    for(mday = 1; mday <= tab_month_days_for_leap[mon]; mday++) {
+      is_stop = 1;
+      tm.tm_year = y - 1900;
+      tm.tm_sec = 0;
+      tm.tm_min = 0;
+      tm.tm_hour = 0;
+      tm.tm_mday = mday;
+      tm.tm_mon = mon;
+      tm.tm_gmtoff = 0;
+      if(retrolibc_mktime(&tm) != t) break;
+      is_stop = 0;
+      t += 24 * 60 * 60;
+    }
+    if(is_stop) break;
+  }
+  CU_ASSERT_EQUAL(is_stop, 0);
+}
+
+static void test_mktime_returns_seconds_for_month_and_month_day_and_no_leap(void)
+{
+  static struct retrolibc_tm tm;
+  time_t t;
+  int y, mon, mday, is_stop;
+  for(y = 1970, t = 0; y < 2003; y++) {
+    t += 365 * 24 * 60 * 60;
+    if(is_leap(y)) t += 24 * 60 * 60;
+  }
+  for(mon = 0; mon < 12; mon++) {
+    for(mday = 1; mday <= tab_month_days_for_no_leap[mon]; mday++) {
+      is_stop = 1;
+      tm.tm_year = y - 1900;
+      tm.tm_sec = 0;
+      tm.tm_min = 0;
+      tm.tm_hour = 0;
+      tm.tm_mday = mday;
+      tm.tm_mon = mon;
+      tm.tm_gmtoff = 0;
+      if(retrolibc_mktime(&tm) != t) break;
+      is_stop = 0;
+      t += 24 * 60 * 60;
+    }
+    if(is_stop) break;
+  }
+  CU_ASSERT_EQUAL(is_stop, 0);
+}
+
 int add_gmtime_r_suite(void)
 {
   CU_pSuite suite;
   if((suite = CU_add_suite("gmtime_r suite", initialize_gmtime_r, cleanup_gmtime_r)) == NULL) return -1;
   if(CU_add_test(suite, "gmtime_r returns year", test_gmtime_r_returns_year) == NULL) return -1;
+  if(CU_add_test(suite, "gmtime_r returns month and month day for leap", test_gmtime_r_returns_month_and_month_day_for_leap) == NULL) return -1;
+  if(CU_add_test(suite, "gmtime_r returns month and month day for no leap", test_gmtime_r_returns_month_and_month_day_for_no_leap) == NULL) return -1;
   if(CU_add_test(suite, "mktime returns seconds for year", test_mktime_returns_seconds_for_year) == NULL) return -1;
+  if(CU_add_test(suite, "mktime returns seconds for month and month day and leap", test_mktime_returns_seconds_for_month_and_month_day_and_leap) == NULL) return -1;
+  if(CU_add_test(suite, "mktime returns seconds for month and month day and no leap", test_mktime_returns_seconds_for_month_and_month_day_and_no_leap) == NULL) return -1;
   return 0;
 }
