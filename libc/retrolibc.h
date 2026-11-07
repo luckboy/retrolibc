@@ -379,7 +379,7 @@ struct retrolibc_tm
 };
 
 struct retrolibc_tm *retrolibc_gmtime_r(const time_t *time, struct retrolibc_tm *retrolibc_tm);
-time_t retrolibc_mktime(const struct retrolibc_tm *retrolibc_tm);
+time_t retrolibc_mktime(struct retrolibc_tm *retrolibc_tm);
 
 #ifdef RETROLIBC_GMTIME_R
 #define tm retrolibc_tm

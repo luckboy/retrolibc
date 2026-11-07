@@ -106,7 +106,7 @@ struct tm *gmtime_r(const time_t *time, struct tm *tm)
 static int is_leap_year(int year)
 { return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0; }
 
-time_t mktime(const struct tm *tm)
+time_t mktime(struct tm *tm)
 {
   time_t t;
   time_t years_since_1600;
@@ -207,5 +207,6 @@ time_t mktime(const struct tm *tm)
   if(tmp <= 0 ? t > TIME_T_MAX + tmp : t < TIME_T_MIN + tmp) return -1;
   t -= tmp;
   if(t < 0) return -1;
+  if(gmtime_r(&t, tm) == NULL) return -1;
   return t;
 }
