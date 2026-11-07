@@ -113,6 +113,7 @@ time_t mktime(struct tm *tm)
   time_t days_since_1600;
   time_t days;
   time_t tmp;
+  long saved_gmtoff;
   int i, mon;
   if(tm->tm_year < -(1900 - 1600) || tm->tm_year > TIME_T_MAX - (1900 - 1600)) return -1;
   /* days */
@@ -207,6 +208,8 @@ time_t mktime(struct tm *tm)
   if(tmp <= 0 ? t > TIME_T_MAX + tmp : t < TIME_T_MIN + tmp) return -1;
   t -= tmp;
   if(t < 0) return -1;
+  saved_gmtoff = tm->tm_gmtoff;
   if(gmtime_r(&t, tm) == NULL) return -1;
+  tm->tm_gmtoff = saved_gmtoff;  
   return t;
 }
