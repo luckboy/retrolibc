@@ -27,9 +27,9 @@ static void test_gmtime_r_returns_year(void)
   time_t t;
   int y, max_y;
 #if LONG_BIT == 64
-   max_y = 2500;
+  max_y = 2500;
 #else
-   max_y = 2038;
+  max_y = 2038;
 #endif
   for(y = 1970, t = 0; y <= max_y; y++) {
     retrolibc_gmtime_r(&t, &tm);
@@ -51,9 +51,9 @@ static void test_mktime_returns_seconds_for_year(void)
   time_t t;
   int y, max_y;
 #if LONG_BIT == 64
-   max_y = 2500;
+  max_y = 2500;
 #else
-   max_y = 2038;
+  max_y = 2038;
 #endif
   for(y = 1970, t = 0; y <= max_y; y++) {
     tm.tm_year = y - 1900;
