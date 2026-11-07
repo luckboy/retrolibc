@@ -48,7 +48,7 @@ static int initialize_gmtime_r(void)
 static int cleanup_gmtime_r(void)
 { return 0; }
 
-int is_leap(int year)
+static int is_leap_year(int year)
 { return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0; }
 
 static void test_gmtime_r_returns_year(void)
@@ -70,7 +70,7 @@ static void test_gmtime_r_returns_year(void)
     if(tm.tm_mday != 1) break;
     if(tm.tm_mon != 0) break;
     t += 365 * 24 * 60 * 60;
-    if(is_leap(y)) t += 24 * 60 * 60;
+    if(is_leap_year(y)) t += 24 * 60 * 60;
   }
   CU_ASSERT_EQUAL(y, max_y + 1);
 }
@@ -82,7 +82,7 @@ static void test_gmtime_r_returns_month_and_month_day_for_leap(void)
   int y, mon, mday, is_stop;
   for(y = 1970, t = 0; y < 2000; y++) {
     t += 365 * 24 * 60 * 60;
-    if(is_leap(y)) t += 24 * 60 * 60;
+    if(is_leap_year(y)) t += 24 * 60 * 60;
   }
   for(mon = 0; mon < 12; mon++) {
     for(mday = 1; mday <= tab_month_days_for_leap[mon]; mday++) {
@@ -109,7 +109,7 @@ static void test_gmtime_r_returns_month_and_month_day_for_no_leap(void)
   int y, mon, mday, is_stop;
   for(y = 1970, t = 0; y < 2003; y++) {
     t += 365 * 24 * 60 * 60;
-    if(is_leap(y)) t += 24 * 60 * 60;
+    if(is_leap_year(y)) t += 24 * 60 * 60;
   }
   for(mon = 0; mon < 12; mon++) {
     for(mday = 1; mday <= tab_month_days_for_no_leap[mon]; mday++) {
@@ -149,7 +149,7 @@ static void test_mktime_returns_seconds_for_year(void)
     tm.tm_gmtoff = 0;
     if(retrolibc_mktime(&tm) != t) break;
     t += 365 * 24 * 60 * 60;
-    if(is_leap(y)) t += 24 * 60 * 60;
+    if(is_leap_year(y)) t += 24 * 60 * 60;
   }
   CU_ASSERT_EQUAL(y, max_y + 1);
 }
@@ -161,7 +161,7 @@ static void test_mktime_returns_seconds_for_month_and_month_day_and_leap(void)
   int y, mon, mday, is_stop;
   for(y = 1970, t = 0; y < 2000; y++) {
     t += 365 * 24 * 60 * 60;
-    if(is_leap(y)) t += 24 * 60 * 60;
+    if(is_leap_year(y)) t += 24 * 60 * 60;
   }
   for(mon = 0; mon < 12; mon++) {
     for(mday = 1; mday <= tab_month_days_for_leap[mon]; mday++) {
@@ -189,7 +189,7 @@ static void test_mktime_returns_seconds_for_month_and_month_day_and_no_leap(void
   int y, mon, mday, is_stop;
   for(y = 1970, t = 0; y < 2003; y++) {
     t += 365 * 24 * 60 * 60;
-    if(is_leap(y)) t += 24 * 60 * 60;
+    if(is_leap_year(y)) t += 24 * 60 * 60;
   }
   for(mon = 0; mon < 12; mon++) {
     for(mday = 1; mday <= tab_month_days_for_no_leap[mon]; mday++) {
