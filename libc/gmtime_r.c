@@ -103,6 +103,9 @@ struct tm *gmtime_r(const time_t *time, struct tm *tm)
   return tm;
 }
 
+static int is_leap_year(int year)
+{ return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0; }
+
 time_t mktime(const struct tm *tm)
 {
   time_t t;
@@ -110,41 +113,33 @@ time_t mktime(const struct tm *tm)
   time_t days_since_1600;
   time_t days;
   time_t tmp;
-  int is_leap;
   int i, mon;
   if(tm->tm_year < -(1900 - 1600) || tm->tm_year > TIME_T_MAX - (1900 - 1600)) return -1;
   /* days */
   /* year */
-  years_since_1600 = tm->tm_year + 1900 - 1600;
+  years_since_1600 = ((time_t) tm->tm_year) + 1900 - 1600;
   tmp = years_since_1600 / 400;
   if(IS_OVERFLOW1(tmp, DAYS_PER_400_YEARS)) return -1;
   tmp *= DAYS_PER_400_YEARS;
   days_since_1600 = tmp;
-  if(years_since_1600 % 400 == 0) {
-    is_leap = 1;
-  } else {
+  if(years_since_1600 % 400 != 0) {
     tmp = (years_since_1600 % 400) / 100;
     if(IS_OVERFLOW1(tmp, DAYS_PER_100_YEARS)) return -1;
     tmp *= DAYS_PER_100_YEARS;
     if(days_since_1600 > TIME_T_MAX - tmp - 1) return -1;
     days_since_1600 += tmp + 1;
-    if(years_since_1600 % 400 % 100 == 0) {
-      is_leap = 0;
-    } else {
+    if(years_since_1600 % 400 % 100 != 0) {
       tmp = (years_since_1600 % 400 % 100) / 4;
       if(IS_OVERFLOW1(tmp, DAYS_PER_4_YEARS)) return -1;
       tmp *= DAYS_PER_4_YEARS;
       if(days_since_1600 - 1 > TIME_T_MAX - tmp) return - 1;
       days_since_1600 += tmp - 1;
-      if(years_since_1600 % 400 % 100 % 4 == 0) {
-        is_leap = 1;
-      } else {
+      if(years_since_1600 % 400 % 100 % 4 != 0) {
         tmp = years_since_1600 % 400 % 100 % 4;
         if(IS_OVERFLOW1(tmp, 365)) return -1;
         tmp *= 365;
         if(days_since_1600 > TIME_T_MAX - tmp - 1) return -1;
         days_since_1600 += tmp + 1;
-        is_leap = 0;
       }
     }
   }
@@ -152,18 +147,36 @@ time_t mktime(const struct tm *tm)
   if(days < 0) return -1;
   /* month */
   if(tm->tm_mon >= 0) {
-    for(i = 0, mon = tm->tm_mon; mon > 0; i = (i + 1 < 12 ? i + 1 : 0), mon--) {
+    time_t y;
+    if(tm->tm_year > TIME_T_MAX - 1900) return -1;
+    for(i = 0, y = ((time_t) tm->tm_year) + 1900, mon = tm->tm_mon; mon > 0; mon--) {
       int month_days = tab_month_days[i];
-      if(i == 1 && is_leap) month_days++;
+      if(i == 1 && is_leap_year(y)) month_days++;
       if(days > TIME_T_MAX - month_days) return -1;
       days += month_days;
+      if(i + 1 < 12) {
+        i++;
+      } else {
+        i = 0;
+        if(y > TIME_T_MAX - 1) return -1;
+        y++;
+      }
     }
   } else {
-    for(i = 11, mon = tm->tm_mon; mon < 0; i = (i - 1 >= 0 ? i - 1 : 0), mon++) {
+    time_t y;
+    if(tm->tm_year > TIME_T_MAX - 1900) return -1;
+    for(i = 11, y = ((time_t) tm->tm_year) + 1900, mon = tm->tm_mon; mon < 0; mon++) {
       int month_days = tab_month_days[i];
-      if(i == 1 && is_leap) month_days++;
+      if(i == 1 && is_leap_year(y)) month_days++;
       if(days - month_days < 0) return -1;
       days -= month_days;
+      if(i - 1 >= 0) {
+        i--;
+      } else {
+        i = 11;
+        if(y < TIME_T_MIN + 1) return -1;
+        y--;
+      }
     }
   }
   /* month day */
