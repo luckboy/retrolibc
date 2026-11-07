@@ -13,6 +13,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <unistd.h>
 
 #ifndef PAGE_SIZE
@@ -358,6 +359,32 @@ int retrolibc_vsscanf(const char *s, const char *format, va_list ap);
 #define sscanf retrolibc_sscanf
 #define vfscanf retrolibc_vfscanf
 #define vsscanf retrolibc_vsscanf
+#endif
+
+/* gmtime_r.c */
+
+struct retrolibc_tm
+{
+  int tm_sec;
+  int tm_min;
+  int tm_hour;
+  int tm_mday;
+  int tm_mon;
+  int tm_year;
+  int tm_wday;
+  int tm_yday;
+  int tm_isdst;
+  long tm_gmtoff;
+  const char *tm_zone;
+};
+
+struct retrolibc_tm *retrolibc_gmtime_r(const time_t *time, struct retrolibc_tm *retrolibc_tm);
+time_t retrolibc_mktime(const struct retrolibc_tm *retrolibc_tm);
+
+#ifdef RETROLIBC_GMTIME_R
+#define tm retrolibc_tm
+#define gmtime_r retrolibc_gmtime_r
+#define mktime retrolibc_mktime
 #endif
 
 /* malloc.c */

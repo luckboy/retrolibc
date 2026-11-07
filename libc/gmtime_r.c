@@ -6,7 +6,12 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 #include <limits.h>
+#ifndef TEST
 #include <time.h>
+#else
+#define RETROLIBC_GMTIME_R
+#include "retrolibc.h"
+#endif
 
 #define TIME_T_MAX                      LONG_MAX
 #define TIME_T_MIN                      LONG_MIN
@@ -83,7 +88,6 @@ struct tm *gmtime_r(const time_t *time, struct tm *tm)
     mday -= month_days;
   }
   mday++;
-  mon++;
   tm->tm_sec = t % 60;
   tm->tm_min = (t / 60) % 60;
   tm->tm_hour = (t / 60 / 60) % 24;
@@ -163,8 +167,9 @@ time_t mktime(const struct tm *tm)
     }
   }
   /* month day */
-  if(days > TIME_T_MAX - tm->tm_mday) return -1;
-  days += tm->tm_mday;
+  tmp = tm->tm_mday - 1;
+  if(tmp >= 0 ? days > TIME_T_MAX - tmp : days < TIME_T_MIN - tmp) return -1;
+  days += tmp;
   /* t */
   if(IS_OVERFLOW(days, 24 * 60 * 60)) return -1;
   t = days * 24 * 60 * 60;
