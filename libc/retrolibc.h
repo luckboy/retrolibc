@@ -237,6 +237,8 @@ int retrolibc___fflush_unlocked(struct retrolibc___FILE *f, int flags);
 int retrolibc___mode_to_oflags(const char *s);
 int retrolibc___init_file(struct retrolibc___FILE *f);
 
+void retrolibc___init_stdio(void);
+
 void retrolibc_clearerr(retrolibc_FILE *f);
 int retrolibc_fclose(retrolibc_FILE *f);
 retrolibc_FILE *retrolibc_fdopen(int fd, const char *mode);
@@ -295,6 +297,8 @@ int retrolibc_ungetc(int c, retrolibc_FILE *f);
 #define __fdclose_unlocked retrolibc___fdclose_unlocked
 #define __mode_to_oflags retrolibc___mode_to_oflags
 #define __init_file retrolibc___init_file
+
+#define __init_stdio retrolibc___init_stdio
 
 #define clearerr retrolibc_clearerr
 #define fclose retrolibc_fclose

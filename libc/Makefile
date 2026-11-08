@@ -31,6 +31,7 @@ FILE_OBJS = \
 	$(BUILD_DIR)/file_fdclose_unlocked.o \
 	$(BUILD_DIR)/file_mode_to_oflags.o \
 	$(BUILD_DIR)/file_init_file.o \
+	$(BUILD_DIR)/file_init_stdio.o \
 	$(BUILD_DIR)/file_clearerr.o \
 	$(BUILD_DIR)/file_fclose.o \
 	$(BUILD_DIR)/file_fdopen.o \
@@ -155,6 +156,7 @@ TEST_FILE_OBJS = \
 	$(TEST_BUILD_DIR)/file_fdclose_unlocked.o \
 	$(TEST_BUILD_DIR)/file_mode_to_oflags.o \
 	$(TEST_BUILD_DIR)/file_init_file.o \
+	$(TEST_BUILD_DIR)/file_init_stdio.o \
 	$(TEST_BUILD_DIR)/file_clearerr.o \
 	$(TEST_BUILD_DIR)/file_fclose.o \
 	$(TEST_BUILD_DIR)/file_fdopen.o \

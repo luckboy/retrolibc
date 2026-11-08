@@ -52,6 +52,8 @@ int __fdclose_unlocked(struct __FILE *f);
 int __mode_to_oflags(const char *s);
 int __init_file(struct __FILE *f);
 
+void __init_stdio(void);
+
 #if defined(TEST) && !defined(RETROLIBC_FILE)
 #undef __FILE
 #endif

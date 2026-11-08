@@ -229,6 +229,15 @@ int __init_file(struct __FILE *f)
 }
 #endif
 
+#ifdef L_init_stdio
+void __init_stdio(void)
+{
+  struct stat buf;
+  if(fstat(stdin->fd, &buf) != -1 && !S_ISCHR(buf.st_mode) && !S_ISFIFO(buf.st_mode)) stdin->flags &= ~FILE_FLAG_LINE_BUFFERED;
+  if(fstat(stdout->fd, &buf) != -1 && !S_ISCHR(buf.st_mode) && !S_ISFIFO(buf.st_mode)) stdout->flags &= ~FILE_FLAG_LINE_BUFFERED;
+}
+#endif
+
 #ifdef L_clearerr
 void clearerr(FILE *f)
 {
