@@ -25,7 +25,7 @@
 #define IS_OVERFLOW2(x, y)              ((x) < TIME_T_MIN / (y))
 #define IS_OVERFLOW(x, y)               (IS_OVERFLOW1((x), (y)) || IS_OVERFLOW2((x), (y)))
 
-static const int tab_month_days[12] = {
+static const signed char tab_month_days[12] = {
   31, /* January */
   28, /* February */
   31, /* March */
