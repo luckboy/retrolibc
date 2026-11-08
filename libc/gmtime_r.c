@@ -97,7 +97,7 @@ struct tm *gmtime_r(const time_t *time, struct tm *tm)
   tm->tm_wday = (days + 4) % 7;
   if(tm->tm_wday < 0) tm->tm_wday += 7;
   tm->tm_yday = yday;
-  tm->tm_isdst = -1;
+  tm->tm_isdst = 0;
   tm->tm_gmtoff = 0;
   tm->tm_zone = NULL;
   return tm;

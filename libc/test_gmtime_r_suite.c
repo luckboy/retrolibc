@@ -74,7 +74,7 @@ static void test_gmtime_r_returns_year(void)
     if(tm.tm_hour != 0) break;
     if(tm.tm_mday != 1) break;
     if(tm.tm_mon != 0) break;
-    if(tm.tm_isdst != -1) break;
+    if(tm.tm_isdst != 0) break;
     if(tm.tm_gmtoff != 0) break;
     if(tm.tm_zone != NULL) break;
     t += 365 * 24 * 60 * 60;
@@ -102,7 +102,7 @@ static void test_gmtime_r_returns_month_and_month_day_for_leap(void)
       if(tm.tm_hour != 0) break;
       if(tm.tm_mday != mday) break;
       if(tm.tm_mon != mon) break;
-      if(tm.tm_isdst != -1) break;
+      if(tm.tm_isdst != 0) break;
       if(tm.tm_gmtoff != 0) break;
       if(tm.tm_zone != NULL) break;
       is_stop = 0;
@@ -132,7 +132,7 @@ static void test_gmtime_r_returns_month_and_month_day_for_no_leap(void)
       if(tm.tm_hour != 0) break;
       if(tm.tm_mday != mday) break;
       if(tm.tm_mon != mon) break;
-      if(tm.tm_isdst != -1) break;
+      if(tm.tm_isdst != 0) break;
       if(tm.tm_gmtoff != 0) break;
       if(tm.tm_zone != NULL) break;
       is_stop = 0;
@@ -167,7 +167,7 @@ static void test_gmtime_r_returns_hour_and_minute_and_second(void)
   CU_ASSERT_EQUAL(tm.tm_mday, 5);
   CU_ASSERT_EQUAL(tm.tm_mon, 4);
   CU_ASSERT_EQUAL(tm.tm_year, 2003 - 1900);
-  CU_ASSERT_EQUAL(tm.tm_isdst, -1);
+  CU_ASSERT_EQUAL(tm.tm_isdst, 0);
   CU_ASSERT_EQUAL(tm.tm_gmtoff, 0);
   CU_ASSERT_PTR_NULL(tm.tm_zone);
 }
@@ -265,7 +265,7 @@ static void test_mktime_returns_seconds_for_year(void)
     if(tm.tm_hour != 0) break;
     if(tm.tm_mday != 1) break;
     if(tm.tm_mon != 0) break;
-    if(tm.tm_isdst != -1) break;
+    if(tm.tm_isdst != 0) break;
     if(tm.tm_gmtoff != 0) break;
     if(tm.tm_zone != NULL) break;
     t += 365 * 24 * 60 * 60;
@@ -300,7 +300,7 @@ static void test_mktime_returns_seconds_for_month_and_month_day_and_leap(void)
       if(tm.tm_hour != 0) break;
       if(tm.tm_mday != mday) break;
       if(tm.tm_mon != mon) break;
-      if(tm.tm_isdst != -1) break;
+      if(tm.tm_isdst != 0) break;
       if(tm.tm_gmtoff != 0) break;
       if(tm.tm_zone != NULL) break;
       is_stop = 0;
@@ -337,7 +337,7 @@ static void test_mktime_returns_seconds_for_month_and_month_day_and_no_leap(void
       if(tm.tm_hour != 0) break;
       if(tm.tm_mday != mday) break;
       if(tm.tm_mon != mon) break;
-      if(tm.tm_isdst != -1) break;
+      if(tm.tm_isdst != 0) break;
       if(tm.tm_gmtoff != 0) break;
       if(tm.tm_zone != NULL) break;
       is_stop = 0;
@@ -378,7 +378,7 @@ static void test_mktime_returns_seconds_for_hour_and_minute_and_second(void)
   CU_ASSERT_EQUAL(tm.tm_mday, 5);
   CU_ASSERT_EQUAL(tm.tm_mon, 4);
   CU_ASSERT_EQUAL(tm.tm_year, 2003 - 1900);
-  CU_ASSERT_EQUAL(tm.tm_isdst, -1);
+  CU_ASSERT_EQUAL(tm.tm_isdst, 0);
   CU_ASSERT_EQUAL(tm.tm_gmtoff, 0);
   CU_ASSERT_PTR_NULL(tm.tm_zone);
 }
@@ -410,7 +410,7 @@ static void test_mktime_returns_seconds_for_month_greater_than_in_year(void)
       if(tm.tm_hour != 0) break;
       if(tm.tm_mday != mday) break;
       if(tm.tm_mon != mon - 12) break;
-      if(tm.tm_isdst != -1) break;
+      if(tm.tm_isdst != 0) break;
       if(tm.tm_gmtoff != 0) break;
       if(tm.tm_zone != NULL) break;
       is_stop = 0;
@@ -448,7 +448,7 @@ static void test_mktime_returns_seconds_for_negative_month(void)
       if(tm.tm_hour != 0) break;
       if(tm.tm_mday != mday) break;
       if(tm.tm_mon != mon + 12) break;
-      if(tm.tm_isdst != -1) break;
+      if(tm.tm_isdst != 0) break;
       if(tm.tm_gmtoff != 0) break;
       if(tm.tm_zone != NULL) break;
       is_stop = 0;
