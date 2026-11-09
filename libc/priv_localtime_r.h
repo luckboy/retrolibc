@@ -13,9 +13,9 @@
 #include "priv_gmtime_r.h"
 
 extern pthread_mutex_t __tz_mutex;
-extern long __tz_std_offest;
+extern long __tz_std_offset;
 extern const char *__tz_std_zone;
-extern long __tz_dst_offest;
+extern long __tz_dst_offset;
 extern const char * __tz_dst_zone;
 extern int __are_tz_rules;
 extern struct tz_rule __tz_rule_std_to_dst;

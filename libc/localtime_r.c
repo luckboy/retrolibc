@@ -11,9 +11,9 @@
 #include "priv_localtime_r.h"
  
 pthread_mutex_t __tz_mutex = PTHREAD_MUTEX_INITIALIZER;
-long __tz_std_offest = 0L;
+long __tz_std_offset = 0L;
 const char *__tz_std_zone = NULL;
-long __tz_dst_offest = 0L;
+long __tz_dst_offset = 0L;
 const char *__tz_dst_zone = NULL;
 int __are_tz_rules = 0;
 struct tz_rule __tz_rule_std_to_dst;
@@ -23,30 +23,30 @@ static struct tm *localtime_r_unlocked(const time_t *time, struct tm *tm)
 {
   time_t t = *time;
   time_t t2;
-  if(__tz_std_offest <= 0 ? t > TIME_T_MAX + __tz_std_offest : t < TIME_T_MIN + __tz_std_offest) return NULL;
-  t2 = t - __tz_std_offest;
+  if(__tz_std_offset <= 0 ? t > TIME_T_MAX + __tz_std_offset : t < TIME_T_MIN + __tz_std_offset) return NULL;
+  t2 = t - __tz_std_offset;
   if(gmtime_r(&t2, tm) == NULL) return NULL;
   if(__are_tz_rules) {
     if(__cmp_tm_with_tz_rule(tm, &__tz_rule_std_to_dst) < 0) {
       tm->tm_isdst = 0;
-      tm->tm_gmtoff = -__tz_std_offest;
+      tm->tm_gmtoff = -__tz_std_offset;
       tm->tm_zone = __tz_std_zone;
       return tm;
     }
-    if(__tz_dst_offest <= 0 ? t > TIME_T_MAX + __tz_dst_offest : t < TIME_T_MIN + __tz_dst_offest) return NULL;
-    t2 = t - __tz_dst_offest;
+    if(__tz_dst_offset <= 0 ? t > TIME_T_MAX + __tz_dst_offset : t < TIME_T_MIN + __tz_dst_offset) return NULL;
+    t2 = t - __tz_dst_offset;
     if(gmtime_r(&t2, tm) == NULL) return NULL;
     if(__cmp_tm_with_tz_rule(tm, &__tz_rule_dst_to_std) < 0) {
       tm->tm_isdst = 1;
-      tm->tm_gmtoff = -__tz_dst_offest;
+      tm->tm_gmtoff = -__tz_dst_offset;
       tm->tm_zone = __tz_dst_zone;
       return tm;
     }
-    t2 = t - __tz_std_offest;
+    t2 = t - __tz_std_offset;
     if(gmtime_r(&t2, tm) == NULL) return NULL;
   }
   tm->tm_isdst = 0;
-  tm->tm_gmtoff = -__tz_std_offest;
+  tm->tm_gmtoff = -__tz_std_offset;
   tm->tm_zone = __tz_std_zone;
   return tm;
 }
