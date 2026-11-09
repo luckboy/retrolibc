@@ -174,7 +174,15 @@ static int parse_tz(const char *s)
 void __tzset_unlocked(void)
 {
   char *tz = getenv(TZ);
-  if(tz != NULL) parse_tz(tz);
+  if(tz != NULL) {
+    parse_tz(tz);
+  } else {
+    __tz_std_offset = 0L;
+    __tz_std_zone = "GMT";
+    __tz_dst_offset = 0L;
+    __tz_dst_zone = NULL;
+    __are_tz_rules = 0;
+  }
   daylight = __are_tz_rules;
   timezone = __tz_std_offset;
   tzname[0] = (char *) __tz_std_zone;
