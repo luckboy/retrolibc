@@ -121,7 +121,7 @@ int __cmp_tm_with_tz_rule(const struct tm *tm, const struct tz_rule *rule)
     } else if(tm->tm_mon > rule->u.m.m - 1) {
       return 1;
     } else {
-      int rule_day = tm->tm_mday - tm->tm_wday + rule->u.m.d;
+      int rule_day = tm->tm_mday - tm->tm_wday + rule->u.m.d - 1;
       int month_days = tab_month_days[tm->tm_mon];
       if(is_leap_year(tm->tm_year + 1900)) month_days++;
       if(rule_day < 0) rule_day += 7;
