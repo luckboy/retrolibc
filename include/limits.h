@@ -12,6 +12,8 @@
 #include <bits/page_size.h>
 #include <bits/wordsize.h>
 
+#define TZNAME_MAX      3
+
 #define PAGE_SIZE       __PAGE_SIZE
 
 #define CHAR_BIT        8
