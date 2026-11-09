@@ -101,7 +101,10 @@ struct tm *gmtime_r(const time_t *time, struct tm *tm)
   return tm;
 }
 
-int __cmp_tm_with_tz_rule(const struct tm *tm, struct tz_rule *rule)
+static int is_leap_year(int year)
+{ return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0; }
+
+int __cmp_tm_with_tz_rule(const struct tm *tm, const struct tz_rule *rule)
 {
   int tm_time = tm->tm_hour * 60 * 60 + tm->tm_min * 60 + tm->tm_sec;
   if(rule->type == '\0' || rule->type == 'J') {
@@ -119,10 +122,12 @@ int __cmp_tm_with_tz_rule(const struct tm *tm, struct tz_rule *rule)
       return 1;
     } else {
       int rule_day = tm->tm_mday - tm->tm_wday + rule->u.m.d;
+      int month_days = tab_month_days[tm->tm_mon];
+      if(is_leap_year(tm->tm_year + 1900)) month_days++;
       if(rule_day < 0) rule_day += 7;
       rule_day %= 7;
       rule_day += (rule->u.m.w - 1) * 7;
-      if(rule_day >= tab_month_days[tm->tm_mon]) rule_day -= 7; /* last week is 4th week */
+      if(rule_day >= month_days) rule_day -= 7; /* last week is 4th week */
       rule_day++;
       if(tm->tm_mday < rule_day) {
         return -1;
@@ -139,9 +144,6 @@ int __cmp_tm_with_tz_rule(const struct tm *tm, struct tz_rule *rule)
     return 0;
   }
 }
-
-static int is_leap_year(int year)
-{ return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0; }
 
 time_t __mktime_no_tzset(const struct tm *tm)
 {

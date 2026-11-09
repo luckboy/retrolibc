@@ -30,7 +30,7 @@ struct tz_rule
 };
 
 #ifndef TEST
-int __cmp_tm_with_tz_rule(const struct tm *tm, struct tz_rule *rule);
+int __cmp_tm_with_tz_rule(const struct tm *tm, const struct tz_rule *rule);
 time_t __mktime_no_tzset(const struct tm *tm);
 #endif
 

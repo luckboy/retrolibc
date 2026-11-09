@@ -384,7 +384,7 @@ struct retrolibc_tm
 };
 
 struct retrolibc_tm *retrolibc_gmtime_r(const time_t *time, struct retrolibc_tm *retrolibc_tm);
-int retrolibc___cmp_tm_with_tz_rule(const struct tm *tm, struct tz_rule *rule);
+int retrolibc___cmp_tm_with_tz_rule(const struct retrolibc_tm *tm, const struct tz_rule *rule);
 time_t retrolibc___mktime_no_tzset(const struct retrolibc_tm *retrolibc_tm);
 
 #ifdef RETROLIBC_GMTIME_R
