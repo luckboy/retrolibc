@@ -383,12 +383,12 @@ struct retrolibc_tm
 };
 
 struct retrolibc_tm *retrolibc_gmtime_r(const time_t *time, struct retrolibc_tm *retrolibc_tm);
-time_t retrolibc_mktime(struct retrolibc_tm *retrolibc_tm);
+time_t retrolibc___mktime_no_tzset(struct retrolibc_tm *retrolibc_tm);
 
 #ifdef RETROLIBC_GMTIME_R
 #define tm retrolibc_tm
 #define gmtime_r retrolibc_gmtime_r
-#define mktime retrolibc_mktime
+#define __mktime_no_tzset retrolibc___mktime_no_tzset
 #endif
 
 /* malloc.c */

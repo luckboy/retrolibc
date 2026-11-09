@@ -240,7 +240,7 @@ static void test_gmtime_r_returns_week_day_for_no_leap(void)
   CU_ASSERT_EQUAL(yday, 365);
 }
 
-static void test_mktime_returns_seconds_for_year(void)
+static void test___mktime_no_tzset_returns_seconds_for_year(void)
 {
   static struct retrolibc_tm tm;
   time_t t;
@@ -258,7 +258,7 @@ static void test_mktime_returns_seconds_for_year(void)
     tm.tm_mday = 1;
     tm.tm_mon = 0;
     tm.tm_gmtoff = 0;
-    if(retrolibc_mktime(&tm) != t) break;
+    if(retrolibc___mktime_no_tzset(&tm) != t) break;
     if(tm.tm_year + 1900 != y) break;
     if(tm.tm_sec != 0) break;
     if(tm.tm_min != 0) break;
@@ -274,7 +274,7 @@ static void test_mktime_returns_seconds_for_year(void)
   CU_ASSERT_EQUAL(y, max_y + 1);
 }
 
-static void test_mktime_returns_seconds_for_month_and_month_day_and_leap(void)
+static void test___mktime_no_tzset_returns_seconds_for_month_and_month_day_and_leap(void)
 {
   static struct retrolibc_tm tm;
   time_t t;
@@ -293,7 +293,7 @@ static void test_mktime_returns_seconds_for_month_and_month_day_and_leap(void)
       tm.tm_mday = mday;
       tm.tm_mon = mon;
       tm.tm_gmtoff = 0;
-      if(retrolibc_mktime(&tm) != t) break;
+      if(retrolibc___mktime_no_tzset(&tm) != t) break;
       if(tm.tm_year + 1900 != y) break;
       if(tm.tm_sec != 0) break;
       if(tm.tm_min != 0) break;
@@ -311,7 +311,7 @@ static void test_mktime_returns_seconds_for_month_and_month_day_and_leap(void)
   CU_ASSERT_EQUAL(is_stop, 0);
 }
 
-static void test_mktime_returns_seconds_for_month_and_month_day_and_no_leap(void)
+static void test___mktime_no_tzset_returns_seconds_for_month_and_month_day_and_no_leap(void)
 {
   static struct retrolibc_tm tm;
   time_t t;
@@ -330,7 +330,7 @@ static void test_mktime_returns_seconds_for_month_and_month_day_and_no_leap(void
       tm.tm_mday = mday;
       tm.tm_mon = mon;
       tm.tm_gmtoff = 0;
-      if(retrolibc_mktime(&tm) != t) break;
+      if(retrolibc___mktime_no_tzset(&tm) != t) break;
       if(tm.tm_year + 1900 != y) break;
       if(tm.tm_sec != 0) break;
       if(tm.tm_min != 0) break;
@@ -348,7 +348,7 @@ static void test_mktime_returns_seconds_for_month_and_month_day_and_no_leap(void
   CU_ASSERT_EQUAL(is_stop, 0);
 }
 
-static void test_mktime_returns_seconds_for_hour_and_minute_and_second(void)
+static void test___mktime_no_tzset_returns_seconds_for_hour_and_minute_and_second(void)
 {
   static struct retrolibc_tm tm;
   time_t t;
@@ -371,7 +371,7 @@ static void test_mktime_returns_seconds_for_hour_and_minute_and_second(void)
   tm.tm_mday = 5;
   tm.tm_mon = 4;
   tm.tm_year = 2003 - 1900;
-  CU_ASSERT_EQUAL(retrolibc_mktime(&tm), t);
+  CU_ASSERT_EQUAL(retrolibc___mktime_no_tzset(&tm), t);
   CU_ASSERT_EQUAL(tm.tm_sec, sec);
   CU_ASSERT_EQUAL(tm.tm_min, min);
   CU_ASSERT_EQUAL(tm.tm_hour, hour);
@@ -383,7 +383,7 @@ static void test_mktime_returns_seconds_for_hour_and_minute_and_second(void)
   CU_ASSERT_PTR_NULL(tm.tm_zone);
 }
 
-static void test_mktime_returns_seconds_for_month_greater_than_in_year(void)
+static void test___mktime_no_tzset_returns_seconds_for_month_greater_than_in_year(void)
 {
   static struct retrolibc_tm tm;
   time_t t;
@@ -403,7 +403,7 @@ static void test_mktime_returns_seconds_for_month_greater_than_in_year(void)
       tm.tm_mday = mday;
       tm.tm_mon = mon;
       tm.tm_gmtoff = 0;
-      if(retrolibc_mktime(&tm) != t) break;
+      if(retrolibc___mktime_no_tzset(&tm) != t) break;
       if(tm.tm_year + 1900 != y + 1) break;
       if(tm.tm_sec != 0) break;
       if(tm.tm_min != 0) break;
@@ -421,7 +421,7 @@ static void test_mktime_returns_seconds_for_month_greater_than_in_year(void)
   CU_ASSERT_EQUAL(is_stop, 0);
 }
 
-static void test_mktime_returns_seconds_for_negative_month(void)
+static void test___mktime_no_tzset_returns_seconds_for_negative_month(void)
 {
   static struct retrolibc_tm tm;
   time_t t;
@@ -441,7 +441,7 @@ static void test_mktime_returns_seconds_for_negative_month(void)
       tm.tm_mday = mday;
       tm.tm_mon = mon;
       tm.tm_gmtoff = 0;
-      if(retrolibc_mktime(&tm) != t) break;
+      if(retrolibc___mktime_no_tzset(&tm) != t) break;
       if(tm.tm_year + 1900 != y - 1) break;
       if(tm.tm_sec != 0) break;
       if(tm.tm_min != 0) break;
@@ -471,11 +471,11 @@ int add_gmtime_r_suite(void)
   if(CU_add_test(suite, "gmtime_r returns year day for no leap", test_gmtime_r_returns_year_day_for_no_leap) == NULL) return -1;
   if(CU_add_test(suite, "gmtime_r returns week day for leap", test_gmtime_r_returns_week_day_for_leap) == NULL) return -1;
   if(CU_add_test(suite, "gmtime_r returns week day for no leap", test_gmtime_r_returns_week_day_for_no_leap) == NULL) return -1;
-  if(CU_add_test(suite, "mktime returns seconds for year", test_mktime_returns_seconds_for_year) == NULL) return -1;
-  if(CU_add_test(suite, "mktime returns seconds for month and month day and leap", test_mktime_returns_seconds_for_month_and_month_day_and_leap) == NULL) return -1;
-  if(CU_add_test(suite, "mktime returns seconds for month and month day and no leap", test_mktime_returns_seconds_for_month_and_month_day_and_no_leap) == NULL) return -1;
-  if(CU_add_test(suite, "mktime returns seconds for hour and minute and second", test_mktime_returns_seconds_for_hour_and_minute_and_second) == NULL) return -1;
-  if(CU_add_test(suite, "mktime returns seconds for month greater than in year", test_mktime_returns_seconds_for_month_greater_than_in_year) == NULL) return -1;
-  if(CU_add_test(suite, "mktime returns seconds for negative month", test_mktime_returns_seconds_for_negative_month) == NULL) return -1;
+  if(CU_add_test(suite, "__mktime_no_tzset returns seconds for year", test___mktime_no_tzset_returns_seconds_for_year) == NULL) return -1;
+  if(CU_add_test(suite, "__mktime_no_tzset returns seconds for month and month day and leap", test___mktime_no_tzset_returns_seconds_for_month_and_month_day_and_leap) == NULL) return -1;
+  if(CU_add_test(suite, "__mktime_no_tzset returns seconds for month and month day and no leap", test___mktime_no_tzset_returns_seconds_for_month_and_month_day_and_no_leap) == NULL) return -1;
+  if(CU_add_test(suite, "__mktime_no_tzset returns seconds for hour and minute and second", test___mktime_no_tzset_returns_seconds_for_hour_and_minute_and_second) == NULL) return -1;
+  if(CU_add_test(suite, "__mktime_no_tzset returns seconds for month greater than in year", test___mktime_no_tzset_returns_seconds_for_month_greater_than_in_year) == NULL) return -1;
+  if(CU_add_test(suite, "__mktime_no_tzset returns seconds for negative month", test___mktime_no_tzset_returns_seconds_for_negative_month) == NULL) return -1;
   return 0;
 }

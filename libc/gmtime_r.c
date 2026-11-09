@@ -8,6 +8,7 @@
 #include <limits.h>
 #ifndef TEST
 #include <time.h>
+#include "priv_time.h"
 #else
 #define RETROLIBC_GMTIME_R
 #include "retrolibc.h"
@@ -106,7 +107,7 @@ struct tm *gmtime_r(const time_t *time, struct tm *tm)
 static int is_leap_year(int year)
 { return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0; }
 
-time_t mktime(struct tm *tm)
+time_t __mktime_no_tzset(struct tm *tm)
 {
   time_t t;
   time_t years_since_1600;
