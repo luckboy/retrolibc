@@ -84,7 +84,7 @@ static time_t mktime_unlocked(struct tm *tm)
   t = __mktime_no_tzset(tm);
   if(t == (time_t) -1) return -1;
   if(strcmp(tm->tm_zone, __tz_std_zone) == 0 || strcmp(tm->tm_zone, __tz_dst_zone) == 0) {
-    if(localtime_r_unlocked(&t2, tm) == NULL) return -1;
+    if(localtime_r_unlocked(&t, tm) == NULL) return -1;
   } else {
     long saved_gmtoff = tm->tm_gmtoff;
     const char *saved_zone = tm->tm_zone;
