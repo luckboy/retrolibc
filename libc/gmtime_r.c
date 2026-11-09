@@ -109,7 +109,7 @@ int __cmp_tm_with_tz_rule(const struct tm *tm, const struct tz_rule *rule)
   int tm_time = tm->tm_hour * 60 * 60 + tm->tm_min * 60 + tm->tm_sec;
   if(rule->type == '\0' || rule->type == 'J') {
     int rule_day = rule->u.n;
-    if(rule->type == 'J' && rule_day < 31 + 29) rule_day--;
+    if(rule->type == 'J' && (rule_day < 31 + 29 || !is_leap_year(tm->tm_year + 1900))) rule_day--;
     if(tm->tm_yday < rule_day) {
       return -1;
     } else if(tm->tm_yday > rule_day) {
