@@ -162,12 +162,19 @@ static int parse_tz(const char *s)
   __tz_std_offset = tz_std_offset;
   strcpy(std, tmp_std);
   __tz_std_zone = std;
-  __tz_dst_offset = tz_dst_offset;
-  strcpy(dst, tmp_dst);
-  __tz_dst_zone = dst;
+  if(are_tz_rules) {
+    __tz_dst_offset = tz_dst_offset;
+    strcpy(dst, tmp_dst);
+    __tz_dst_zone = dst;
+  } else {
+    __tz_dst_offset = 0L;
+    __tz_dst_zone = "";
+  }
   __are_tz_rules = are_tz_rules;
-  __tz_rule_std_to_dst = tz_rule_std_to_dst;
-  __tz_rule_dst_to_std = tz_rule_dst_to_std;
+  if(are_tz_rules) {
+    __tz_rule_std_to_dst = tz_rule_std_to_dst;
+    __tz_rule_dst_to_std = tz_rule_dst_to_std;
+  }
   return 0;
 }
 
@@ -180,7 +187,7 @@ void __tzset_unlocked(void)
     __tz_std_offset = 0L;
     __tz_std_zone = "GMT";
     __tz_dst_offset = 0L;
-    __tz_dst_zone = NULL;
+    __tz_dst_zone = "";
     __are_tz_rules = 0;
   }
   daylight = __are_tz_rules;
