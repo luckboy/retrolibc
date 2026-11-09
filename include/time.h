@@ -36,6 +36,7 @@ extern "C" {
 #endif
 
 struct tm *gmtime_r(const time_t *time, struct tm *tm);
+struct tm *localtime_r(const time_t *time, struct tm *tm);
 time_t mktime(struct tm *tm);
 
 #ifdef __cplusplus

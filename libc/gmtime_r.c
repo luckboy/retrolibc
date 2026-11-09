@@ -8,14 +8,11 @@
 #include <limits.h>
 #ifndef TEST
 #include <time.h>
-#include "priv_time.h"
+#include "priv_gmtime_r.h"
 #else
 #define RETROLIBC_GMTIME_R
 #include "retrolibc.h"
 #endif
-
-#define TIME_T_MAX                      LONG_MAX
-#define TIME_T_MIN                      LONG_MIN
 
 #define DAYS_PER_400_YEARS              (303 * 365 + 97 * 366)
 #define DAYS_PER_100_YEARS              (76 * 365 + 24 * 366)
@@ -100,21 +97,59 @@ struct tm *gmtime_r(const time_t *time, struct tm *tm)
   tm->tm_yday = yday;
   tm->tm_isdst = 0;
   tm->tm_gmtoff = 0;
-  tm->tm_zone = NULL;
+  tm->tm_zone = "GMT";
   return tm;
+}
+
+int __cmp_tm_with_tz_rule(const struct tm *tm, struct tz_rule *rule)
+{
+  int tm_time = tm->tm_hour * 60 * 60 + tm->tm_min * 60 + tm->tm_sec;
+  if(rule->type == '\0' || rule->type == 'J') {
+    int rule_day = rule->u.n;
+    if(rule->type == 'J' && rule_day < 31 + 29) rule_day--;
+    if(tm->tm_yday < rule_day) {
+      return -1;
+    } else if(tm->tm_yday > rule_day) {
+      return 1;
+    }
+  } else {
+    if(tm->tm_mon < rule->u.m.m - 1) {
+      return -1;
+    } else if(tm->tm_mon > rule->u.m.m - 1) {
+      return 1;
+    } else {
+      int rule_day = tm->tm_mday - tm->tm_wday + rule->u.m.d;
+      if(rule_day < 0) rule_day += 7;
+      rule_day %= 7;
+      rule_day += (rule->u.m.w - 1) * 7;
+      if(rule_day >= tab_month_days[tm->tm_mon]) rule_day -= 7; /* last week is 4th week */
+      rule_day++;
+      if(tm->tm_mday < rule_day) {
+        return -1;
+      } else if(tm->tm_mday > rule_day) {
+        return 1;
+      }
+    }
+  }
+  if(tm_time < rule->time) {
+    return -1;
+  } else if(tm_time > rule->time) {
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
 static int is_leap_year(int year)
 { return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0; }
 
-time_t __mktime_no_tzset(struct tm *tm)
+time_t __mktime_no_tzset(const struct tm *tm)
 {
   time_t t;
   time_t years_since_1600;
   time_t days_since_1600;
   time_t days;
   time_t tmp;
-  long saved_gmtoff;
   int i, mon;
   if(tm->tm_year < -(1900 - 1600) || tm->tm_year > TIME_T_MAX - (1900 - 1600)) return -1;
   /* days */
@@ -209,8 +244,5 @@ time_t __mktime_no_tzset(struct tm *tm)
   if(tmp <= 0 ? t > TIME_T_MAX + tmp : t < TIME_T_MIN + tmp) return -1;
   t -= tmp;
   if(t < 0) return -1;
-  saved_gmtoff = tm->tm_gmtoff;
-  if(gmtime_r(&t, tm) == NULL) return -1;
-  tm->tm_gmtoff = saved_gmtoff;  
   return t;
 }

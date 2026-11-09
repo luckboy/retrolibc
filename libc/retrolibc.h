@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
+#include "priv_gmtime_r.h"
 
 #ifndef PAGE_SIZE
 #define PAGE_SIZE       (sysconf(_SC_PAGE_SIZE))
@@ -383,11 +384,13 @@ struct retrolibc_tm
 };
 
 struct retrolibc_tm *retrolibc_gmtime_r(const time_t *time, struct retrolibc_tm *retrolibc_tm);
-time_t retrolibc___mktime_no_tzset(struct retrolibc_tm *retrolibc_tm);
+int retrolibc___cmp_tm_with_tz_rule(const struct tm *tm, struct tz_rule *rule);
+time_t retrolibc___mktime_no_tzset(const struct retrolibc_tm *retrolibc_tm);
 
 #ifdef RETROLIBC_GMTIME_R
 #define tm retrolibc_tm
 #define gmtime_r retrolibc_gmtime_r
+#define __cmp_tm_with_tz_rule retrolibc___cmp_tm_with_tz_rule
 #define __mktime_no_tzset retrolibc___mktime_no_tzset
 #endif
 
