@@ -76,6 +76,14 @@ static int parse_offset(const char *s, long *offset, char **endptr)
   return 0;
 }
 
+static void parse_tzname(const char *s, char *tzname, char **endptr)
+{
+  int n;
+  for(n = TZNAME_MAX; n > 0 && isupper(*s); s++, tzname++, n--) *tzname = *s;
+  *tzname = '\0';
+  *endptr = (char *) s;
+}
+
 static int parse_tz_rule(const char *s, struct tz_rule *rule, char **endptr)
 {
   struct tz_rule tmp_rule;
@@ -133,20 +141,10 @@ static int parse_tz(const char *s)
     .u = { .n = 0 },
     .time = 0L
   };
-  char *d;
-  int n;
-  for(d = tmp_std, n = TZNAME_MAX; n > 0; s++, d++, n--) {
-    if(!isupper(*s)) break;
-    *d = *s;
-  }
-  *d = '\0';
+  parse_tzname(s, tmp_std, (char **) (&s));
   if(parse_offset(s, &tz_std_offset, (char **) (&s)) == -1) return -1;
   if(*s != '\0') {
-    for(d = tmp_dst, n = TZNAME_MAX; n > 0; s++, d++, n--) {
-      if(!isupper(*s)) break;
-      *d = *s;
-    }
-    *d = '\0';
+    parse_tzname(s, tmp_dst, (char **) (&s));
     if(*s != ',') {
       if(parse_offset(s, &tz_dst_offset, (char **) (&s)) == -1) return -1;
       if(*s != ',') return -1;
