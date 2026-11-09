@@ -14,6 +14,7 @@ static struct tm *localtime_r_unlocked(const time_t *time, struct tm *tm)
 {
   time_t t = *time;
   time_t t2;
+  __tzset_unlocked();
   if(__tz_std_offset <= 0 ? t > TIME_T_MAX + __tz_std_offset : t < TIME_T_MIN + __tz_std_offset) return NULL;
   t2 = t - __tz_std_offset;
   if(gmtime_r(&t2, tm) == NULL) return NULL;
@@ -46,9 +47,6 @@ struct tm *localtime_r(const time_t *time, struct tm *tm)
 {
   struct tm *r;
   pthread_mutex_lock(&__tz_mutex);
-#ifndef TEST
-  __tzset_unlocked();
-#endif
   r = localtime_r_unlocked(time, tm);
   pthread_mutex_unlock(&__tz_mutex);
   return r;
@@ -56,8 +54,9 @@ struct tm *localtime_r(const time_t *time, struct tm *tm)
 
 static time_t mktime_unlocked(struct tm *tm)
 {
-  time_t t = __mktime_no_tzset(tm);
-  time_t t2;
+  time_t t, t2;
+  __tzset_unlocked();
+  t = __mktime_no_tzset(tm);
   if(t == (time_t) -1) return -1;
   if(strcmp(tm->tm_zone, __tz_std_zone) == 0 || strcmp(tm->tm_zone, __tz_dst_zone) == 0) {
     if(localtime_r_unlocked(&t2, tm) == NULL) return -1;
@@ -77,9 +76,6 @@ time_t mktime(struct tm *tm)
 {
   time_t r;
   pthread_mutex_lock(&__tz_mutex);
-#ifndef TEST
-  __tzset_unlocked();
-#endif
   r = mktime_unlocked(tm);
   pthread_mutex_unlock(&__tz_mutex);
   return r;
