@@ -5,8 +5,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-#ifndef _PRIV_LOCALTIME_R_H
-#define _PRIV_LOCALTIME_R_H
+#ifndef _PRIV_TZSET_H
+#define _PRIV_TZSET_H
 
 #include <pthread.h>
 #include <time.h>

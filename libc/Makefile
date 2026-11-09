@@ -127,6 +127,7 @@ OBJS = \
 	$(BUILD_DIR)/strtod.o \
 	$(BUILD_DIR)/strtol.o \
 	$(BUILD_DIR)/sys_errlist.o \
+	$(BUILD_DIR)/tzset.o \
 	$(BUILD_DIR)/ulltostr.o
 
 DEPS = $(addsuffix .d, $(OBJS))
