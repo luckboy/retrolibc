@@ -64,7 +64,7 @@ static struct tm *localtime_r_unlocked(const time_t *time, struct tm *tm)
   }
   tm->tm_isdst = 0;
   tm->tm_gmtoff = -__tz_std_offset;
-  tm->tm_zone = __tz_std_zone;
+  tm->tm_zone = find_or_dup_tzname(__tz_std_zone);
   return tm;
 }
 
