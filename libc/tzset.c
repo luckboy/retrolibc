@@ -118,6 +118,8 @@ static int parse_tz(const char *s)
 {
   static char std[TZNAME_MAX + 1];
   static char dst[TZNAME_MAX + 1];
+  char tmp_std[TZNAME_MAX + 1];
+  char tmp_dst[TZNAME_MAX + 1];
   long tz_std_offset = 0L;
   long tz_dst_offset = 0L;
   int are_tz_rules = 0;
@@ -133,14 +135,14 @@ static int parse_tz(const char *s)
   };
   char *d;
   int n;
-  for(d = std, n = TZNAME_MAX; n > 0; s++, d++, n--) {
+  for(d = tmp_std, n = TZNAME_MAX; n > 0; s++, d++, n--) {
     if(!isupper(*s)) break;
     *d = *s;
   }
   *d = '\0';
   if(parse_offset(s, &tz_std_offset, (char **) (&s)) == -1) return -1;
   if(*s != '\0') {
-    for(d = dst, n = TZNAME_MAX; n > 0; s++, d++, n--) {
+    for(d = tmp_dst, n = TZNAME_MAX; n > 0; s++, d++, n--) {
       if(!isupper(*s)) break;
       *d = *s;
     }
@@ -160,8 +162,10 @@ static int parse_tz(const char *s)
     are_tz_rules = 1;
   }
   __tz_std_offset = tz_std_offset;
+  strcpy(std, tmp_std);
   __tz_std_zone = std;
   __tz_dst_offset = tz_dst_offset;
+  strcpy(dst, tmp_dst);
   __tz_dst_zone = dst;
   __are_tz_rules = are_tz_rules;
   __tz_rule_std_to_dst = tz_rule_std_to_dst;

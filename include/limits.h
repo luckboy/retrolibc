@@ -12,7 +12,7 @@
 #include <bits/page_size.h>
 #include <bits/wordsize.h>
 
-#define TZNAME_MAX      3
+#define TZNAME_MAX      6
 
 #define PAGE_SIZE       __PAGE_SIZE
 
