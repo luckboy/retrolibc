@@ -345,7 +345,7 @@ static int xconv_efg(struct xreader *xr, union farg *xp, int width, enum len_mod
   /* exponent */
   c = xgetc_with_width(xr, &width);
   if(c == 'E' || c == 'e') {
-    float exp_sign = 1.0;
+    double exp_sign = 1.0;
     c = xgetc_with_width(xr, &width);
     if(c == '+' || c == '-') {
       if(c == '-') exp_sign = -1.0;
