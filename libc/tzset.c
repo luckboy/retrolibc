@@ -10,10 +10,23 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef TEST
 #include <time.h>
 #include "priv_tzset.h"
+#else
+#define RETROLIBC_TZSET
+#include "retrolibc.h"
+#endif
 
+#ifndef TZNAME_MAX
+#define TZNAME_MAX      _POSIX_TZNAME_MAX
+#endif
+
+#ifndef TEST
 #define TZ              "TZ"
+#else
+#define TZ              "RETROLIBC_TZ"
+#endif
 
 pthread_mutex_t __tz_mutex = PTHREAD_MUTEX_INITIALIZER;
 long __tz_std_offset = 0L;
@@ -74,6 +87,7 @@ static int parse_offset(const char *s, long *offset, char **endptr)
     s++;
   }
   if(parse_time(s, offset, (char **) (&s)) == -1) return -1;
+  *endptr = (char *) s;
   *offset *= sign;
   return 0;
 }
@@ -110,12 +124,13 @@ static int parse_tz_rule(const char *s, struct tz_rule *rule, char **endptr)
     if(tmp_rule.u.m.w < 1 || tmp_rule.u.m.w > 5) return -1;
     if(*s != '.') return -1;
     s++;
-    tmp_rule.u.m.w = parse_int(s, (char **) (&s), 1);
-    if(tmp_rule.u.m.w < 0 || tmp_rule.u.m.w > 6) return -1;
+    tmp_rule.u.m.d = parse_int(s, (char **) (&s), 1);
+    if(tmp_rule.u.m.d < 0 || tmp_rule.u.m.d > 6) return -1;
     break;
   }
   if(*s == '/') {
-     if(parse_time(s, &(tmp_rule.time), (char **) (&s)) == -1) return -1;
+    s++;
+    if(parse_time(s, &(tmp_rule.time), (char **) (&s)) == -1) return -1;
   } else {
     tmp_rule.time = 2 * 60 * 60;
   }
@@ -157,7 +172,7 @@ static int parse_tz(const char *s)
     if(parse_tz_rule(s, &tz_rule_std_to_dst, (char **) (&s)) == -1) return -1;
     if(*s != ',') return -1;
     s++;
-    if(parse_tz_rule(s, &tz_rule_std_to_dst, (char **) (&s)) == -1) return -1;
+    if(parse_tz_rule(s, &tz_rule_dst_to_std, (char **) (&s)) == -1) return -1;
     if(*s != '\0') return -1;
     are_tz_rules = 1;
   }

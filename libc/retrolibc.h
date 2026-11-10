@@ -444,6 +444,44 @@ unsigned long long retrolibc_strtoull(const char *s, char **endptr, int base);
 #define strtoull retrolibc_strtoull
 #endif
 
+/* tzset.c */
+
+extern pthread_mutex_t retrolibc___tz_mutex;
+extern long retrolibc___tz_std_offset;
+extern const char *retrolibc___tz_std_zone;
+extern long retrolibc___tz_dst_offset;
+extern const char * retrolibc___tz_dst_zone;
+extern int retrolibc___are_tz_rules;
+extern struct tz_rule retrolibc___tz_rule_std_to_dst;
+extern struct tz_rule retrolibc___tz_rule_dst_to_std;
+
+extern int retrolibc_daylight;
+extern long retrolibc_timezone;
+extern char *retrolibc_tzname[2];
+
+void retrolibc___tzset_unlocked(void);
+void retrolibc_tzset(void);
+
+#ifdef RETROLIBC_TZSET
+
+#define __tz_mutex retrolibc___tz_mutex
+#define __tz_std_offset retrolibc___tz_std_offset
+#define __tz_std_zone retrolibc___tz_std_zone
+#define __tz_dst_offset retrolibc___tz_dst_offset
+#define __tz_dst_zone retrolibc___tz_dst_zone
+#define __are_tz_rules retrolibc___are_tz_rules
+#define __tz_rule_std_to_dst retrolibc___tz_rule_std_to_dst
+#define __tz_rule_dst_to_std retrolibc___tz_rule_dst_to_std
+
+#define daylight retrolibc_daylight
+#define timezone retrolibc_timezone
+#define tzname retrolibc_tzname
+
+#define __tzset_unlocked retrolibc___tzset_unlocked
+#define tzset retrolibc_tzset
+
+#endif
+
 /* ulltostr.c */
 
 char *retrolibc___ulltostr(char *buf, unsigned long long n, int base, int is_uppercase);
