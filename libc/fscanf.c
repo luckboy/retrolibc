@@ -125,6 +125,12 @@ union arg
   unsigned long long *llu;
 };
 
+union farg
+{
+  float *f;
+  double *d;
+};
+
 static int xconv_dioux(struct xreader *xr, const union arg *xp, int conv_spec, int width, enum len_mod len_mod, int is_signed)
 {
   int base;
@@ -293,11 +299,11 @@ static int xconv_dioux(struct xreader *xr, const union arg *xp, int conv_spec, i
   return 0;
 }
 
-static int xconv_efg(struct xreader *xr, float *xp, int width)
+static int xconv_efg(struct xreader *xr, union farg *xp, int width, enum len_mod len_mod)
 {
-  float n, d;
-  float sign = 1.0f;
-  float exp = 0.0f;
+  double n, d;
+  double sign = 1.0;
+  double exp = 0.0;
   int is_dot = 0;
   int are_only_zeros = 1;
   int is_digit = 0;
@@ -310,26 +316,26 @@ static int xconv_efg(struct xreader *xr, float *xp, int width)
   /* sign */
   c = xgetc_with_width(xr, &width);
   if(c == '+' || c == '-') {
-    if(c == '-') sign = -1.0f;
+    if(c == '-') sign = -1.0;
   } else {
     xungetc_with_width(c, xr, &width);
   }
   /* number */
-  for(n = 0.0f; (c = xgetc_with_width(xr, &width)) != EOF;) {
+  for(n = 0.0; (c = xgetc_with_width(xr, &width)) != EOF;) {
     if(isdigit(c)) {
       int digit = c - '0';
       if(c != '0') are_only_zeros = 0;
       if(!is_dot) {
-        n = n * 10.0f + digit;
+        n = n * 10.0 + digit;
       } else {
         n += digit / d;
-        d *= 10.0f;
+        d *= 10.0;
       }
       is_digit = 1;
     } else if(c == '.') {
       if(is_dot) break;
       is_dot = 1;
-      d = 10.0f;
+      d = 10.0;
     } else {
       xungetc_with_width(c, xr, &width);
       break;
@@ -339,16 +345,16 @@ static int xconv_efg(struct xreader *xr, float *xp, int width)
   /* exponent */
   c = xgetc_with_width(xr, &width);
   if(c == 'E' || c == 'e') {
-    float exp_sign = 1.0f;
+    float exp_sign = 1.0;
     c = xgetc_with_width(xr, &width);
     if(c == '+' || c == '-') {
-      if(c == '-') exp_sign = -1.0f;
+      if(c == '-') exp_sign = -1.0;
     } else {
       xungetc_with_width(c, xr, &width);
     }
     for(; (c = xgetc_with_width(xr, &width)) != EOF; ) {
       if(isdigit(c)) {
-        exp = exp * 10.0f + (c - '0');
+        exp = exp * 10.0 + (c - '0');
         is_exp_digit = 1;
       } else {
         xungetc_with_width(c, xr, &width);
@@ -361,14 +367,22 @@ static int xconv_efg(struct xreader *xr, float *xp, int width)
     xungetc_with_width(c, xr, &width);
   }
   if(!are_only_zeros) {
-    if(n >= HUGE_VAL || n == 0.0f) {
+    if(n >= HUGE_VAL || n == 0.0) {
       n *= sign;
     } else {
-      n *= sign * pow(10.0f, exp);
+      n *= sign * pow(10.0, exp);
     }
   }
   /* Stores number. */
-  if(xp != NULL) *xp = n;
+  switch(len_mod) {
+  case LEN_MOD_L:
+  case LEN_MOD_LL:
+    if(xp->d != NULL) *(xp->d) = n;
+    break;
+  default:
+    if(xp->f != NULL) *(xp->f) = (float) n;
+    break;
+  }
   return 0;
 }
 
@@ -468,6 +482,7 @@ static int xscanf(struct xreader *xr, const char *format, va_list ap)
       int width = -1;
       enum len_mod len_mod = LEN_MOD_I;
       union arg arg;
+      union farg farg;
       int is_signed;
       saved_format = format;
       format++;
@@ -553,7 +568,16 @@ static int xscanf(struct xreader *xr, const char *format, va_list ap)
       case 'g':
       case 'E':
       case 'G':
-        if(xconv_efg(xr, !is_skip ? va_arg(ap, float *) : NULL, width) == -1) is_stop = 1;
+        switch(len_mod) {
+        case LEN_MOD_L:
+        case LEN_MOD_LL:
+          farg.d = (!is_skip ? va_arg(ap, double *) : NULL);
+          break;
+        default:
+          farg.f = (!is_skip ? va_arg(ap, float *) : NULL);
+          break;
+        }
+        if(xconv_efg(xr, &farg, width, len_mod) == -1) is_stop = 1;
         break;
       case 's':
         if(xconv_s(xr, !is_skip ? va_arg(ap, char *) : NULL, width) == -1) is_stop = 1;
