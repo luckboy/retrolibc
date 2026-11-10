@@ -400,6 +400,18 @@ static void test_perror_prints_error_with_empty_string(void)
   CU_ASSERT_EQUAL(s[strlen(strerror(ENOENT)) + 1], '\0');
 }
 
+static void test_printf_prints_values(void)
+{
+  static char s[100];
+  clean_current_dir();
+  initialize_mock();
+  mock_stdout = fopen("test.txt", "w");
+  CU_ASSERT_EQUAL(retrolibc_printf("n=%d s=%s f=%f\n", 1234, "abc", 34.56), 25);
+  fclose(mock_stdout);
+  CU_ASSERT_FATAL(read_from_file("test.txt", s, 100));
+  CU_ASSERT_STRING_EQUAL(s, "n=1234 s=abc f=34.560000\n");
+}
+
 static void test_putc_writes_character(void)
 {
   FILE *f;
@@ -483,6 +495,22 @@ static void test_rewind_resets_offset(void)
   fclose(f);
 }
 
+static void test_scanf_reads_values(void)
+{
+  int x;
+  static char s[100];
+  float y;
+  clean_current_dir();
+  initialize_mock();
+  CU_ASSERT_FATAL(write_to_file("test.txt", "1234 abc 34.56"));
+  mock_stdin = fopen("test.txt", "r");
+  CU_ASSERT_EQUAL(retrolibc_scanf("%d%s%f", &x, s, &y), 3);
+  CU_ASSERT_EQUAL(x, 1234);
+  CU_ASSERT_STRING_EQUAL(s, "abc");
+  CU_ASSERT(fabs(y - 34.56) <= 0.0001);
+  fclose(mock_stdin);
+}
+
 static void test_setbuf_sets_buffer(void)
 {
   static char buf[BUFSIZ];
@@ -494,6 +522,7 @@ static void test_setbuf_sets_buffer(void)
   retrolibc_setbuf(f, buf);
   fclose(f);
 }
+
 static void test_setbuf_unsets_buffer(void)
 {
   FILE *f;
@@ -504,7 +533,6 @@ static void test_setbuf_unsets_buffer(void)
   retrolibc_setbuf(f, NULL);
   fclose(f);
 }
-
 
 int add_stdio_suite(void)
 {
@@ -537,12 +565,14 @@ int add_stdio_suite(void)
   if(CU_add_test(suite, "perror prints error with string", test_perror_prints_error_with_string) == NULL) return -1;
   if(CU_add_test(suite, "perror prints error with null", test_perror_prints_error_with_null) == NULL) return -1;
   if(CU_add_test(suite, "perror prints error with empty string", test_perror_prints_error_with_empty_string) == NULL) return -1;
+  if(CU_add_test(suite, "printf prints value", test_printf_prints_values) == NULL) return -1;
   if(CU_add_test(suite, "putc writes character", test_putc_writes_character) == NULL) return -1;
   if(CU_add_test(suite, "putchar writes character", test_putchar_writes_character) == NULL) return -1;
   if(CU_add_test(suite, "putchar_unlocked writes character", test_putchar_unlocked_writes_character) == NULL) return -1;
   if(CU_add_test(suite, "puts writes string", test_puts_writes_string) == NULL) return -1;
   if(CU_add_test(suite, "putw writes word", test_putw_writes_word) == NULL) return -1;
   if(CU_add_test(suite, "rewind resets offset", test_rewind_resets_offset) == NULL) return -1;
+  if(CU_add_test(suite, "scanf reads values", test_scanf_reads_values) == NULL) return -1;
   if(CU_add_test(suite, "setbuf sets buffer", test_setbuf_sets_buffer) == NULL) return -1;
   if(CU_add_test(suite, "setbuf unsets buffer", test_setbuf_unsets_buffer) == NULL) return -1;
   return 0;

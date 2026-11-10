@@ -7,6 +7,7 @@
  */
 #include <errno.h>
 #include <limits.h>
+#include <stdarg.h>
 #include <string.h>
 #ifndef TEST
 #include <stdio.h>
@@ -165,6 +166,18 @@ void perror(const char *s)
 }
 #endif
 
+#ifdef L_printf
+int printf(const char *format, ...)
+{
+  va_list ap;
+  int r;
+  va_start(ap, format);
+  r = vprintf(format, ap);
+  va_end(ap);
+  return r;
+}
+#endif
+
 #ifdef L_putc
 int putc(int c, FILE *f)
 { return fputc(c, f); }
@@ -207,6 +220,18 @@ void rewind(FILE *f)
 { fseek(f, SEEK_SET, 0); }
 #endif
 
+#ifdef L_scanf
+int scanf(const char *format, ...)
+{
+  va_list ap;
+  int r;
+  va_start(ap, format);
+  r = vscanf(format, ap);
+  va_end(ap);
+  return r;
+}
+#endif
+
 #ifdef L_setbuf
 void setbuf(FILE *f, char *buf)
 {
@@ -216,4 +241,14 @@ void setbuf(FILE *f, char *buf)
     setvbuf(f, buf, _IONBF, BUFSIZ);
   }
 }
+#endif
+
+#ifdef L_vprintf
+int vprintf(const char *format, va_list ap)
+{ return vfprintf(stdout, format, ap); }
+#endif
+
+#ifdef L_vscanf
+int vscanf(const char *format, va_list ap)
+{ return vfscanf(stdin, format, ap); }
 #endif

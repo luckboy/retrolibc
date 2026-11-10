@@ -82,13 +82,17 @@ int retrolibc_getchar_unlocked(void);
 char *retrolibc_gets(char *s);
 int retrolibc_getw(FILE *f);
 void retrolibc_perror(const char *s);
+int retrolibc_printf(const char *format, ...);
 int retrolibc_putc(int c, FILE *f);
 int retrolibc_putchar(int c);
 int retrolibc_putchar_unlocked(int c);
 int retrolibc_puts(const char *s);
 int retrolibc_putw(int w, FILE *f);
 void retrolibc_rewind(FILE *f);
+int retrolibc_scanf(const char *format, ...);
 void retrolibc_setbuf(FILE *f, char *buf);
+int retrolibc_vprintf(const char *format, va_list ap);
+int retrolibc_vscanf(const char *format, va_list ap);
 
 #ifdef RETROLIBC_STDIO
 
@@ -115,13 +119,17 @@ void retrolibc_setbuf(FILE *f, char *buf);
 #define gets retrolibc_gets
 #define getw retrolibc_getw
 #define perror retrolibc_perror
+#define printf retrolibc_printf
 #define putc retrolibc_putc
 #define putchar retrolibc_putchar
 #define putchar_unlocked retrolibc_putchar_unlocked
 #define puts retrolibc_puts
 #define putw retrolibc_putw
 #define rewind retrolibc_rewind
+#define scanf retrolibc_scanf
 #define setbuf retrolibc_setbuf
+#define vprintf retrolibc_vprintf
+#define vscanf retrolibc_vscanf
 
 #endif
 

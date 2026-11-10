@@ -70,13 +70,17 @@ STDIO_OBJS = \
 	$(BUILD_DIR)/stdio_gets.o \
 	$(BUILD_DIR)/stdio_getw.o \
 	$(BUILD_DIR)/stdio_perror.o \
+	$(BUILD_DIR)/stdio_printf.o \
 	$(BUILD_DIR)/stdio_putc.o \
 	$(BUILD_DIR)/stdio_putchar.o \
 	$(BUILD_DIR)/stdio_putchar_unlocked.o \
 	$(BUILD_DIR)/stdio_puts.o \
 	$(BUILD_DIR)/stdio_putw.o \
 	$(BUILD_DIR)/stdio_rewind.o \
-	$(BUILD_DIR)/stdio_setbuf.o
+	$(BUILD_DIR)/stdio_scanf.o \
+	$(BUILD_DIR)/stdio_setbuf.o \
+	$(BUILD_DIR)/stdio_vprintf.o \
+	$(BUILD_DIR)/stdio_vscanf.o
 
 STDLIB_OBJS = \
 	$(BUILD_DIR)/stdlib_atoi.o \
@@ -197,13 +201,17 @@ TEST_STDIO_OBJS = \
 	$(TEST_BUILD_DIR)/stdio_gets.o \
 	$(TEST_BUILD_DIR)/stdio_getw.o \
 	$(TEST_BUILD_DIR)/stdio_perror.o \
+	$(TEST_BUILD_DIR)/stdio_printf.o \
 	$(TEST_BUILD_DIR)/stdio_putc.o \
 	$(TEST_BUILD_DIR)/stdio_putchar.o \
 	$(TEST_BUILD_DIR)/stdio_putchar_unlocked.o \
 	$(TEST_BUILD_DIR)/stdio_puts.o \
 	$(TEST_BUILD_DIR)/stdio_putw.o \
 	$(TEST_BUILD_DIR)/stdio_rewind.o \
-	$(TEST_BUILD_DIR)/stdio_setbuf.o
+	$(TEST_BUILD_DIR)/stdio_scanf.o \
+	$(TEST_BUILD_DIR)/stdio_setbuf.o \
+	$(TEST_BUILD_DIR)/stdio_vprintf.o \
+	$(TEST_BUILD_DIR)/stdio_vscanf.o
 	
 TEST_STDLIB_OBJS = \
 	$(TEST_BUILD_DIR)/stdlib_atoi.o \

@@ -61,13 +61,17 @@ int getchar_unlocked(void);
 char *gets(char *s);
 int getw(FILE *f);
 void perror(const char *s);
+int printf(const char *format, ...);
 int putc(int c, FILE *f);
 int putchar(int c);
 int putchar_unlocked(int c);
 int puts(const char *s);
 int putw(int w, FILE *f);
 void rewind(FILE *f);
+int scanf(const char *format, ...);
 void setbuf(FILE *f, char *buf);
+int vprintf(const char *format, va_list ap);
+int vscanf(const char *format, va_list ap);
 
 int fprintf(FILE *f, const char *format, ...);
 int snprintf(char *s, size_t n, const char *format, ...);
