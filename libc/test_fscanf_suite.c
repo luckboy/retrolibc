@@ -674,62 +674,80 @@ static void test_sscanf_parses_number_for_f_and_width(void)
   CU_ASSERT_EQUAL(y, 2.0f);
 }
 
-static void test_sscanf_parses_number_for_f_and_overflow(void)
-{
-  float x;
-  CU_ASSERT_EQUAL(retrolibc_sscanf("1.234E500", "%f", &x), 1);
-  CU_ASSERT_EQUAL(x, HUGE_VAL);
-  CU_ASSERT_EQUAL(retrolibc_sscanf("-1.234E500", "%f", &x), 1);
-  CU_ASSERT_EQUAL(x, -HUGE_VAL);
-}
-
-static void test_sscanf_parses_number_for_f_and_underflow(void)
-{
-  float x;
-  CU_ASSERT_EQUAL(retrolibc_sscanf("1.234E-500", "%f", &x), 1);
-  CU_ASSERT_EQUAL(x, 0.0f);
-}
-
 static void test_sscanf_parses_number_for_f_with_length_modifier(void)
 {
   float x;
   double lx;
-  CU_ASSERT_EQUAL(retrolibc_sscanf("1234", "%f", &x), 1);
-  CU_ASSERT_EQUAL(x, 1234.0f);
-  CU_ASSERT_EQUAL(retrolibc_sscanf("-3456", "%f", &x), 1);
-  CU_ASSERT_EQUAL(x, -3456.0f);
-  CU_ASSERT_EQUAL(retrolibc_sscanf("123499", "%f", &x), 1);
-  CU_ASSERT_EQUAL(x, 123499.0f);
-  CU_ASSERT_EQUAL(retrolibc_sscanf("0", "%f", &x), 1);
+  double llx;
+  CU_ASSERT_EQUAL(retrolibc_sscanf("12.34", "%f", &x), 1);
+  CU_ASSERT(fabs(x - 12.34) <= 0.0001);
+  CU_ASSERT_EQUAL(retrolibc_sscanf("-34.56", "%f", &x), 1);
+  CU_ASSERT(fabs(x - -34.56) <= 0.0001);
+  CU_ASSERT_EQUAL(retrolibc_sscanf("123.499", "%f", &x), 1);
+  CU_ASSERT(fabs(x - 123.499) <= 0.0001);
+  CU_ASSERT_EQUAL(retrolibc_sscanf("0.0", "%f", &x), 1);
   CU_ASSERT_EQUAL(x, 0.0f);
-  CU_ASSERT_EQUAL(retrolibc_sscanf("1234", "%lf", &lx), 1);
-  CU_ASSERT_EQUAL(lx, 1234.0);
-  CU_ASSERT_EQUAL(retrolibc_sscanf("-3456", "%lf", &lx), 1);
-  CU_ASSERT_EQUAL(lx, -3456.0);
-  CU_ASSERT_EQUAL(retrolibc_sscanf("123499", "%lf", &lx), 1);
-  CU_ASSERT_EQUAL(lx, 123499.0);
-  CU_ASSERT_EQUAL(retrolibc_sscanf("0", "%lf", &lx), 1);
-  CU_ASSERT_EQUAL(lx, 0.0);
-  CU_ASSERT_EQUAL(retrolibc_sscanf("1234", "%llf", &lx), 1);
-  CU_ASSERT_EQUAL(lx, 1234.0);
-  CU_ASSERT_EQUAL(retrolibc_sscanf("-3456", "%llf", &lx), 1);
-  CU_ASSERT_EQUAL(lx, -3456.0);
-  CU_ASSERT_EQUAL(retrolibc_sscanf("123499", "%llf", &lx), 1);
-  CU_ASSERT_EQUAL(lx, 123499.0);
-  CU_ASSERT_EQUAL(retrolibc_sscanf("0", "%llf", &lx), 1);
-  CU_ASSERT_EQUAL(lx, 0.0);
+  CU_ASSERT_EQUAL(retrolibc_sscanf("12.34", "%lf", &lx), 1);
+  CU_ASSERT(fabs(lx - 12.34) <= 0.0001);
+  CU_ASSERT_EQUAL(retrolibc_sscanf("-34.56", "%lf", &lx), 1);
+  CU_ASSERT(fabs(lx - -34.56) <= 0.0001);
+  CU_ASSERT_EQUAL(retrolibc_sscanf("123.499", "%lf", &lx), 1);
+  CU_ASSERT(fabs(lx - 123.499) <= 0.0001);
+  CU_ASSERT_EQUAL(retrolibc_sscanf("0.0", "%lf", &lx), 1);
+  CU_ASSERT_EQUAL(lx, 0.0f);
+  CU_ASSERT_EQUAL(retrolibc_sscanf("12.34", "%llf", &llx), 1);
+  CU_ASSERT(fabs(llx - 12.34) <= 0.0001);
+  CU_ASSERT_EQUAL(retrolibc_sscanf("-34.56", "%llf", &llx), 1);
+  CU_ASSERT(fabs(llx - -34.56) <= 0.0001);
+  CU_ASSERT_EQUAL(retrolibc_sscanf("123.499", "%llf", &llx), 1);
+  CU_ASSERT(fabs(llx - 123.499) <= 0.0001);
+  CU_ASSERT_EQUAL(retrolibc_sscanf("0.0", "%llf", &llx), 1);
+  CU_ASSERT_EQUAL(llx, 0.0f);
+}
+
+static void test_sscanf_parses_number_for_f_with_length_modifier_and_overflow(void)
+{
+  float x;
+  double lx;
+  double llx;
+  CU_ASSERT_EQUAL(retrolibc_sscanf("1.234E500", "%f", &x), 1);
+  CU_ASSERT_EQUAL(x, HUGE_VAL);
+  CU_ASSERT_EQUAL(retrolibc_sscanf("-1.234E500", "%f", &x), 1);
+  CU_ASSERT_EQUAL(x, -HUGE_VAL);
+  CU_ASSERT_EQUAL(retrolibc_sscanf("1.234E500", "%lf", &lx), 1);
+  CU_ASSERT_EQUAL(lx, HUGE_VAL);
+  CU_ASSERT_EQUAL(retrolibc_sscanf("-1.234E500", "%lf", &lx), 1);
+  CU_ASSERT_EQUAL(lx, -HUGE_VAL);
+  CU_ASSERT_EQUAL(retrolibc_sscanf("1.234E500", "%llf", &llx), 1);
+  CU_ASSERT_EQUAL(llx, HUGE_VAL);
+  CU_ASSERT_EQUAL(retrolibc_sscanf("-1.234E500", "%llf", &llx), 1);
+  CU_ASSERT_EQUAL(llx, -HUGE_VAL);
+}
+
+static void test_sscanf_parses_number_for_f_with_length_modifier_and_underflow(void)
+{
+  float x;
+  double lx;
+  double llx;
+  CU_ASSERT_EQUAL(retrolibc_sscanf("1.234E-500", "%f", &x), 1);
+  CU_ASSERT_EQUAL(x, 0.0f);
+  CU_ASSERT_EQUAL(retrolibc_sscanf("1.234E-500", "%lf", &lx), 1);
+  CU_ASSERT_EQUAL(lx, 0.0f);
+  CU_ASSERT_EQUAL(retrolibc_sscanf("1.234E-500", "%llf", &llx), 1);
+  CU_ASSERT_EQUAL(llx, 0.0f);
 }
 
 static void test_sscanf_parses_number_for_f_with_length_modifier_and_star(void)
 {
   float x;
   double lx;
+  double llx;
   CU_ASSERT_EQUAL(retrolibc_sscanf("0 1234", "%*f%f", &x), 1);
   CU_ASSERT_EQUAL(x, 1234.0f);
   CU_ASSERT_EQUAL(retrolibc_sscanf("0 1234", "%*lf%lf", &lx), 1);
   CU_ASSERT_EQUAL(lx, 1234.0);
-  CU_ASSERT_EQUAL(retrolibc_sscanf("0 1234", "%*llf%llf", &lx), 1);
-  CU_ASSERT_EQUAL(lx, 1234.0);
+  CU_ASSERT_EQUAL(retrolibc_sscanf("0 1234", "%*llf%llf", &llx), 1);
+  CU_ASSERT_EQUAL(llx, 1234.0);
 }
 
 static void test_sscanf_does_not_match_for_f(void)
@@ -1114,10 +1132,10 @@ int add_fscanf_suite(void)
   if(CU_add_test(suite, "sscanf parses number for f and width", test_sscanf_parses_number_for_f_and_width) == NULL) return -1;
   if(CU_add_test(suite, "sscanf parses number for f and spaces", test_sscanf_parses_number_for_f_and_spaces) == NULL) return -1;
   if(CU_add_test(suite, "sscanf parses number for f and width", test_sscanf_parses_number_for_f_and_width) == NULL) return -1;
-  if(CU_add_test(suite, "sscanf parses number for f and overflow", test_sscanf_parses_number_for_f_and_overflow) == NULL) return -1;
-  if(CU_add_test(suite, "sscanf parses number for f and underflow", test_sscanf_parses_number_for_f_and_underflow) == NULL) return -1;
-  if(CU_add_test(suite, "sscanf parses number for f and length modifier", test_sscanf_parses_number_for_f_with_length_modifier) == NULL) return -1;
-  if(CU_add_test(suite, "sscanf parses number for f and length modifier and *", test_sscanf_parses_number_for_f_with_length_modifier_and_star) == NULL) return -1;
+  if(CU_add_test(suite, "sscanf parses number for f with length modifier", test_sscanf_parses_number_for_f_with_length_modifier) == NULL) return -1;
+  if(CU_add_test(suite, "sscanf parses number for f with length modifier and overflow", test_sscanf_parses_number_for_f_with_length_modifier_and_overflow) == NULL) return -1;
+  if(CU_add_test(suite, "sscanf parses number for f with length modifier and underflow", test_sscanf_parses_number_for_f_with_length_modifier_and_underflow) == NULL) return -1;
+  if(CU_add_test(suite, "sscanf parses number for f with length modifier and *", test_sscanf_parses_number_for_f_with_length_modifier_and_star) == NULL) return -1;
   if(CU_add_test(suite, "sscanf doesn't match for f", test_sscanf_does_not_match_for_f) == NULL) return -1;
   if(CU_add_test(suite, "sscanf parses string for s", test_sscanf_parses_string_for_s) == NULL) return -1;
   if(CU_add_test(suite, "sscanf parses string for s and spaces", test_sscanf_parses_string_for_s_and_spaces) == NULL) return -1;
