@@ -387,11 +387,21 @@ struct retrolibc_tm *retrolibc_gmtime_r(const time_t *time, struct retrolibc_tm 
 int retrolibc___cmp_tm_with_tz_rule(const struct retrolibc_tm *retrolibc_tm, const struct tz_rule *rule);
 time_t retrolibc___mktime_no_tzset(const struct retrolibc_tm *retrolibc_tm);
 
-#ifdef RETROLIBC_GMTIME_R
+#if defined(RETROLIBC_GMTIME_R) || defined(RETROLIBC_LOCALTIME_R)
 #define tm retrolibc_tm
 #define gmtime_r retrolibc_gmtime_r
 #define __cmp_tm_with_tz_rule retrolibc___cmp_tm_with_tz_rule
 #define __mktime_no_tzset retrolibc___mktime_no_tzset
+#endif
+
+/* localtime_r.c */
+
+struct tm *retrolibc_localtime_r(const time_t *time, struct retrolibc_tm *retrolibc_tm);
+time_t retrolibc_mktime(struct retrolibc_tm *retrolibc_tm);
+
+#ifdef RETROLIBC_LOCALTIME_R
+#define localtime_r retrolibc_localtime_r
+#define mktime retrolibc_mktime
 #endif
 
 /* malloc.c */
@@ -462,7 +472,7 @@ extern char *retrolibc_tzname[2];
 void retrolibc___tzset_unlocked(void);
 void retrolibc_tzset(void);
 
-#ifdef RETROLIBC_TZSET
+#if defined(RETROLIBC_TZSET) || defined(RETROLIBC_LOCALTIME_R)
 
 #define __tz_mutex retrolibc___tz_mutex
 #define __tz_std_offset retrolibc___tz_std_offset
