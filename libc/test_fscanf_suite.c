@@ -28,7 +28,7 @@ static void test_sscanf_parses_values(void)
 {
   int x;
   static char s[100];
-  double y;
+  float y;
   CU_ASSERT_EQUAL(retrolibc_sscanf("1234 abc 34.56", "%d%s%f", &x, s, &y), 3);
   CU_ASSERT_EQUAL(x, 1234);
   CU_ASSERT_STRING_EQUAL(s, "abc");
@@ -392,7 +392,7 @@ static void test_sscanf_does_not_match_for_ix(void)
 
 static void test_sscanf_parses_number_for_f(void)
 {
-  double x;
+  float x;
   CU_ASSERT_EQUAL(retrolibc_sscanf("1234", "%f", &x), 1);
   CU_ASSERT_EQUAL(x, 1234.0);
   CU_ASSERT_EQUAL(retrolibc_sscanf("-3456", "%f", &x), 1);
@@ -407,7 +407,7 @@ static void test_sscanf_parses_number_for_f(void)
 
 static void test_sscanf_parses_number_for_f_and_dot(void)
 {
-  double x;
+  float x;
   CU_ASSERT_EQUAL(retrolibc_sscanf("12.34", "%f", &x), 1);
   CU_ASSERT(fabs(x - 12.34) <= 0.0001);
   CU_ASSERT_EQUAL(retrolibc_sscanf("-34.56", "%f", &x), 1);
@@ -422,7 +422,7 @@ static void test_sscanf_parses_number_for_f_and_dot(void)
 
 static void test_sscanf_parses_number_for_f_and_exponent(void)
 {
-  double x;
+  float x;
   CU_ASSERT_EQUAL(retrolibc_sscanf("12.34e9", "%f", &x), 1);
   CU_ASSERT(fabs(x - 12.34e9) <= 0.0001e9);
   CU_ASSERT_EQUAL(retrolibc_sscanf("-34.56e-12", "%f", &x), 1);
@@ -443,7 +443,7 @@ static void test_sscanf_parses_number_for_f_and_exponent(void)
 
 static void test_sscanf_parses_number_for_e(void)
 {
-  double x;
+  float x;
   CU_ASSERT_EQUAL(retrolibc_sscanf("1234", "%e", &x), 1);
   CU_ASSERT_EQUAL(x, 1234.0);
   CU_ASSERT_EQUAL(retrolibc_sscanf("-3456", "%e", &x), 1);
@@ -458,7 +458,7 @@ static void test_sscanf_parses_number_for_e(void)
 
 static void test_sscanf_parses_number_for_e_and_dot(void)
 {
-  double x;
+  float x;
   CU_ASSERT_EQUAL(retrolibc_sscanf("12.34", "%e", &x), 1);
   CU_ASSERT(fabs(x - 12.34) <= 0.0001);
   CU_ASSERT_EQUAL(retrolibc_sscanf("-34.56", "%e", &x), 1);
@@ -473,7 +473,7 @@ static void test_sscanf_parses_number_for_e_and_dot(void)
 
 static void test_sscanf_parses_number_for_e_and_exponent(void)
 {
-  double x;
+  float x;
   CU_ASSERT_EQUAL(retrolibc_sscanf("12.34e9", "%e", &x), 1);
   CU_ASSERT(fabs(x - 12.34e9) <= 0.0001e9);
   CU_ASSERT_EQUAL(retrolibc_sscanf("-34.56e-12", "%e", &x), 1);
@@ -494,7 +494,7 @@ static void test_sscanf_parses_number_for_e_and_exponent(void)
 
 static void test_sscanf_parses_number_for_g(void)
 {
-  double x;
+  float x;
   CU_ASSERT_EQUAL(retrolibc_sscanf("1234", "%g", &x), 1);
   CU_ASSERT_EQUAL(x, 1234.0);
   CU_ASSERT_EQUAL(retrolibc_sscanf("-3456", "%g", &x), 1);
@@ -509,7 +509,7 @@ static void test_sscanf_parses_number_for_g(void)
 
 static void test_sscanf_parses_number_for_g_and_dot(void)
 {
-  double x;
+  float x;
   CU_ASSERT_EQUAL(retrolibc_sscanf("12.34", "%g", &x), 1);
   CU_ASSERT(fabs(x - 12.34) <= 0.0001);
   CU_ASSERT_EQUAL(retrolibc_sscanf("-34.56", "%g", &x), 1);
@@ -524,7 +524,7 @@ static void test_sscanf_parses_number_for_g_and_dot(void)
 
 static void test_sscanf_parses_number_for_g_and_exponent(void)
 {
-  double x;
+  float x;
   CU_ASSERT_EQUAL(retrolibc_sscanf("12.34e9", "%g", &x), 1);
   CU_ASSERT(fabs(x - 12.34e9) <= 0.0001e9);
   CU_ASSERT_EQUAL(retrolibc_sscanf("-34.56e-12", "%g", &x), 1);
@@ -545,7 +545,7 @@ static void test_sscanf_parses_number_for_g_and_exponent(void)
 
 static void test_sscanf_parses_number_for_uppercase_e(void)
 {
-  double x;
+  float x;
   CU_ASSERT_EQUAL(retrolibc_sscanf("1234", "%E", &x), 1);
   CU_ASSERT_EQUAL(x, 1234.0);
   CU_ASSERT_EQUAL(retrolibc_sscanf("-3456", "%E", &x), 1);
@@ -560,7 +560,7 @@ static void test_sscanf_parses_number_for_uppercase_e(void)
 
 static void test_sscanf_parses_number_for_uppercase_e_and_dot(void)
 {
-  double x;
+  float x;
   CU_ASSERT_EQUAL(retrolibc_sscanf("12.34", "%E", &x), 1);
   CU_ASSERT(fabs(x - 12.34) <= 0.0001);
   CU_ASSERT_EQUAL(retrolibc_sscanf("-34.56", "%E", &x), 1);
@@ -575,7 +575,7 @@ static void test_sscanf_parses_number_for_uppercase_e_and_dot(void)
 
 static void test_sscanf_parses_number_for_uppercase_e_and_exponent(void)
 {
-  double x;
+  float x;
   CU_ASSERT_EQUAL(retrolibc_sscanf("12.34e9", "%E", &x), 1);
   CU_ASSERT(fabs(x - 12.34e9) <= 0.0001e9);
   CU_ASSERT_EQUAL(retrolibc_sscanf("-34.56e-12", "%E", &x), 1);
@@ -596,7 +596,7 @@ static void test_sscanf_parses_number_for_uppercase_e_and_exponent(void)
 
 static void test_sscanf_parses_number_for_uppercase_g(void)
 {
-  double x;
+  float x;
   CU_ASSERT_EQUAL(retrolibc_sscanf("1234", "%G", &x), 1);
   CU_ASSERT_EQUAL(x, 1234.0);
   CU_ASSERT_EQUAL(retrolibc_sscanf("-3456", "%G", &x), 1);
@@ -611,7 +611,7 @@ static void test_sscanf_parses_number_for_uppercase_g(void)
 
 static void test_sscanf_parses_number_for_uppercase_g_and_dot(void)
 {
-  double x;
+  float x;
   CU_ASSERT_EQUAL(retrolibc_sscanf("12.34", "%G", &x), 1);
   CU_ASSERT(fabs(x - 12.34) <= 0.0001);
   CU_ASSERT_EQUAL(retrolibc_sscanf("-34.56", "%G", &x), 1);
@@ -626,7 +626,7 @@ static void test_sscanf_parses_number_for_uppercase_g_and_dot(void)
 
 static void test_sscanf_parses_number_for_uppercase_g_and_exponent(void)
 {
-  double x;
+  float x;
   CU_ASSERT_EQUAL(retrolibc_sscanf("12.34e9", "%G", &x), 1);
   CU_ASSERT(fabs(x - 12.34e9) <= 0.0001e9);
   CU_ASSERT_EQUAL(retrolibc_sscanf("-34.56e-12", "%G", &x), 1);
@@ -647,7 +647,7 @@ static void test_sscanf_parses_number_for_uppercase_g_and_exponent(void)
 
 static void test_sscanf_parses_number_for_f_and_spaces(void)
 {
-  double x;
+  float x;
   CU_ASSERT_EQUAL(retrolibc_sscanf(" \t 1234", "%f", &x), 1);
   CU_ASSERT_EQUAL(x, 1234.0);
   CU_ASSERT_EQUAL(retrolibc_sscanf("\t\t-1234", "%f", &x), 1);
@@ -656,7 +656,7 @@ static void test_sscanf_parses_number_for_f_and_spaces(void)
 
 static void test_sscanf_parses_number_for_f_and_width(void)
 {
-  double x, y;
+  float x, y;
   CU_ASSERT_EQUAL(retrolibc_sscanf("123499", "%3f%f", &x, &y), 2);
   CU_ASSERT_EQUAL(x, 123.0);
   CU_ASSERT_EQUAL(y, 499.0);
@@ -676,7 +676,7 @@ static void test_sscanf_parses_number_for_f_and_width(void)
 
 static void test_sscanf_parses_number_for_f_and_overflow(void)
 {
-  double x;
+  float x;
   CU_ASSERT_EQUAL(retrolibc_sscanf("1.234E500", "%f", &x), 1);
   CU_ASSERT_EQUAL(x, HUGE_VAL);
   CU_ASSERT_EQUAL(retrolibc_sscanf("-1.234E500", "%f", &x), 1);
@@ -685,21 +685,21 @@ static void test_sscanf_parses_number_for_f_and_overflow(void)
 
 static void test_sscanf_parses_number_for_f_and_underflow(void)
 {
-  double x;
+  float x;
   CU_ASSERT_EQUAL(retrolibc_sscanf("1.234E-500", "%f", &x), 1);
   CU_ASSERT_EQUAL(x, 0.0);
 }
 
 static void test_sscanf_parses_number_for_f_with_star(void)
 {
-  double x;
+  float x;
   CU_ASSERT_EQUAL(retrolibc_sscanf("0 1234", "%*f%f", &x), 1);
   CU_ASSERT_EQUAL(x, 1234.0);
 }
 
 static void test_sscanf_does_not_match_for_f(void)
 {
-  double x;
+  float x;
   CU_ASSERT_EQUAL(retrolibc_sscanf(" \t ", "%f", &x), 0);
   CU_ASSERT_EQUAL(retrolibc_sscanf("-", "%f", &x), 0);
   CU_ASSERT_EQUAL(retrolibc_sscanf("+", "%f", &x), 0);
@@ -929,7 +929,7 @@ static void test_sscanf_parses_values_without_space_separator(void)
 {
   int x;
   static char s[100];
-  double f;
+  float f;
   static char s2[100];
   CU_ASSERT_EQUAL(retrolibc_sscanf("1234abc", "%d%s", &x, s), 2);
   CU_ASSERT_EQUAL(x, 1234);
@@ -982,7 +982,7 @@ static void test_fscanf_reads_values(void)
   FILE *f;
   int x;
   static char s[100];
-  double y;
+  float y;
   clean_current_dir();
   CU_ASSERT_FATAL(write_to_file("test.txt", "1234 abc 34.56"));
   f = fopen("test.txt", "r");
@@ -1028,7 +1028,7 @@ static void test_fscanf_returns_eof(void)
   FILE *f;
   int x;
   static char s[100];
-  double y;
+  float y;
   clean_current_dir();
   CU_ASSERT_FATAL(write_to_file("test.txt", ""));
   f = fopen("test.txt", "r");

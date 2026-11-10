@@ -293,11 +293,11 @@ static int xconv_dioux(struct xreader *xr, const union arg *xp, int conv_spec, i
   return 0;
 }
 
-static int xconv_efg(struct xreader *xr, double *xp, int width)
+static int xconv_efg(struct xreader *xr, float *xp, int width)
 {
-  double n, d;
-  double sign = 1.0;
-  double exp = 0.0;
+  float n, d;
+  float sign = 1.0f;
+  float exp = 0.0f;
   int is_dot = 0;
   int are_only_zeros = 1;
   int is_digit = 0;
@@ -310,26 +310,26 @@ static int xconv_efg(struct xreader *xr, double *xp, int width)
   /* sign */
   c = xgetc_with_width(xr, &width);
   if(c == '+' || c == '-') {
-    if(c == '-') sign = -1.0;
+    if(c == '-') sign = -1.0f;
   } else {
     xungetc_with_width(c, xr, &width);
   }
   /* number */
-  for(n = 0.0; (c = xgetc_with_width(xr, &width)) != EOF;) {
+  for(n = 0.0f; (c = xgetc_with_width(xr, &width)) != EOF;) {
     if(isdigit(c)) {
       int digit = c - '0';
       if(c != '0') are_only_zeros = 0;
       if(!is_dot) {
-        n = n * 10.0 + digit;
+        n = n * 10.0f + digit;
       } else {
         n += digit / d;
-        d *= 10.0;
+        d *= 10.0f;
       }
       is_digit = 1;
     } else if(c == '.') {
       if(is_dot) break;
       is_dot = 1;
-      d = 10.0;
+      d = 10.0f;
     } else {
       xungetc_with_width(c, xr, &width);
       break;
@@ -339,16 +339,16 @@ static int xconv_efg(struct xreader *xr, double *xp, int width)
   /* exponent */
   c = xgetc_with_width(xr, &width);
   if(c == 'E' || c == 'e') {
-    double exp_sign = 1.0;
+    float exp_sign = 1.0f;
     c = xgetc_with_width(xr, &width);
     if(c == '+' || c == '-') {
-      if(c == '-') exp_sign = -1.0;
+      if(c == '-') exp_sign = -1.0f;
     } else {
       xungetc_with_width(c, xr, &width);
     }
     for(; (c = xgetc_with_width(xr, &width)) != EOF; ) {
       if(isdigit(c)) {
-        exp = exp * 10.0 + (c - '0');
+        exp = exp * 10.0f + (c - '0');
         is_exp_digit = 1;
       } else {
         xungetc_with_width(c, xr, &width);
@@ -361,10 +361,10 @@ static int xconv_efg(struct xreader *xr, double *xp, int width)
     xungetc_with_width(c, xr, &width);
   }
   if(!are_only_zeros) {
-    if(n >= HUGE_VAL || n == 0.0) {
+    if(n >= HUGE_VAL || n == 0.0f) {
       n *= sign;
     } else {
-      n *= sign * pow(10.0, exp);
+      n *= sign * pow(10.0f, exp);
     }
   }
   /* Stores number. */
@@ -553,7 +553,7 @@ static int xscanf(struct xreader *xr, const char *format, va_list ap)
       case 'g':
       case 'E':
       case 'G':
-        if(xconv_efg(xr, !is_skip ? va_arg(ap, double *) : NULL, width) == -1) is_stop = 1;
+        if(xconv_efg(xr, !is_skip ? va_arg(ap, float *) : NULL, width) == -1) is_stop = 1;
         break;
       case 's':
         if(xconv_s(xr, !is_skip ? va_arg(ap, char *) : NULL, width) == -1) is_stop = 1;
