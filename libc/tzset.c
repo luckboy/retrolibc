@@ -44,19 +44,21 @@ static int parse_int(const char *s, char **endptr, int max_digits)
   return n;
 }
 
-static long parse_time(const char *s, long *time, char **endptr)
+static int parse_time(const char *s, long *time, char **endptr)
 {
-  long hour, min, sec;
+  long hour, min = 0, sec = 0;
   hour = parse_int(s, (char **) (&s), 2);
-  if(hour > 23) return -1L;
-  if(*s != ':') return -1L;
-  s++;
-  min = parse_int(s, (char **) (&s), 2);
-  if(hour > 59) return -1L;
-  if(*s != ':') return -1L;
-  s++;
-  sec = parse_int(s, (char **) (&s), 2);
-  if(sec > 59) return -1L;
+  if(hour < 0 || hour > 23) return -1;
+  if(*s == ':') {
+    s++;
+    min = parse_int(s, (char **) (&s), 2);
+    if(min < 0 || min > 59) return -1;
+    if(*s == ':') {
+      s++;
+      sec = parse_int(s, (char **) (&s), 2);
+      if(sec < 0 || sec > 59) return -1;
+    }
+  }
   *endptr = (char *) s;
   *time = hour * 60 * 60 + min * 60 + sec;
   return 0;
@@ -87,7 +89,7 @@ static void parse_tzname(const char *s, char *tzname, char **endptr)
 static int parse_tz_rule(const char *s, struct tz_rule *rule, char **endptr)
 {
   struct tz_rule tmp_rule;
-  if(*s =='J' || *s == 'M') {
+  if(*s == 'J' || *s == 'M') {
     tmp_rule.type = *s;
     s++;
   } else {
@@ -109,7 +111,7 @@ static int parse_tz_rule(const char *s, struct tz_rule *rule, char **endptr)
     if(*s != '.') return -1;
     s++;
     tmp_rule.u.m.w = parse_int(s, (char **) (&s), 1);
-    if(tmp_rule.u.m.w > 6) return -1;
+    if(tmp_rule.u.m.w < 0 || tmp_rule.u.m.w > 6) return -1;
     break;
   }
   if(*s == '/') {
