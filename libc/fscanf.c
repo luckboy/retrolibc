@@ -106,7 +106,7 @@ enum len_mod
 {
   LEN_MOD_HH,
   LEN_MOD_H,
-  LEN_MOD_I,
+  LEN_MOD_N,
   LEN_MOD_L,
   LEN_MOD_LL
 };
@@ -480,7 +480,7 @@ static int xscanf(struct xreader *xr, const char *format, va_list ap)
       int is_n = 0;
       int is_skip = 0;
       int width = -1;
-      enum len_mod len_mod = LEN_MOD_I;
+      enum len_mod len_mod = LEN_MOD_N;
       union arg arg;
       union farg farg;
       int is_signed;

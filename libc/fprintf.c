@@ -92,7 +92,7 @@ enum len_mod
 {
   LEN_MOD_HH,
   LEN_MOD_H,
-  LEN_MOD_I,
+  LEN_MOD_N,
   LEN_MOD_L,
   LEN_MOD_LL
 };
@@ -435,7 +435,7 @@ static void xprintf(struct xwriter *xw, const char *format, va_list ap)
       int flags = 0;
       long width = 0;
       long prec = -1;
-      enum len_mod len_mod = LEN_MOD_I;
+      enum len_mod len_mod = LEN_MOD_N;
       int is_stop;
       union arg arg;
       int is_signed;
