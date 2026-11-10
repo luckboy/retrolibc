@@ -104,7 +104,7 @@ static time_t mktime_unlocked(struct tm *tm)
   time_t t, t2;
   t = __mktime_no_tzset(tm);
   if(t == (time_t) -1) return -1;
-  if(strcmp(tm->tm_zone, __tz_std_zone) == 0 || strcmp(tm->tm_zone, __tz_dst_zone) == 0) {
+  if((strcmp(tm->tm_zone, __tz_std_zone) == 0 && tm->tm_gmtoff == -__tz_std_offset) || (__are_tz_rules && strcmp(tm->tm_zone, __tz_dst_zone) == 0 && tm->tm_gmtoff == -__tz_dst_offset)) {
     if(localtime_r_unlocked(&t, tm) == NULL) return -1;
   } else {
     long saved_gmtoff = tm->tm_gmtoff;

@@ -387,6 +387,46 @@ static void test_mktime_returns_seconds_for_cst(void)
   CU_ASSERT_STRING_EQUAL(tm.tm_zone, "CST");
 }
 
+static void test_mktime_returns_seconds_for_cet_with_different_offset(void)
+{
+  static struct retrolibc_tm tm;
+  time_t t;
+  int y, mon, hour, min, sec;
+  initialize_retrolibc_localtime_r();
+  putenv("RETROLIBC_TZ=CET-1");
+  for(y = 1970, t = 0; y < 2003; y++) {
+    t += 365 * 24 * 60 * 60;
+    if(is_leap_year(y)) t += 24 * 60 * 60;
+  }
+  for(mon = 0; mon < 4; mon++) {
+    t += tab_month_days[mon] * 24 * 60 * 60;
+  }
+  t += (5 - 1) * 24 * 60 * 60;
+  hour = 12;
+  min = 34;
+  sec = 56;
+  t += hour * 60 * 60 + min * 60 + sec;
+  t += 8 * 60 * 60;
+  tm.tm_sec = sec;
+  tm.tm_min = min;
+  tm.tm_hour = hour;
+  tm.tm_mday = 5;
+  tm.tm_mon = 4;
+  tm.tm_year = 2003 - 1900;
+  tm.tm_gmtoff = -8 * 60 * 60;
+  tm.tm_zone = "CET";
+  CU_ASSERT_EQUAL(retrolibc_mktime(&tm), t);
+  CU_ASSERT_EQUAL(tm.tm_sec, sec);
+  CU_ASSERT_EQUAL(tm.tm_min, min);
+  CU_ASSERT_EQUAL(tm.tm_hour, hour);
+  CU_ASSERT_EQUAL(tm.tm_mday, 5);
+  CU_ASSERT_EQUAL(tm.tm_mon, 4);
+  CU_ASSERT_EQUAL(tm.tm_year, 2003 - 1900);
+  CU_ASSERT_EQUAL(tm.tm_isdst, -1);
+  CU_ASSERT_EQUAL(tm.tm_gmtoff, -8 * 60 * 60);
+  CU_ASSERT_STRING_EQUAL(tm.tm_zone, "CET");
+}
+
 int add_localtime_r_suite(void)
 {
   CU_pSuite suite;
@@ -400,5 +440,6 @@ int add_localtime_r_suite(void)
   if(CU_add_test(suite, "mktime returns seconds for GMT", test_mktime_returns_seconds_for_gmt) == NULL) return -1;
   if(CU_add_test(suite, "mktime returns seconds and corrects tm for GMT", test_mktime_returns_seconds_and_corrects_tm_for_gmt) == NULL) return -1;
   if(CU_add_test(suite, "mktime returns seconds for CST", test_mktime_returns_seconds_for_cst) == NULL) return -1;
+  if(CU_add_test(suite, "mktime returns seconds for CET with different offset", test_mktime_returns_seconds_for_cet_with_different_offset) == NULL) return -1;
   return 0;
 }
