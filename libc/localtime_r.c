@@ -102,13 +102,21 @@ struct tm *localtime_r(const time_t *time, struct tm *tm)
 static time_t mktime_unlocked(struct tm *tm)
 {
   time_t t, t2;
+  long saved_gmtoff = tm->tm_gmtoff;
+  const char *saved_zone = tm->tm_zone;
+  if(tm->tm_zone == NULL) {
+    tm->tm_gmtoff = -__tz_std_offset;
+    tm->tm_zone = __tz_std_zone;
+  }
   t = __mktime_no_tzset(tm);
-  if(t == (time_t) -1) return -1;
+  if(t == (time_t) -1) {
+    tm->tm_gmtoff = saved_gmtoff;
+    tm->tm_zone = saved_zone;
+    return -1;
+  }
   if((strcmp(tm->tm_zone, __tz_std_zone) == 0 && tm->tm_gmtoff == -__tz_std_offset) || (__are_tz_rules && strcmp(tm->tm_zone, __tz_dst_zone) == 0 && tm->tm_gmtoff == -__tz_dst_offset)) {
     if(localtime_r_unlocked(&t, tm) == NULL) return -1;
   } else {
-    long saved_gmtoff = tm->tm_gmtoff;
-    const char *saved_zone = tm->tm_zone;
     t2 = t + tm->tm_gmtoff;
     if(gmtime_r(&t2, tm) == NULL) return -1;
     tm->tm_isdst = (strcmp(saved_zone, "GMT") == 0 ? 0 : -1);
