@@ -173,6 +173,12 @@ static char *format_tm(char *s, size_t *maxsize, const char *format, const struc
       case 'Z':
         if((s = copy_str(s, maxsize, tm->tm_zone)) == NULL) return NULL;
         break;
+      case '%':  
+        if(*maxsize <= 0) return NULL;
+        *s = '%';
+        s++;
+        (*maxsize)--;
+        break;
       default:
         if(*maxsize <= 0) return NULL;
         *s = *format;
