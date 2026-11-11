@@ -29,7 +29,6 @@ static int parse_name(const char *buf, char **endptr, const char *names[], int n
       return i;
     }
   }
-  *endptr = (char *) buf;
   return -1;
 }
 
@@ -44,8 +43,8 @@ static int parse_int(const char *buf, char **endptr, int max_digits)
       break;
     }
   }
-  *endptr = (char *) buf;
   if(is_digit) return -1;
+  *endptr = (char *) buf;
   return n;
 }
 
@@ -77,6 +76,7 @@ char *strptime(const char *buf, const char *format, struct tm *tm)
         break;
       case 'c':
         if((buf = strptime(buf, "%a %b %e %H:%M:%S %Y", tm)) == NULL) return NULL;
+        is_century = is_year_in_century = 0;
         break;
       case 'C':
         if((tmp = parse_int(buf, (char **) (&buf), 2)) == -1) return NULL;
@@ -155,6 +155,7 @@ char *strptime(const char *buf, const char *format, struct tm *tm)
         break;
       case 'x':
         if((buf = strptime(buf, "%m/%d/%y", tm)) == NULL) return NULL;
+        is_year_in_century = 1;
         break;
       case 'y':
         if((tmp = parse_int(buf, (char **) (&buf), 2)) == -1) return NULL;
@@ -164,7 +165,7 @@ char *strptime(const char *buf, const char *format, struct tm *tm)
         break;
       case 'Y':
         if((tmp = parse_int(buf, (char **) (&buf), 4)) == -1) return NULL;
-        if(tmp < 0 || tmp > 99) return NULL;
+        if(tmp < 0 || tmp > 9999) return NULL;
         tm->tm_year = tmp - 1900;
         is_century = is_year_in_century = 0;
         break;
@@ -188,5 +189,7 @@ char *strptime(const char *buf, const char *format, struct tm *tm)
   } else {
     if(is_year_in_century && tm->tm_year <= 68) tm->tm_year += 2000 - 1900;
   }
+  tm->tm_gmtoff = 0L;
+  tm->tm_zone = NULL;
   return (char *) buf;
 }
