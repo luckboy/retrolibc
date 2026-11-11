@@ -144,6 +144,7 @@ static char *format_tm(char *s, size_t *maxsize, const char *format, const struc
         (*maxsize)--;
         break;
       case 'T':
+      case 'X':
         if((s = format_tm(s, maxsize, "%H:%M:%S", tm, t)) == NULL) return NULL;
         break;
       case 'u':
