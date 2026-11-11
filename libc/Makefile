@@ -130,6 +130,7 @@ OBJS = \
 	$(BUILD_DIR)/qsort.o \
 	$(BUILD_DIR)/strerror.o \
 	$(BUILD_DIR)/strftime.o \
+	$(BUILD_DIR)/strptime.o \
 	$(BUILD_DIR)/strtod.o \
 	$(BUILD_DIR)/strtol.o \
 	$(BUILD_DIR)/sys_errlist.o \

@@ -43,6 +43,7 @@ struct tm *gmtime_r(const time_t *time, struct tm *tm);
 struct tm *localtime_r(const time_t *time, struct tm *tm);
 time_t mktime(struct tm *tm);
 size_t strftime(char *s, size_t maxsize, const char *format, const struct tm *tm);
+char *strptime(const char *buf, const char *format, struct tm *tm);
 void tzset(void);
 
 #ifdef __cplusplus
