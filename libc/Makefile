@@ -126,13 +126,16 @@ OBJS = \
 	$(BUILD_DIR)/gmtime_r.o \
 	$(BUILD_DIR)/localtime_r.o \
 	$(BUILD_DIR)/malloc.o \
+	$(BUILD_DIR)/month_names.o \
 	$(BUILD_DIR)/qsort.o \
 	$(BUILD_DIR)/strerror.o \
+	$(BUILD_DIR)/strftime.o \
 	$(BUILD_DIR)/strtod.o \
 	$(BUILD_DIR)/strtol.o \
 	$(BUILD_DIR)/sys_errlist.o \
 	$(BUILD_DIR)/tzset.o \
-	$(BUILD_DIR)/ulltostr.o
+	$(BUILD_DIR)/ulltostr.o \
+	$(BUILD_DIR)/week_day_names.o
 
 DEPS = $(addsuffix .d, $(OBJS))
 	
