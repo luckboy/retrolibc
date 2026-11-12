@@ -20,6 +20,9 @@ extern const char *__abbreviated_month_names[12];
 extern const char *__week_day_names[7];
 extern const char *__abbreviated_week_day_names[7];
 
+static int is_leap_year(int year)
+{ return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0; }
+
 static int week_num(const struct tm *tm)
 {
   int days = tm->tm_yday - tm->tm_wday + 1;
@@ -32,7 +35,11 @@ static int week_num(const struct tm *tm)
     return (tm->tm_yday + 7 - days) / 7 + 1;
   } else {
     /* next week is first week */
-    return (tm->tm_yday - days) / 7 + 1;
+    if(tm->tm_yday - days >= 0) {
+      return (tm->tm_yday - days) / 7 + 1;
+    } else {
+      return (tm->tm_yday - days + 365 + (is_leap_year(tm->tm_year - 1) ? 1 : 0)) / 7 + 1;
+    }
   }
 }
 
