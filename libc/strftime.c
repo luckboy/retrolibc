@@ -30,16 +30,16 @@ static int  iso_week_days(int yday, int wday)
 
 static int week_num(const struct tm *tm)
 {
-    int year = tm->tm_year + 1900;
-    int days = iso_week_days(tm->tm_yday, tm->tm_wday);
-    if(days >= 0) {
-      int tmp_days = iso_week_days(tm->tm_yday - ((365 + is_leap_year(year) ? 1 : 0)), tm->tm_wday);
-      if(tmp_days >= 0) days = tmp_days;
-    } else {
-      year -= 1;
-      days = iso_week_days(tm->tm_yday + (365 + (is_leap_year(year) ? 1 : 0)), tm->tm_wday);
-    }
-    return days / 7 + 1;
+  int year = tm->tm_year + 1900;
+  int days = iso_week_days(tm->tm_yday, tm->tm_wday);
+  if(days >= 0) {
+    int tmp_days = iso_week_days(tm->tm_yday - ((365 + is_leap_year(year) ? 1 : 0)), tm->tm_wday);
+    if(tmp_days >= 0) days = tmp_days;
+  } else {
+    year -= 1;
+    days = iso_week_days(tm->tm_yday + (365 + (is_leap_year(year) ? 1 : 0)), tm->tm_wday);
+  }
+  return days / 7 + 1;
 }
 
 static char *copy_str(char *s, size_t *maxsize, const char *t)
