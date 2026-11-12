@@ -20,25 +20,20 @@ extern const char *__abbreviated_month_names[12];
 extern const char *__week_day_names[7];
 extern const char *__abbreviated_week_day_names[7];
 
-static int is_leap_year(int year)
-{ return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0; }
-
-/* Iso_week_days function and week_num function use algorithms from strftime_l.c file of GNU C Library */
-
-static int  iso_week_days(int yday, int wday)
-{ return yday - (yday - wday + 4 + (366 / 7 + 2) * 7) % 7 + 4 - 1; }
-
 static int week_num(const struct tm *tm)
 {
-  int year = tm->tm_year + 1900;
-  int days = iso_week_days(tm->tm_yday, tm->tm_wday);
-  if(days >= 0) {
-    int tmp_days = iso_week_days(tm->tm_yday - ((365 + is_leap_year(year) ? 1 : 0)), tm->tm_wday);
-    if(tmp_days >= 0) days = tmp_days;
+  int days = tm->tm_yday - tm->tm_wday + 1;
+  if(days < 0) days += 7;
+  days %= 7;
+  if(days == 0) days = 7;
+  if(days >= 4) {
+    /* week containing 1 January has 4 or more days */
+    /* it is first week */
+    return (tm->tm_yday + 7 - days) / 7 + 1;
   } else {
-    days = iso_week_days(tm->tm_yday + (365 + (is_leap_year(year - 1) ? 1 : 0)), tm->tm_wday);
+    /* next week is first week */
+    return (tm->tm_yday - days) / 7 + 1;
   }
-  return days / 7 + 1;
 }
 
 static char *copy_str(char *s, size_t *maxsize, const char *t)
