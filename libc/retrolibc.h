@@ -434,7 +434,7 @@ void retrolibc_free(void *p);
 
 /* month_names.c */
 
-#if defined(RETROLIBC_MONTH_NAMES) || defined(RETROLIBC_STRFTIME)
+#if defined(RETROLIBC_MONTH_NAMES) || defined(RETROLIBC_STRFTIME) || defined(RETROLIBC_STRPTIME)
 #define __month_names retrolibc___month_names
 #define __abbreviated_month_names retrolibc___abbreviated_month_names
 #endif
@@ -456,6 +456,15 @@ size_t retrolibc_strftime(char *s, size_t maxsize, const char *format, const str
 #define strftime retrolibc_strftime
 #define mktime retrolibc_mktime
 #define __ulltostr retrolibc___ulltostr
+#endif
+
+/* strptime.c */
+
+char *retrolibc_strptime(const char *buf, const char *format, struct retrolibc_tm *retrolibc_tm);
+
+#ifdef RETROLIBC_STRPTIME
+#define tm retrolibc_tm
+#define strptime retrolibc_strptime
 #endif
 
 /* strtod.c */
@@ -528,7 +537,7 @@ char *retrolibc___ulltostr(char *buf, unsigned long long n, int base, int is_upp
 
 /* week_day_names.c */
 
-#if defined(RETROLIBC_WEEK_DAY_NAMES) || defined(RETROLIBC_STRFTIME)
+#if defined(RETROLIBC_WEEK_DAY_NAMES) || defined(RETROLIBC_STRFTIME) || defined(RETROLIBC_STRPTIME)
 #define __week_day_names retrolibc___week_day_names
 #define __abbreviated_week_day_names retrolibc___abbreviated_week_day_names
 #endif

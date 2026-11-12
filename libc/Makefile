@@ -279,6 +279,8 @@ TEST_OBJS = \
 	$(TEST_BUILD_DIR)/test_qsort_suite.o \
 	$(TEST_BUILD_DIR)/strftime.o \
 	$(TEST_BUILD_DIR)/test_strftime_suite.o \
+	$(TEST_BUILD_DIR)/strptime.o \
+	$(TEST_BUILD_DIR)/test_strptime_suite.o \
 	$(TEST_BUILD_DIR)/strtod.o \
 	$(TEST_BUILD_DIR)/test_strtod_suite.o \
 	$(TEST_BUILD_DIR)/strtol.o \

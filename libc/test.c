@@ -35,6 +35,7 @@ int add_localtime_r_suite(void);
 int add_malloc_suite(void);
 int add_qsort_suite(void);
 int add_strftime_suite(void);
+int add_strptime_suite(void);
 int add_strtod_suite(void);
 int add_strtol_suite(void);
 int add_tzset_suite(void);
@@ -106,6 +107,10 @@ int main(int argc, char **argv)
     return CU_get_error();
   }
   if(add_strftime_suite() == -1) {
+    CU_cleanup_registry();
+    return CU_get_error();
+  }
+  if(add_strptime_suite() == -1) {
     CU_cleanup_registry();
     return CU_get_error();
   }

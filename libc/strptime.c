@@ -9,7 +9,12 @@
 #include <limits.h>
 #include <string.h>
 #include <strings.h>
+#ifndef TEST
 #include <time.h>
+#else
+#define RETROLIBC_STRPTIME
+#include "retrolibc.h"
+#endif
 
 extern const char *__month_names[12];
 extern const char *__abbreviated_month_names[12];
@@ -43,7 +48,7 @@ static int parse_int(const char *buf, char **endptr, int max_digits)
       break;
     }
   }
-  if(is_digit) return -1;
+  if(!is_digit) return -1;
   *endptr = (char *) buf;
   return n;
 }
@@ -67,8 +72,8 @@ char *strptime(const char *buf, const char *format, struct tm *tm)
       switch(*format) {
       case 'a':
       case 'A':
-        if((tmp = parse_name(buf, (char **) (&buf), __week_day_names, 12)) == -1) {
-          if((tmp = parse_name(buf, (char **) (&buf), __abbreviated_week_day_names, 12)) == -1) return NULL;
+        if((tmp = parse_name(buf, (char **) (&buf), __week_day_names, 7)) == -1) {
+          if((tmp = parse_name(buf, (char **) (&buf), __abbreviated_week_day_names, 7)) == -1) return NULL;
         }
         tm->tm_wday = tmp;
         break;
@@ -95,6 +100,10 @@ char *strptime(const char *buf, const char *format, struct tm *tm)
         if((tmp = parse_int(buf, (char **) (&buf), 2)) == -1) return NULL;
         if(tmp < 1 || tmp > 31) return NULL;
         tm->tm_mday = tmp;
+        break;
+      case 'D':
+        if((buf = strptime(buf, "%m/%d/%y", tm)) == NULL) return NULL;
+        is_year_in_century = 1;
         break;
       case 'H':
         if((tmp = parse_int(buf, (char **) (&buf), 2)) == -1) return NULL;
@@ -139,6 +148,7 @@ char *strptime(const char *buf, const char *format, struct tm *tm)
       case 'S':
         if((tmp = parse_int(buf, (char **) (&buf), 2)) == -1) return NULL;
         if(tmp < 0 || tmp > 61) return NULL;
+        if(tmp > 59) tmp = 59;
         tm->tm_sec = tmp;
         break;
       case 'T':
@@ -146,7 +156,7 @@ char *strptime(const char *buf, const char *format, struct tm *tm)
         break;
       case 'U':
       case 'W':
-        if((tmp = parse_int(buf, (char **) (&buf), 3)) == -1) return NULL;
+        if((tmp = parse_int(buf, (char **) (&buf), 2)) == -1) return NULL;
         if(tmp < 0 || tmp > 53) return NULL;
         break;
       case 'w':
