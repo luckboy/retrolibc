@@ -23,12 +23,18 @@ extern const char *__abbreviated_week_day_names[7];
 static int is_leap_year(int year)
 { return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0; }
 
-static int week_num(const struct tm *tm)
+static int first_week_days(int yday, int wday)
 {
-  int days = tm->tm_yday - tm->tm_wday + 1;
+  int days = yday - wday + 1;
   if(days < 0) days += 7;
   days %= 7;
   if(days == 0) days = 7;
+  return days;
+}
+
+static int week_num(const struct tm *tm)
+{
+  int days = first_week_days(tm->tm_yday, tm->tm_wday);
   if(days >= 4) {
     /* week containing 1 January has 4 or more days */
     /* it is first week */
@@ -38,7 +44,13 @@ static int week_num(const struct tm *tm)
     if(tm->tm_yday - days >= 0) {
       return (tm->tm_yday - days) / 7 + 1;
     } else {
-      return (tm->tm_yday - days + 365 + (is_leap_year(tm->tm_year - 1) ? 1 : 0)) / 7 + 1;
+      int yday = tm->tm_yday + 365 + (is_leap_year(tm->tm_year - 1) ? 1 : 0);
+      days = first_week_days(yday, tm->tm_wday);
+      if(days >= 4) {
+        return (yday + 7 - days) / 7 + 1;
+      } else {
+        return (yday - days) / 7 + 1;
+      }
     }
   }
 }
