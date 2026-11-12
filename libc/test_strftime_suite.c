@@ -816,7 +816,6 @@ static void test_strftime_converts_tm_to_string_for_invalid_conversion_specifica
   tm.tm_gmtoff = 60 * 60;
   tm.tm_zone = "CET";
   CU_ASSERT_EQUAL(retrolibc_strftime(buf, 100, "%q", &tm), 2);
-  printf("%s\n", buf);
   CU_ASSERT_STRING_EQUAL(buf, "%q");
 }
 
