@@ -48,6 +48,12 @@ static int parse_int(const char *buf, char **endptr, int max_digits)
   return n;
 }
 
+char *skip_spaces(const char *buf)
+{
+  for(; isspace(*buf); buf++);
+  return (char *) buf;
+}
+
 char *strptime(const char *buf, const char *format, struct tm *tm)
 {
   int is_century = 0;
@@ -116,8 +122,8 @@ char *strptime(const char *buf, const char *format, struct tm *tm)
         tm->tm_min = tmp;
         break;
       case 'n':
-        if(*buf != '\n') return NULL;
-        buf++;
+      case 't':
+        buf = skip_spaces(buf);
         break;
       case 'p':
         if((tmp = parse_name(buf, (char **) (&buf), am_pm, 2)) == -1) return NULL;
@@ -134,10 +140,6 @@ char *strptime(const char *buf, const char *format, struct tm *tm)
         if((tmp = parse_int(buf, (char **) (&buf), 2)) == -1) return NULL;
         if(tmp < 0 || tmp > 61) return NULL;
         tm->tm_sec = tmp;
-        break;
-      case 't':
-        if(*buf != '\t') return NULL;
-        buf++;
         break;
       case 'T':
         if((buf = strptime(buf, "%H:%M:%S", tm)) == NULL) return NULL;
@@ -182,8 +184,12 @@ char *strptime(const char *buf, const char *format, struct tm *tm)
         break;
       }
     } else {
-      if(*buf != *format) return NULL;
-      buf++;
+      if(isspace(*format)) {
+        buf = skip_spaces(buf);
+      } else {
+        if(*buf != *format) return NULL;
+        buf++;
+      }
     }
   }
   if(is_century) {
