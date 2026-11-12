@@ -34,9 +34,7 @@ static int week_num(const struct tm *tm)
     int days = iso_week_days(tm->tm_yday, tm->tm_wday);
     if(days >= 0) {
       int tmp_days = iso_week_days(tm->tm_yday - ((365 + is_leap_year(year) ? 1 : 0)), tm->tm_wday);
-      if(tmp_days >= 0) {
-        days = tmp_days;
-      }
+      if(tmp_days >= 0) days = tmp_days;
     } else {
       year -= 1;
       days = iso_week_days(tm->tm_yday + (365 + (is_leap_year(year) ? 1 : 0)), tm->tm_wday);
