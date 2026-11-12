@@ -24,11 +24,9 @@ static int is_leap_year(int year)
 { return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0; }
 
 /* Iso_week_days function and week_num function use algorithms from strftime_l.c file of GNU C Library */
+
 static int  iso_week_days(int yday, int wday)
-{
-  int tmp = (366 / 7 + 2) * 7;
-  return yday - (yday - wday + 4 + tmp) % 7 + 4 - 1;
-}
+{ return yday - (yday - wday + 4 + (366 / 7 + 2) * 7) % 7 + 4 - 1; }
 
 static int week_num(const struct tm *tm)
 {
@@ -150,7 +148,6 @@ static char *format_tm(char *s, size_t *maxsize, const char *format, const struc
         (*maxsize)--;
         break;
       case 'T':
-      case 'X':
         if((s = format_tm(s, maxsize, "%H:%M:%S", tm, t)) == NULL) return NULL;
         break;
       case 'u':
@@ -170,6 +167,9 @@ static char *format_tm(char *s, size_t *maxsize, const char *format, const struc
         break;
       case 'x':
         if((s = format_tm(s, maxsize, "%m/%d/%y", tm, t)) == NULL) return NULL;
+        break;
+      case 'X':
+        if((s = format_tm(s, maxsize, "%H:%M:%S", tm, t)) == NULL) return NULL;
         break;
       case 'y':
         if((s = format_llong(s, maxsize, 2, tm->tm_year % 100, 1)) == NULL) return NULL;

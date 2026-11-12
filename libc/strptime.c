@@ -140,7 +140,6 @@ char *strptime(const char *buf, const char *format, struct tm *tm)
         buf++;
         break;
       case 'T':
-      case 'X':
         if((buf = strptime(buf, "%H:%M:%S", tm)) == NULL) return NULL;
         break;
       case 'U':
@@ -162,6 +161,9 @@ char *strptime(const char *buf, const char *format, struct tm *tm)
         if(tmp < 0 || tmp > 99) return NULL;
         tm->tm_year = tmp;
         is_year_in_century = 1;
+        break;
+      case 'X':
+        if((buf = strptime(buf, "%H:%M:%S", tm)) == NULL) return NULL;
         break;
       case 'Y':
         if((tmp = parse_int(buf, (char **) (&buf), 4)) == -1) return NULL;

@@ -9,10 +9,6 @@
 #include <CUnit/Basic.h>
 #include "retrolibc.h"
 
-#ifndef LONG_BIT
-#define LONG_BIT        __WORDSIZE
-#endif
-
 void free_retrolibc_tzname_list(void);
 
 static const int tab_month_days[12] = {
