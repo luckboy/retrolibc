@@ -5,6 +5,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+#ifdef TEST
+#define RETROLIBC_WEEK_DAY_NAMES
+#include "retrolibc.h"
+#endif
+
 const char *__week_day_names[7] = {
   "Sunday",
   "Monday",

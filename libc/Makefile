@@ -274,8 +274,11 @@ TEST_OBJS = \
 	$(TEST_BUILD_DIR)/test_localtime_r_suite.o \
 	$(TEST_BUILD_DIR)/malloc.o \
 	$(TEST_BUILD_DIR)/test_malloc_suite.o \
+	$(TEST_BUILD_DIR)/month_names.o \
 	$(TEST_BUILD_DIR)/qsort.o \
 	$(TEST_BUILD_DIR)/test_qsort_suite.o \
+	$(TEST_BUILD_DIR)/strftime.o \
+	$(TEST_BUILD_DIR)/test_strftime_suite.o \
 	$(TEST_BUILD_DIR)/strtod.o \
 	$(TEST_BUILD_DIR)/test_strtod_suite.o \
 	$(TEST_BUILD_DIR)/strtol.o \
@@ -283,6 +286,7 @@ TEST_OBJS = \
 	$(TEST_BUILD_DIR)/tzset.o \
 	$(TEST_BUILD_DIR)/test_tzset_suite.o \
 	$(TEST_BUILD_DIR)/ulltostr.o \
+	$(TEST_BUILD_DIR)/week_day_names.o \
 	$(TEST_BUILD_DIR)/test_ulltostr_suite.o \
 	$(TEST_BUILD_DIR)/test.o
 

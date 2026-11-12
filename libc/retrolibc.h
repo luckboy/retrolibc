@@ -432,12 +432,30 @@ void retrolibc_free(void *p);
 
 #endif
 
+/* month_names.c */
+
+#if defined(RETROLIBC_MONTH_NAMES) || defined(RETROLIBC_STRFTIME)
+#define __month_names retrolibc___month_names
+#define __abbreviated_month_names retrolibc___abbreviated_month_names
+#endif
+
 /* qsort.c */
 
 void retrolibc_qsort(void *base, size_t n, size_t size, int (*cmp)(const void *, const void *));
 
 #ifdef RETROLIBC_QSORT
 #define qsort retrolibc_qsort
+#endif
+
+/* strftime.c */
+
+size_t retrolibc_strftime(char *s, size_t maxsize, const char *format, const struct retrolibc_tm *retrolibc_tm);
+
+#ifdef RETROLIBC_STRFTIME
+#define tm retrolibc_tm
+#define strftime retrolibc_strftime
+#define mktime retrolibc_mktime
+#define __ulltostr retrolibc___ulltostr
 #endif
 
 /* strtod.c */
@@ -506,6 +524,13 @@ char *retrolibc___ulltostr(char *buf, unsigned long long n, int base, int is_upp
 
 #ifdef RETROLIBC_ULLTOSTR
 #define __ulltostr retrolibc___ulltostr
+#endif
+
+/* week_day_names.c */
+
+#if defined(RETROLIBC_WEEK_DAY_NAMES) || defined(RETROLIBC_STRFTIME)
+#define __week_day_names retrolibc___week_day_names
+#define __abbreviated_week_day_names retrolibc___abbreviated_week_day_names
 #endif
 
 #endif

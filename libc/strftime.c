@@ -6,8 +6,13 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 #include <string.h>
+#ifndef TEST
 #include <time.h>
 #include "priv_stdlib.h"
+#else
+#define RETROLIBC_STRFTIME
+#include "retrolibc.h"
+#endif
 
 extern const char *__month_names[12];
 extern const char *__abbreviated_month_names[12];
@@ -56,7 +61,7 @@ static char *format_llong(char *s, size_t *maxsize, int width, long long n, int 
   int m, len;
   __ulltostr(buf, (unsigned long long) n, 10, 0);
   len = (int) strlen(buf);
-  for(m = width - len; m > 0; s++, maxsize--, m--) {
+  for(m = width - len; m > 0; s++, (*maxsize)--, m--) {
     if(*maxsize <= 0) return NULL;
     *s = (is_zero ? '0' : ' ');
   }
@@ -112,10 +117,11 @@ static char *format_tm(char *s, size_t *maxsize, const char *format, const struc
         if((s = format_llong(s, maxsize, 3, tm->tm_yday + 1, 1)) == NULL) return NULL;
         break;
       case 'm':
-        if((s = format_llong(s, maxsize, 2, tm->tm_mday, 1)) == NULL) return NULL;
+        if((s = format_llong(s, maxsize, 2, tm->tm_mon + 1, 1)) == NULL) return NULL;
         break;
       case 'M':
         if((s = format_llong(s, maxsize, 2, tm->tm_min, 1)) == NULL) return NULL;
+        break;
       case 'n':
         if(*maxsize <= 0) return NULL;
         *s = '\n';
@@ -166,10 +172,10 @@ static char *format_tm(char *s, size_t *maxsize, const char *format, const struc
         if((s = format_tm(s, maxsize, "%m/%d/%y", tm, t)) == NULL) return NULL;
         break;
       case 'y':
-        if((s = format_llong(s, maxsize, 1, tm->tm_year % 100, 1)) == NULL) return NULL;
+        if((s = format_llong(s, maxsize, 2, tm->tm_year % 100, 1)) == NULL) return NULL;
         break;
       case 'Y':
-        if((s = format_llong(s, maxsize, 1, tm->tm_year + 1900, 1)) == NULL) return NULL;
+        if((s = format_llong(s, maxsize, 4, tm->tm_year + 1900, 1)) == NULL) return NULL;
         break;
       case 'Z':
         if((s = copy_str(s, maxsize, tm->tm_zone)) == NULL) return NULL;
@@ -182,7 +188,7 @@ static char *format_tm(char *s, size_t *maxsize, const char *format, const struc
         break;
       default:
         if(*maxsize <= 0) return NULL;
-        *s = *format;
+        *s = '%';
         s++;
         (*maxsize)--;
         format = saved_format;
