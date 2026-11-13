@@ -35,16 +35,16 @@ static int first_week_days(int yday, int wday)
 static int week_num(const struct tm *tm)
 {
   int days = first_week_days(tm->tm_yday, tm->tm_wday);
+  int tmp, week;
   if(days >= 4) {
     /* week containing 1 January has 4 or more days */
     /* it is first week */
-    return (tm->tm_yday + 7 - days) / 7 + 1;
+    tmp = 7 - days;
   } else {
     /* next week is first week */
-    if(tm->tm_yday - days >= 0) {
-      return (tm->tm_yday - days) / 7 + 1;
-    } else {
-      int yday = tm->tm_yday + 365 + (is_leap_year(tm->tm_year - 1) ? 1 : 0);
+    tmp = -days;
+    if(tm->tm_yday + tmp < 0) {
+      int yday = tm->tm_yday + 365 + (is_leap_year(tm->tm_year + 1900 - 1) ? 1 : 0);
       days = first_week_days(yday, tm->tm_wday);
       if(days >= 4) {
         return (yday + 7 - days) / 7 + 1;
@@ -53,6 +53,12 @@ static int week_num(const struct tm *tm)
       }
     }
   }
+  week = (tm->tm_yday + tmp) / 7;
+  if(week == (365 + (is_leap_year(tm->tm_year + 1900) ? 1 : 0) + tmp) / 7) {
+    int yday = tm->tm_yday - (365 + (is_leap_year(tm->tm_year + 1900) ? 1 : 0));
+    if(first_week_days(yday, tm->tm_wday) >= 4) return 1;
+  }
+  return week + 1;
 }
 
 static char *copy_str(char *s, size_t *maxsize, const char *t)

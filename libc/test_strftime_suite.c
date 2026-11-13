@@ -657,6 +657,42 @@ static void test_strftime_converts_tm_to_string_for_uppercase_v_and_2005_and_1_a
   CU_ASSERT_STRING_EQUAL(buf, "01");
 }
 
+static void test_strftime_converts_tm_to_string_for_uppercase_v_and_2002_and_12_and_29(void)
+{
+  static char buf[100];
+  static struct retrolibc_tm tm;
+  initialize_retrolibc_strftime();
+  putenv("RETROLIBC_TZ=CET-1");
+  tm.tm_sec = 56;
+  tm.tm_min = 34;
+  tm.tm_hour = 21;
+  tm.tm_mday = 29;
+  tm.tm_mon = 11;
+  tm.tm_year = 2002 - 1900;
+  tm.tm_gmtoff = 60 * 60;
+  tm.tm_zone = "CET";
+  CU_ASSERT_EQUAL(retrolibc_strftime(buf, 100, "%V", &tm), 2);
+  CU_ASSERT_STRING_EQUAL(buf, "52");
+}
+
+static void test_strftime_converts_tm_to_string_for_uppercase_v_and_2002_and_12_and_30(void)
+{
+  static char buf[100];
+  static struct retrolibc_tm tm;
+  initialize_retrolibc_strftime();
+  putenv("RETROLIBC_TZ=CET-1");
+  tm.tm_sec = 56;
+  tm.tm_min = 34;
+  tm.tm_hour = 21;
+  tm.tm_mday = 30;
+  tm.tm_mon = 11;
+  tm.tm_year = 2002 - 1900;
+  tm.tm_gmtoff = 60 * 60;
+  tm.tm_zone = "CET";
+  CU_ASSERT_EQUAL(retrolibc_strftime(buf, 100, "%V", &tm), 2);
+  CU_ASSERT_STRING_EQUAL(buf, "01");
+}
+
 static void test_strftime_converts_tm_to_string_for_uppercase_v_and_2024(void)
 {
   static char buf[100];
@@ -1055,6 +1091,8 @@ int add_strftime_suite(void)
   if(CU_add_test(suite, "strftime converts tm to string for V and 2005 and 7", test_strftime_converts_tm_to_string_for_uppercase_v_and_2005_and_7) == NULL) return -1;
   if(CU_add_test(suite, "strftime converts tm to string for V and 2005 and 1 and 2", test_strftime_converts_tm_to_string_for_uppercase_v_and_2005_and_1_and_2) == NULL) return -1;
   if(CU_add_test(suite, "strftime converts tm to string for V and 2005 and 1 and 3", test_strftime_converts_tm_to_string_for_uppercase_v_and_2005_and_1_and_3) == NULL) return -1;
+  if(CU_add_test(suite, "strftime converts tm to string for V and 2002 and 12 and 29", test_strftime_converts_tm_to_string_for_uppercase_v_and_2002_and_12_and_29) == NULL) return -1;
+  if(CU_add_test(suite, "strftime converts tm to string for V and 2002 and 12 and 30", test_strftime_converts_tm_to_string_for_uppercase_v_and_2002_and_12_and_30) == NULL) return -1;
   if(CU_add_test(suite, "strftime converts tm to string for V and 2024", test_strftime_converts_tm_to_string_for_uppercase_v_and_2024) == NULL) return -1;
   if(CU_add_test(suite, "strftime converts tm to string for V and 2024 and 10", test_strftime_converts_tm_to_string_for_uppercase_v_and_2024_and_10) == NULL) return -1;
   if(CU_add_test(suite, "strftime converts tm to string for V and 2024 and 11", test_strftime_converts_tm_to_string_for_uppercase_v_and_2024_and_11) == NULL) return -1;
