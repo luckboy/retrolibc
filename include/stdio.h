@@ -58,7 +58,7 @@ long ftell(FILE *f);
 int getc(FILE *f);
 int getchar(void);
 int getchar_unlocked(void);
-char *gets(char *s);
+char *gets(char *s) __attribute__((warning("This function is unsafe!!!")));
 int getw(FILE *f);
 void perror(const char *s);
 int printf(const char *format, ...);
