@@ -44,6 +44,7 @@ static int week_num(const struct tm *tm)
     /* next week is first week */
     tmp = -days;
     if(tm->tm_yday + tmp < 0) {
+      /* last week of previous year */
       int yday = tm->tm_yday + 365 + (is_leap_year(tm->tm_year + 1900 - 1) ? 1 : 0);
       days = first_week_days(yday, tm->tm_wday);
       if(days >= 4) {
@@ -55,6 +56,7 @@ static int week_num(const struct tm *tm)
   }
   week = (tm->tm_yday + tmp) / 7;
   max_ydays = 365 + (is_leap_year(tm->tm_year + 1900) ? 1 : 0);
+  /* first week of next year */
   if(week == (max_ydays + tmp) / 7 && first_week_days(tm->tm_yday - max_ydays, tm->tm_wday) >= 4) return 1;
   return week + 1;
 }
