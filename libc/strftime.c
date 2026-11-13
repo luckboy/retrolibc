@@ -35,7 +35,7 @@ static int first_week_days(int yday, int wday)
 static int week_num(const struct tm *tm)
 {
   int days = first_week_days(tm->tm_yday, tm->tm_wday);
-  int tmp, week;
+  int tmp, week, max_ydays;
   if(days >= 4) {
     /* week containing 1 January has 4 or more days */
     /* it is first week */
@@ -54,10 +54,8 @@ static int week_num(const struct tm *tm)
     }
   }
   week = (tm->tm_yday + tmp) / 7;
-  if(week == (365 + (is_leap_year(tm->tm_year + 1900) ? 1 : 0) + tmp) / 7) {
-    int yday = tm->tm_yday - (365 + (is_leap_year(tm->tm_year + 1900) ? 1 : 0));
-    if(first_week_days(yday, tm->tm_wday) >= 4) return 1;
-  }
+  max_ydays = 365 + (is_leap_year(tm->tm_year + 1900) ? 1 : 0);
+  if(week == (max_ydays + tmp) / 7 && first_week_days(tm->tm_yday - max_ydays, tm->tm_wday) >= 4) return 1;
   return week + 1;
 }
 
