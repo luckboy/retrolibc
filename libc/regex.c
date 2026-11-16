@@ -869,3 +869,38 @@ int regexec(const regex_t *reg, const char *s, size_t nmatches, regmatch_t match
   free(interp.stack);
   return interp.errcode;
 }
+
+size_t regerror(int errcode, const regex_t *reg, char *errbuf, size_t errbuf_size)
+{
+  static const char *errlist[16] = {
+    "Success",
+    "No match",
+    "Invalid regular expression",
+    "Invalid collation character",
+    "Invalid character class name",
+    "Trailing backslash",
+    "Invalid back reference",
+    "Unmatched [ or [^",
+    "Unmatched ( or \\(",
+    "Unmatched \\{",
+    "Invalid content of \\{\\}",
+    "Invalid range end",
+    "Memory exhausted",
+    "Premature end of regular expression",
+    "Not implemented function",
+    "Unknown error"
+  };
+  size_t len;
+  if(errcode < 0 || errcode > 14) errcode = 15;
+  len = strlen(errlist[errcode]);
+  if(errbuf_size > 0) {
+    size_t n = errbuf_size - 1;
+    n = (len < n ? len : n);
+    memcpy(errbuf, errlist[errcode], n);
+    errbuf[n] = '\0';
+  }
+  return len + 1;
+}
+
+void regfree(regex_t *reg)
+{ free(reg->__bytecode); }
