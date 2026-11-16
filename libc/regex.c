@@ -19,7 +19,7 @@
 
 struct compiler
 {
-  signed char cflags;
+  short cflags;
   unsigned char *bytecode;
   ssize_t bytecode_size;
   ssize_t bytecode_capacity;
@@ -515,8 +515,8 @@ struct stack_elem
 
 struct interpreter
 {
-  signed char cflags;
-  signed char eflags;
+  short cflags;
+  short eflags;
   unsigned char *bytecode;
   ssize_t ip;
   regoff_t o;
