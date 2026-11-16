@@ -219,7 +219,11 @@ static const char *compile7(struct compiler *comp, const char *s, int is_in_brac
       }
       s++;
     } else {
-      if(s[1] == '-' && s[2] != '\0') {
+      if(s[1] == '-') {
+        if(s[2] == ']' || s[2] == '\0') {
+          comp->errcode = REG_ERANGE;
+          return NULL;
+        }
         if(add_op_with_range(comp, RE_OP_RANGE, *s, s[2]) == -1) return NULL;
         s += 3;
       } else {
@@ -297,6 +301,10 @@ static const char *compile5(struct compiler *comp, const char *s)
       }
       s += 2;
     } else if(*s == '\\' && *s >= '1' && *s <= '9') {
+      if(*s - '1' < comp->nbr) {
+        comp->errcode = REG_ESUBREG;
+        return NULL;
+      }
       if(add_op_with_char(comp, RE_OP_BACK_REF, *s - '1') == -1) return NULL;
       s += 2;
     } else {
