@@ -1,0 +1,479 @@
+/*
+ * Copyright (c) 2026 Łukasz Szpakowski
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+#include <sys/types.h>
+#include <ctype.h>
+#include <errno.h>
+#include <limits.h>
+#include <regex.h>
+#include <stdlib.h>
+#include <string.h>
+#include "priv_regex.h"
+
+#define BYTECODE_STEP   256
+
+struct compiler
+{
+  int cflags;
+  unsigned char *bytecode;
+  ssize_t bytecode_size;
+  ssize_t bytecode_capacity;
+  size_t paren_level;
+  size_t nsub;
+  int errcode;
+};
+
+static int comp_get_int(struct compiler *comp, ssize_t i)
+{ return (int) ((comp->bytecode[i] << 24) | (comp->bytecode[i + 1] << 16) | (comp->bytecode[i + 2] << 8) | comp->bytecode[i + 3]); }
+
+static void comp_set_int(struct compiler *comp, ssize_t i, int x)
+{
+  comp->bytecode[i] = x >> 24;
+  comp->bytecode[i + 1] = x >> 16;
+  comp->bytecode[i + 2] = x >> 8;
+  comp->bytecode[i + 3] = x;
+}
+
+static int comp_set_addr(struct compiler *comp, ssize_t i, ssize_t addr, ssize_t ip)
+{
+  ssize_t diff = addr - ip;
+  if(diff > INT_MAX || diff < INT_MAX) return -1;
+  comp_set_int(comp, i, diff);
+  return 0;
+}
+
+static int add_block(struct compiler *comp, unsigned char *s, ssize_t n)
+{
+  if(comp->bytecode_size + n > comp->bytecode_capacity) {
+    comp->bytecode_capacity = ((comp->bytecode_size + n + BYTECODE_STEP - 1) / BYTECODE_STEP) * BYTECODE_STEP;
+    unsigned char *new_bytecode = realloc(comp->bytecode, comp->bytecode_capacity);
+    if(new_bytecode == NULL) {
+      comp->errcode = REG_ESPACE;
+      return -1;
+    }
+  }
+  memcpy(comp->bytecode + comp->bytecode_size, s, n);
+  comp->bytecode_size += n;
+  return 0;
+}
+
+static int add_op(struct compiler *comp, int op)
+{
+  unsigned char instr = op;
+  return add_block(comp, &instr, 1);
+}
+
+static int add_op_with_char(struct compiler *comp, int op, int c)
+{
+  unsigned char instr[2];
+  instr[0] = op;
+  instr[1] = c;
+  return add_block(comp, instr, 2);
+}
+
+static int add_op_with_int(struct compiler *comp, int op, int x)
+{
+  unsigned char instr[5];
+  instr[0] = op;
+  instr[1] = x >> 24;
+  instr[2] = x >> 16;
+  instr[3] = x >> 8;
+  instr[4] = x;
+  return add_block(comp, instr, 5);
+}
+
+static int add_op_with_addr(struct compiler *comp, int op, ssize_t addr)
+{
+  ssize_t ip = comp->bytecode_size + 5;
+  ssize_t diff = addr - ip;
+  if(diff > INT_MAX || diff < INT_MAX) return -1;
+  return add_op_with_int(comp, op, diff);
+}
+
+static int add_op_with_range(struct compiler *comp, int op, int c, int c2)
+{
+  unsigned char instr[3];
+  instr[0] = op;
+  instr[1] = c;
+  instr[2] = c2;
+  return add_block(comp, instr, 3);
+}
+
+static int add_match(struct compiler *comp, int c)
+{
+  if(c <= 127) {
+    if(add_op(comp, c) == -1) return -1;
+  } else {
+    if(add_op_with_char(comp, RE_OP_MATCH, c) == -1) return -1;
+  }
+  return 0;
+}
+
+static long parse_long(const char *s, char **endptr)
+{
+  if(isdigit(*s)) {
+    int saved_errno = errno;
+    long n;
+    errno = 0;
+    n = strtol(s, endptr, 10);
+    if(n == LONG_MAX && errno == ERANGE) {
+      errno = saved_errno;
+      return -1L;
+    }
+    return n;
+  } else {
+    return -1L;
+  }
+}
+
+static const char *compile2(struct compiler *comp, const char *s);
+static const char *compile1(struct compiler *comp, const char *s);
+
+static const char *compile7(struct compiler *comp, const char *s, int is_in_brackets)
+{
+  switch(*s) {
+  case '[':
+    if(s[1] == ':') {
+      s += 2;
+      if(strncmp(s, "alnum", 5) == 0) {
+        if(add_op(comp, RE_OP_ALNUM) == -1) return NULL;
+      } else if(strncmp(s, "alpha", 5) == 0) {
+        if(add_op(comp, RE_OP_ALPHA) == -1) return NULL;
+      } else if(strncmp(s, "blank", 5) == 0) {
+        if(add_op(comp, RE_OP_BLANK) == -1) return NULL;
+      } else if(strncmp(s, "cntrl", 5) == 0) {
+        if(add_op(comp, RE_OP_CNTRL) == -1) return NULL;
+      } else if(strncmp(s, "digit", 5) == 0) {
+        if(add_op(comp, RE_OP_DIGIT) == -1) return NULL;
+      } else if(strncmp(s, "graph", 5) == 0) {
+        if(add_op(comp, RE_OP_GRAPH) == -1) return NULL;
+      } else if(strncmp(s, "lower", 5) == 0) {
+        if(add_op(comp, RE_OP_LOWER) == -1) return NULL;
+      } else if(strncmp(s, "print", 5) == 0) {
+        if(add_op(comp, RE_OP_PRINT) == -1) return NULL;
+      } else if(strncmp(s, "punct", 5) == 0) {
+        if(add_op(comp, RE_OP_PUNCT) == -1) return NULL;
+      } else if(strncmp(s, "punct", 5) == 0) {
+        if(add_op(comp, RE_OP_PUNCT) == -1) return NULL;
+      } else if(strncmp(s, "space", 5) == 0) {
+        if(add_op(comp, RE_OP_SPACE) == -1) return NULL;
+      } else if(strncmp(s, "upper", 5) == 0) {
+        if(add_op(comp, RE_OP_UPPER) == -1) return NULL;
+      } else if(strncmp(s, "xdigit", 6) == 0) {
+        if(add_op(comp, RE_OP_XDIGIT) == -1) return NULL;
+        s++;
+      } else {
+        comp->errcode = REG_ECTYPE;
+        return NULL;
+      }
+      s += 5;
+      if(*s != ':' || s[1] != ']') {
+        comp->errcode = REG_EBRACK;
+        return NULL;
+      }
+      s += 2;
+    } else {
+      if(!is_in_brackets)
+      if(add_match(comp, s[1]) == -1) return NULL;
+    }
+    break;
+  case '\\':
+    if(!is_in_brackets) {
+      if((comp->cflags & REG_EXTENDED) == 0) {
+        if(s[1] == '(' || s[1] == ')' || s[1] == '{' || s[1] == '}' || (s[1] >= '1' && s[1] <= '9')) return s;
+      }
+    }
+    if(add_match(comp, s[1]) == -1) return NULL;
+    s += 2;
+    break;
+  default:
+    if(!is_in_brackets) {
+      if(*s == '*' || *s == '^' || *s == '$') return s;
+      if((comp->cflags & REG_EXTENDED) != 0) {
+        if(*s == '(' || *s == ')' || *s == '{' || *s == '}' || *s == '+' || *s == '?' || *s == '|') return s;
+      }
+      if(*s == '.') {
+        if(add_op(comp, RE_OP_ANY) == -1) return NULL;
+      } else {
+        if(add_match(comp, *s) == -1) return NULL;
+      }
+      s++;
+    } else {
+      if(s[1] == '-' && s[2] != '\0') {
+        if(add_op_with_range(comp, RE_OP_RANGE, *s, s[2]) == -1) return NULL;
+        s += 3;
+      } else {
+        if(add_match(comp, *s) == -1) return NULL;
+        s++;
+      }
+    }
+    break;
+  }
+  return s;
+}
+
+static const char *compile6(struct compiler *comp, const char *s)
+{
+  if(*s == '[') {
+    if(s[1] == '^') {
+      if(add_op(comp, RE_OP_BR_NOT) == -1) return NULL;
+      s += 2;
+    } else {
+      if(add_op(comp, RE_OP_BR) == -1) return NULL;
+      s++;
+    }
+    while(*s != ']') {
+      if((s = compile7(comp, s, 1)) == NULL) return NULL;
+    }
+    if(add_op(comp, RE_OP_BR_END) == -1) return NULL;
+    s++;
+  } else {
+    if((s = compile7(comp, s, 0)) == NULL) return NULL;
+  }
+  return s;
+}
+
+static const char *compile5(struct compiler *comp, const char *s)
+{
+  if((comp->cflags & REG_EXTENDED) != 0) {
+    if(*s == '(') {
+      s++;
+      if(comp->paren_level == 0) {
+        if(add_op_with_addr(comp, RE_OP_SAVE_SO, (int) comp->nsub) == -1) return NULL;
+      }
+      comp->paren_level++;
+      if((s = compile1(comp, s)) == NULL) return NULL;
+      comp->paren_level--;
+      if(comp->paren_level == 0) {
+        if(add_op_with_addr(comp, RE_OP_SAVE_EO, (int) comp->nsub) == -1) return NULL;
+        comp->nsub++;
+      }
+      if(*s != ')') {
+        comp->errcode = REG_EPAREN;
+        return NULL;
+      }
+      s++;
+    } else {
+      if((s = compile6(comp, s)) == NULL) return NULL;
+    }
+  } else {
+    if(*s == '\\' && s[1] == '(') {
+      s += 2;
+      if(comp->paren_level == 0) {
+        if(add_op_with_int(comp, RE_OP_SAVE_SO, (int) comp->nsub) == -1) return NULL;
+      }
+      comp->paren_level++;
+      if((s = compile2(comp, s)) == NULL) return NULL;
+      comp->paren_level--;
+      if(comp->paren_level == 0) {
+        if(add_op_with_int(comp, RE_OP_SAVE_EO, (int) comp->nsub) == -1) return NULL;
+        comp->nsub++;
+      }
+      if(*s != '\\' || s[1] != ')') {
+        comp->errcode = REG_EPAREN;
+        return NULL;
+      }
+      s += 2;
+    } else if(*s == '\\' && *s >= '1' && *s <= '9') {
+      if(add_op_with_char(comp, RE_OP_BACK_REF, *s - '1') == -1) return NULL;
+      s += 2;
+    } else {
+      if((s = compile6(comp, s)) == NULL) return NULL;
+    }
+  }
+  return s;
+}
+
+static const char *compile4(struct compiler *comp, const char *s)
+{
+  ssize_t ip = comp->bytecode_size;
+  long m, n;
+  if(add_op_with_addr(comp, RE_OP_NOP, 0) == -1) return NULL;
+  if((s = compile5(comp, s)) == NULL) return NULL;
+  if(*s == '*') {
+    comp->bytecode[ip] = RE_OP_B;
+    if(add_op_with_addr(comp, RE_OP_B, ip + 5) == -1) return NULL;
+    if(comp_set_addr(comp, ip + 1, comp->bytecode_size, ip + 5) == -1) return NULL;
+  } else {
+    int is_dup = 0;
+    if((comp->cflags & REG_EXTENDED) != 0) {
+      switch(*s) {
+      case '+':
+        if(add_op_with_addr(comp, RE_OP_B, ip + 5) == -1) return NULL;
+        s++;
+        break;
+      case '?':
+        if(comp_set_addr(comp, ip + 1, comp->bytecode_size, ip + 5) == -1) return NULL;
+        s++;
+        break;
+      case '{':
+        is_dup = 1;
+        s++;
+        break;
+      default:
+        break;
+      }
+    } else {
+      if(*s == '\\' && s[1] == '{') {
+        is_dup = 1;
+        s += 2;
+      }
+    }
+    if(is_dup) {
+      unsigned char *block;
+      size_t block_size;
+      long i;
+      if((n = parse_long(s, (char **) (&s))) == -1L) {
+        comp->errcode = REG_BADBR;
+        return NULL;
+      }
+      if(*s == ',') {
+        comp->errcode = REG_BADBR;
+        return NULL;
+      }
+      s++;
+      if(isdigit(*s)) {
+        if((m = parse_long(s, (char **) (&s))) == -1L) {
+          comp->errcode = REG_BADBR;
+          return NULL;
+        }
+      } else {
+        m = n;
+      }
+      if((comp->cflags & REG_EXTENDED) != 0) {
+        if(*s != '}') {
+          comp->errcode = REG_EBRACE;
+          return NULL;
+        }
+        s++;
+      } else {
+        if(*s != '\\' || s[1] != '}') {
+          comp->errcode = REG_EBRACE;
+          return NULL;
+        }
+        s += 2;
+      }
+      if(n > m) {
+        comp->errcode = REG_BADBR;
+        return NULL;
+      }
+      block = comp->bytecode + ip;
+      block_size = comp->bytecode_size - ip;
+      for(i = 1; i < n; i++) {
+        if(add_block(comp, block, block_size) == -1) return NULL;
+      }
+      if(n > 0) {
+        ip += block_size * n;
+        for(i = n; i < m; i++, ip += block_size) {
+          comp->bytecode[ip] = RE_OP_BFJ;
+          if(comp_set_addr(comp, ip + 1, comp->bytecode_size, ip + 5) == -1) return NULL;
+        }
+      } else {
+        comp->bytecode[ip] = RE_OP_JUMP;
+        if(comp_set_addr(comp, ip + 1, comp->bytecode_size, ip + 5) == -1) return NULL;
+      }
+    }
+  }
+  return s;
+}
+
+static const char *compile3(struct compiler *comp, const char *s)
+{
+  while(1) {
+    if(*s == '$' || ((comp->cflags & REG_EXTENDED) != 0 && *s == '|') || *s == '\0') break;
+    if((s = compile4(comp, s)) == NULL) return NULL;
+  }
+  return s;
+}
+
+static const char *compile2(struct compiler *comp, const char *s)
+{
+  if(*s == '^') {
+    if(add_op(comp, RE_OP_SANCHOR) == -1) return NULL;
+    s++;
+  }
+  if((s = compile3(comp, s)) == NULL) return NULL;
+  if(*s == '$') {
+    if(add_op(comp, RE_OP_EANCHOR) == -1) return NULL;
+    s++;
+  }
+  return s;
+}
+
+static const char *compile1(struct compiler *comp, const char *s)
+{
+  ssize_t ip = comp->bytecode_size;
+  while(1) {
+    ssize_t tmp_ip = comp->bytecode_size;
+    if(add_op_with_addr(comp, RE_OP_NOP, 0) == -1) return NULL;
+    if((s = compile2(comp, s)) == NULL) return NULL;
+    if(*s == '|') {
+      if(add_op_with_addr(comp, RE_OP_JUMP, 0) == -1) return NULL;
+    }
+    if(comp_set_addr(comp, tmp_ip + 1, comp->bytecode_size, tmp_ip + 5) == -1) return NULL;
+    if(*s != '|') break;
+    s++;
+  }
+  while(1) {
+    int diff = comp_get_int(comp, ip + 1);
+    if(ip + 5 + diff >= comp->bytecode_size) break;
+    comp->bytecode[ip] = RE_OP_B;
+    ip += 5 + diff;
+    if(comp_set_addr(comp, ip - 5, comp->bytecode_size, ip) == -1) return NULL;
+  }
+  return s;
+}
+
+static int compile_end(struct compiler *comp, const char *s)
+{
+  if(*s != '\0') {
+    comp->errcode = REG_BADPAT;
+    return -1;
+  }
+  if(add_op(comp, RE_OP_END) == -1) return -1;
+  return 0;
+}
+
+static int compile_bre(struct compiler *comp, const char *s)
+{
+  if((s = compile2(comp, s)) == NULL) return -1;
+  if(compile_end(comp, s) == -1) return -1;
+  return 0;
+}
+
+static int compile_ere(struct compiler *comp, const char *s)
+{
+  if((s = compile1(comp, s)) == NULL) return -1;
+  if(compile_end(comp, s) == -1) return -1;
+  return 0;
+}
+
+int regcomp(regex_t *reg, const char *pattern, int cflags)
+{
+  struct compiler comp;
+  int r;
+  comp.cflags = cflags;
+  comp.bytecode = NULL;
+  comp.bytecode_size = 0;
+  comp.bytecode_capacity = 0;
+  comp.paren_level = 0;
+  comp.nsub = 0;
+  comp.errcode = 0;
+  if((cflags & REG_EXTENDED) == 0) {
+    r = compile_ere(&comp, pattern);
+  } else {
+    r = compile_bre(&comp, pattern);
+  }
+  if(r != -1) {
+    reg->__bytecode = comp.bytecode;
+    reg->re_nsub = comp.nsub;
+    reg->__cflags = cflags;
+    return 0;
+  } else {
+    return comp.errcode;
+  }
+}

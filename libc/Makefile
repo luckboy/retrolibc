@@ -128,6 +128,7 @@ OBJS = \
 	$(BUILD_DIR)/malloc.o \
 	$(BUILD_DIR)/month_names.o \
 	$(BUILD_DIR)/qsort.o \
+	$(BUILD_DIR)/regex.o \
 	$(BUILD_DIR)/strerror.o \
 	$(BUILD_DIR)/strftime.o \
 	$(BUILD_DIR)/strptime.o \
