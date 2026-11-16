@@ -15,6 +15,7 @@
 #include "priv_regex.h"
 
 #define BYTECODE_STEP   256
+#define STACK_STEP      16
 
 struct compiler
 {
@@ -50,12 +51,14 @@ static int comp_set_addr(struct compiler *comp, ssize_t i, ssize_t addr, ssize_t
 static int add_block(struct compiler *comp, unsigned char *s, ssize_t n)
 {
   if(comp->bytecode_size + n > comp->bytecode_capacity) {
+    unsigned char *new_bytecode;
     comp->bytecode_capacity = ((comp->bytecode_size + n + BYTECODE_STEP - 1) / BYTECODE_STEP) * BYTECODE_STEP;
-    unsigned char *new_bytecode = realloc(comp->bytecode, comp->bytecode_capacity);
+    new_bytecode = realloc(comp->bytecode, comp->bytecode_capacity);
     if(new_bytecode == NULL) {
       comp->errcode = REG_ESPACE;
       return -1;
     }
+    comp->bytecode = new_bytecode;
   }
   memcpy(comp->bytecode + comp->bytecode_size, s, n);
   comp->bytecode_size += n;
@@ -492,4 +495,377 @@ int regcomp(regex_t *reg, const char *pattern, int cflags)
   } else {
     return comp.errcode;
   }
+}
+
+struct stack_elem
+{
+  ssize_t ip;
+  regoff_t o;
+  size_t sub;
+  size_t br;
+};
+
+struct interpreter
+{
+  int cflags;
+  int eflags;
+  unsigned char *bytecode;
+  ssize_t ip;
+  regoff_t o;
+  size_t sub;
+  size_t br;
+  size_t sp;
+  struct stack_elem *stack;
+  size_t stack_capacity;
+  regmatch_t *matches;
+  size_t nmatches;
+  regmatch_t brs[9];
+  signed char br_mode;
+  signed char is_success;
+  signed char is_stopped;
+  int errcode;
+};
+
+static int interp_get_int(struct interpreter *interp, ssize_t i)
+{ return (int) ((interp->bytecode[i] << 24) | (interp->bytecode[i + 1] << 16) | (interp->bytecode[i + 2] << 8) | interp->bytecode[i + 3]); }
+
+static int get_char(struct interpreter *interp, const char *s)
+{ return (interp->cflags & REG_ICASE) != 0 ? tolower(s[interp->o]) : s[interp->o]; }
+
+static int push(struct interpreter *interp, ssize_t ip)
+{
+  if(interp->sp + 1 > interp->stack_capacity) {
+    struct stack_elem *new_stack;
+    interp->stack_capacity = ((interp->sp + 1 + STACK_STEP - 1) / STACK_STEP) * STACK_STEP;
+    new_stack = realloc(interp->stack, interp->stack_capacity * sizeof(struct stack_elem));
+    if(new_stack == NULL) {
+      interp->errcode = REG_ESPACE;
+      return -1;
+    }
+    interp->stack = new_stack;
+  }
+  interp->stack[interp->sp].ip = ip;
+  interp->stack[interp->sp].o = interp->o;
+  interp->stack[interp->sp].sub = interp->sub;
+  interp->stack[interp->sp].br = interp->br;
+  interp->sp++;
+  return 0;
+}
+
+static void match_success(struct interpreter *interp, const char *s)
+{
+  if(!interp->br_mode) {
+    if((interp->cflags & REG_NEWLINE) != 0 && s[interp->o] == '\n') {
+      interp->eflags &= ~REG_NOTBOL;
+    } else {
+      interp->eflags |= REG_NOTBOL;
+    }
+    interp->o++;
+  } else {
+    interp->is_success = 1;
+  }
+}
+
+static void match_failure(struct interpreter *interp)
+{
+  if(!interp->br_mode) {
+    if(interp->sp > 0) {
+      size_t old_sub = interp->sub;
+      size_t old_br = interp->br;
+      size_t i, n;
+      interp->ip = interp->stack[interp->sp].ip;
+      interp->o = interp->stack[interp->sp].o;
+      interp->sub = interp->stack[interp->sp].sub;
+      interp->br = interp->stack[interp->sp].br;
+      interp->sp--;
+      if(interp->nmatches > 0) {
+        n = (old_sub + 1 < interp->nmatches - 1 ? old_sub + 1 : interp->nmatches - 1);
+        for(i = interp->sub; i < n; i++) interp->matches[i + 1].re_so = interp->matches[i + 1].re_eo = -1;
+      }
+      n = (old_br + 1 ? old_br : 9);
+      for(i = interp->br; i < n; i++) interp->brs[i].re_so = interp->brs[i].re_eo = -1;
+    } else {
+      interp->is_stopped = 1;
+      interp->errcode = REG_NOTMATCH;
+    }
+  }
+}
+
+static int interpret_bytecode(struct interpreter *interp, const char *s)
+{
+  while(!interp->is_stopped) {
+    ssize_t old_ip = interp->ip;
+    int tmp, tmp2;
+    switch(interp->bytecode[interp->ip]) {
+    case RE_OP_END:
+      interp->ip++;
+      interp->is_stopped = 1;
+      interp->errcode = 0;
+      break;
+    case RE_OP_ANY:
+      interp->ip++;
+      if(s[interp->o] != '\0') {
+        match_success(interp, s);
+      } else {
+        match_failure(interp);
+      }
+      break;
+    case RE_OP_MATCH:
+      interp->ip += 2;
+      if((unsigned char) get_char(interp, s) == interp->bytecode[old_ip + 1]) {
+        match_success(interp, s);
+      } else {
+        match_failure(interp);
+      }
+      break;
+    case RE_OP_SANCHOR:
+      interp->ip++;
+      if((interp->eflags & REG_NOTBOL) != 0) match_failure(interp);
+      break;
+    case RE_OP_EANCHOR:
+      interp->ip++;
+      if(s[interp->o] == '\0' || ((interp->cflags & REG_NEWLINE) != 0 && s[interp->o] == '\n')) {
+        match_success(interp, s);
+      } else {
+        match_failure(interp);
+      }
+    case RE_OP_BR:
+      interp->ip++;
+      interp->br_mode = 1;
+      interp->is_success = 0;
+      break;
+    case RE_OP_BR_NOT:
+      interp->ip++;
+      interp->br_mode = 2;
+      interp->is_success = 0;
+      break;
+    case RE_OP_BR_END:
+      interp->ip++;
+      if(interp->br_mode == 1 ? interp->is_success : (!interp->is_success && (interp->cflags & REG_NEWLINE) != 0 && s[interp->o] != '\n')) {
+        match_success(interp, s);
+      } else {
+        match_failure(interp);
+      }
+      interp->br_mode = 0;
+      break;
+    case RE_OP_NOP:
+      interp->ip += 5;
+      break;
+    case RE_OP_B:
+      interp->ip += 5;
+      if(push(interp, interp->ip + interp_get_int(interp, old_ip + 1)) == -1) return -1;
+      break;
+    case RE_OP_BFJ:
+      interp->ip += 5;
+      if(push(interp, interp->ip) == -1) return -1;
+      interp->ip += interp_get_int(interp, old_ip + 1);
+      break;
+    case RE_OP_JUMP:
+      interp->ip += 5;
+      interp->ip += interp_get_int(interp, old_ip + 1);
+      break;
+    case RE_OP_SAVE_MSO:
+      interp->ip += 5;
+      tmp = interp_get_int(interp, old_ip + 1);
+      if(tmp >= 0 && ((size_t) tmp + 1) < interp->nmatches) interp->matches[tmp].re_so = interp->o;
+      interp->sub = (tmp > interp->sub ? (size_t) tmp : interp->sub);
+      break;
+    case RE_OP_SAVE_MEO:
+      interp->ip += 5;
+      tmp = interp_get_int(interp, old_ip + 1);
+      if(tmp >= 0 && ((size_t) tmp + 1) < interp->nmatches) interp->matches[tmp].re_eo = interp->o;
+      interp->sub = (tmp > interp->sub ? (size_t) tmp : interp->sub);
+      break;
+    case RE_OP_SAVE_BRSO:
+      interp->ip += 5;
+      tmp = interp_get_int(interp, old_ip + 1);
+      if(tmp >= 0 && tmp < 9) interp->brs[tmp].re_so = interp->o;
+      interp->sub = (tmp > interp->sub ? (size_t) tmp : interp->sub);
+      break;
+    case RE_OP_SAVE_BREO:
+      interp->ip += 5;
+      tmp = interp_get_int(interp, old_ip + 1);
+      if(tmp >= 0 && tmp < 9) interp->brs[tmp].re_eo = interp->o;
+      interp->br = (tmp > interp->br ? (size_t) tmp : interp->br);
+      break;
+    case RE_OP_BACK_REF:
+      interp->ip += 2;
+      tmp = interp->bytecode[old_ip + 1];
+      if(tmp >= 0 && tmp < 9 && interp->brs[tmp].re_so != -1 && interp->brs[tmp].re_eo != -1) {
+        if(strncmp(s + interp->o, s + interp->brs[tmp].re_so, interp->brs[tmp].re_eo - interp->brs[tmp].re_so) == 0) {
+            if(!interp->br_mode) {
+              regoff_t i;
+              for(i = 0; i < interp->brs[tmp].re_eo - interp->brs[tmp].re_so; i++, interp->o++) {
+                if((interp->cflags & REG_NEWLINE) != 0 && s[interp->o] == '\n') {
+                  interp->eflags &= ~REG_NOTBOL;
+                } else {
+                  interp->eflags |= REG_NOTBOL;
+                }
+              }
+            } else {
+              interp->is_success = 1;
+            }
+        } else {
+          match_failure(interp);
+        }
+      } else {
+        match_failure(interp);
+      }
+      break;
+    case RE_OP_RANGE:
+      interp->ip += 3;
+      tmp = interp->bytecode[old_ip + 1];
+      tmp2 = interp->bytecode[old_ip + 2];
+      if(get_char(interp, s) >= tmp && get_char(interp, s) <= tmp2) {
+        match_success(interp, s);
+      } else {
+        match_failure(interp);
+      }
+      break;
+    case RE_OP_ALNUM:
+      interp->ip++;
+      if(isalnum(get_char(interp, s))) {
+        match_success(interp, s);
+      } else {
+        match_failure(interp);
+      }
+      break;
+    case RE_OP_BLANK:
+      interp->ip++;
+      if(get_char(interp, s) == ' ' || get_char(interp, s) == '\t') {
+        match_success(interp, s);
+      } else {
+        match_failure(interp);
+      }
+      break;
+    case RE_OP_CNTRL:
+      interp->ip++;
+      if(iscntrl(get_char(interp, s))) {
+        match_success(interp, s);
+      } else {
+        match_failure(interp);
+      }
+      break;
+    case RE_OP_DIGIT:
+      interp->ip++;
+      if(isdigit(get_char(interp, s))) {
+        match_success(interp, s);
+      } else {
+        match_failure(interp);
+      }
+      break;
+    case RE_OP_GRAPH:
+      interp->ip++;
+      if(isgraph(get_char(interp, s))) {
+        match_success(interp, s);
+      } else {
+        match_failure(interp);
+      }
+      break;
+    case RE_OP_LOWER:
+      interp->ip++;
+      if(islower(get_char(interp, s))) {
+        match_success(interp, s);
+      } else {
+        match_failure(interp);
+      }
+      break;
+    case RE_OP_PRINT:
+      interp->ip++;
+      if(isprint(get_char(interp, s))) {
+        match_success(interp, s);
+      } else {
+        match_failure(interp);
+      }
+      break;
+    case RE_OP_PUNCT:
+      interp->ip++;
+      if(ispunct(get_char(interp, s))) {
+        match_success(interp, s);
+      } else {
+        match_failure(interp);
+      }
+      break;
+    case RE_OP_SPACE:
+      interp->ip++;
+      if(isspace(get_char(interp, s))) {
+        match_success(interp, s);
+      } else {
+        match_failure(interp);
+      }
+      break;
+    case RE_OP_UPPER:
+      interp->ip++;
+      if(isupper(get_char(interp, s))) {
+        match_success(interp, s);
+      } else {
+        match_failure(interp);
+      }
+      break;
+    case RE_OP_XDIGIT:
+      interp->ip++;
+      if(isxdigit(get_char(interp, s))) {
+        match_success(interp, s);
+      } else {
+        match_failure(interp);
+      }
+      break;
+    default:
+      interp->ip++;
+      if((unsigned char) get_char(interp, s) == interp->bytecode[old_ip]) {
+        match_success(interp, s);
+      } else {
+        match_failure(interp);
+      }
+      break;
+    }
+  }
+  return 0;
+}
+
+int regexec(const regex_t *reg, const char *s, size_t nmatches, regmatch_t matches[], int eflags)
+{
+  struct interpreter interp;
+  regoff_t o = 0;
+  size_t i;
+  interp.cflags = reg->__cflags;
+  interp.stack = malloc(STACK_STEP * sizeof(struct stack_elem));
+  if(interp.stack == NULL) return REG_ESPACE;
+  interp.stack_capacity = STACK_STEP;
+  o = 0;
+  while(1) {
+    interp.ip = 0;
+    interp.o = o;
+    interp.sub = 0;
+    interp.br = 0;
+    interp.sp = 0;
+    if((reg->__cflags & REG_NOSUB) == 0) {
+      interp.matches = matches;
+      interp.nmatches = nmatches;
+      for(i = 0; i < interp.nmatches; i++) interp.matches[i].re_so = interp.matches[i].re_eo = -1;
+    } else {
+      interp.matches = NULL;
+      interp.nmatches = 0;
+    }
+    for(i = 0; i < interp.nmatches; i++) interp.matches[i].re_so = interp.brs[i].re_eo = -1;
+    interp.br_mode = 0;
+    interp.is_success = 0;
+    interp.is_stopped = 0;
+    interp.errcode = 0;
+    interpret_bytecode(&interp, s);
+    if(interp.errcode == 0 && interp.nmatches >= 1) {
+      interp.matches[0].re_so = o;
+      interp.matches[0].re_eo = interp.o;
+    }
+    if(interp.errcode == 0 || interp.errcode == REG_ESPACE) break;
+    if((interp.cflags & REG_NEWLINE) != 0 && s[o] == '\n') {
+      eflags &= ~REG_NOTBOL;
+    } else {
+      eflags |= REG_NOTBOL;
+    }
+    if(s[i] == '\0') break;
+    o++;
+  }
+  free(interp.stack);
+  return interp.errcode;
 }

@@ -13,7 +13,7 @@
 #define REG_EXTENDED    (1 << 0)
 #define REG_ICASE       (1 << 1)
 #define REG_NOSUB       (1 << 2)
-#define REG_NELINE      (1 << 3)
+#define REG_NEWLINE     (1 << 3)
 
 #define REG_NOTBOL      (1 << 0)
 #define REG_NOTEOL      (1 << 1)
@@ -53,7 +53,7 @@ extern "C" {
 #endif
 
 int regcomp(regex_t *reg, const char *pattern, int cflags);
-int regexec(const regex_t *reg, const char *string, size_t nmatch, regmatch_t matches[], int eflags);
+int regexec(const regex_t *reg, const char *s, size_t nmatches, regmatch_t matches[], int eflags);
 size_t regerror(int errcode, const regex_t *reg, char *errbuf, size_t errbuf_size);
 void regfree(regex_t *reg);
 
