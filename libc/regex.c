@@ -632,9 +632,9 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
       break;
     case RE_OP_EANCHOR:
       interp->ip++;
-      if(s[interp->o] == '\0' || ((interp->cflags & REG_NEWLINE) != 0 && s[interp->o] == '\n')) {
+      if((interp->cflags & REG_NEWLINE) != 0 && s[interp->o] == '\n') {
         match_success(interp, s);
-      } else {
+      } else if((interp->eflags & REG_NOTEOL) != 0 || s[interp->o] != '\0' ) {
         match_failure(interp);
       }
     case RE_OP_BR:
