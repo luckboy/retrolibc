@@ -50,6 +50,10 @@ static int comp_set_addr(struct compiler *comp, ssize_t i, ssize_t addr, ssize_t
 
 static int add_block(struct compiler *comp, unsigned char *s, ssize_t n)
 {
+  if(comp->bytecode_size > LONG_MAX - n) {
+    comp->errcode = REG_ESPACE;
+    return -1;
+  }
   if(comp->bytecode_size + n > comp->bytecode_capacity) {
     unsigned char *new_bytecode;
     comp->bytecode_capacity = ((comp->bytecode_size + n + BYTECODE_STEP - 1) / BYTECODE_STEP) * BYTECODE_STEP;

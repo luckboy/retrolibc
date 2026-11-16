@@ -8,6 +8,7 @@
 #ifndef _REGEX_H
 #define _REGEX_H
 
+#include <sys/types.h>
 #include <stddef.h>
 
 #define REG_EXTENDED    (1 << 0)
@@ -40,7 +41,7 @@ typedef struct
   int __cflags;
 } regex_t;
 
-typedef size_t regoff_t;
+typedef ssize_t regoff_t;
 
 typedef struct
 {
