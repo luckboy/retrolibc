@@ -14,8 +14,8 @@
 #include <string.h>
 #include "priv_regex.h"
 
-#define BYTECODE_STEP   256
-#define STACK_STEP      16
+#define BYTECODE_STEP   1024
+#define STACK_STEP      64
 
 struct compiler
 {
