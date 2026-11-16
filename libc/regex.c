@@ -19,14 +19,14 @@
 
 struct compiler
 {
-  int cflags;
+  signed char cflags;
   unsigned char *bytecode;
   ssize_t bytecode_size;
   ssize_t bytecode_capacity;
   size_t paren_level;
   size_t nsub;
   size_t nbr;
-  int errcode;
+  signed char errcode;
 };
 
 static int comp_get_int(struct compiler *comp, ssize_t i)
@@ -507,8 +507,8 @@ struct stack_elem
 
 struct interpreter
 {
-  int cflags;
-  int eflags;
+  signed char cflags;
+  signed char eflags;
   unsigned char *bytecode;
   ssize_t ip;
   regoff_t o;
@@ -523,7 +523,7 @@ struct interpreter
   signed char br_mode;
   signed char is_success;
   signed char is_stopped;
-  int errcode;
+  signed char errcode;
 };
 
 static int interp_get_int(struct interpreter *interp, ssize_t i)
