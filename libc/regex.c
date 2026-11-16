@@ -24,6 +24,7 @@ struct compiler
   ssize_t bytecode_capacity;
   size_t paren_level;
   size_t nsub;
+  size_t nbr;
   int errcode;
 };
 
@@ -90,8 +91,20 @@ static int add_op_with_addr(struct compiler *comp, int op, ssize_t addr)
 {
   ssize_t ip = comp->bytecode_size + 5;
   ssize_t diff = addr - ip;
-  if(diff > INT_MAX || diff < INT_MAX) return -1;
+  if(diff > INT_MAX || diff < INT_MAX) {
+    comp->errcode = REG_ESPACE;
+    return -1;
+  }
   return add_op_with_int(comp, op, diff);
+}
+
+static int add_op_with_size(struct compiler *comp, int op, size_t x)
+{
+  if(x >= (size_t) INT_MAX) {
+    comp->errcode = REG_ESPACE;
+    return -1;
+  }
+  return add_op_with_int(comp, op, (int) x);
 }
 
 static int add_op_with_range(struct compiler *comp, int op, int c, int c2)
@@ -241,17 +254,14 @@ static const char *compile5(struct compiler *comp, const char *s)
 {
   if((comp->cflags & REG_EXTENDED) != 0) {
     if(*s == '(') {
+      size_t sub = comp->nsub;
       s++;
-      if(comp->paren_level == 0) {
-        if(add_op_with_addr(comp, RE_OP_SAVE_SO, (int) comp->nsub) == -1) return NULL;
-      }
+      if(add_op_with_size(comp, RE_OP_SAVE_MSO, sub) == -1) return NULL;
+      comp->nsub++;
       comp->paren_level++;
       if((s = compile1(comp, s)) == NULL) return NULL;
       comp->paren_level--;
-      if(comp->paren_level == 0) {
-        if(add_op_with_addr(comp, RE_OP_SAVE_EO, (int) comp->nsub) == -1) return NULL;
-        comp->nsub++;
-      }
+      if(add_op_with_size(comp, RE_OP_SAVE_MEO, sub) == -1) return NULL;
       if(*s != ')') {
         comp->errcode = REG_EPAREN;
         return NULL;
@@ -262,16 +272,21 @@ static const char *compile5(struct compiler *comp, const char *s)
     }
   } else {
     if(*s == '\\' && s[1] == '(') {
+      size_t sub = comp->nsub;
+      size_t br = comp->nbr;
       s += 2;
+      if(add_op_with_size(comp, RE_OP_SAVE_MSO, sub) == -1) return NULL;
+      comp->nsub++;
       if(comp->paren_level == 0) {
-        if(add_op_with_int(comp, RE_OP_SAVE_SO, (int) comp->nsub) == -1) return NULL;
+        if(add_op_with_size(comp, RE_OP_SAVE_BRSO, br) == -1) return NULL;
+        comp->nbr++;
       }
       comp->paren_level++;
       if((s = compile2(comp, s)) == NULL) return NULL;
       comp->paren_level--;
+      if(add_op_with_size(comp, RE_OP_SAVE_MEO, sub) == -1) return NULL;
       if(comp->paren_level == 0) {
-        if(add_op_with_int(comp, RE_OP_SAVE_EO, (int) comp->nsub) == -1) return NULL;
-        comp->nsub++;
+        if(add_op_with_size(comp, RE_OP_SAVE_BREO, br) == -1) return NULL;
       }
       if(*s != '\\' || s[1] != ')') {
         comp->errcode = REG_EPAREN;
@@ -462,6 +477,7 @@ int regcomp(regex_t *reg, const char *pattern, int cflags)
   comp.bytecode_capacity = 0;
   comp.paren_level = 0;
   comp.nsub = 0;
+  comp.nbr = 0;
   comp.errcode = 0;
   if((cflags & REG_EXTENDED) == 0) {
     r = compile_ere(&comp, pattern);
