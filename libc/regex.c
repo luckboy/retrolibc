@@ -648,7 +648,7 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
     case RE_OP_MATCH:
       n = interp->bytecode[interp->ip + 1];
       interp->ip += 2;
-      if((unsigned char) get_char(interp, s) == n) {
+      if((unsigned char) get_char(interp, s) == (unsigned char) n) {
         match_success(interp, s);
       } else {
         match_failure(interp);
