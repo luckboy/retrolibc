@@ -200,6 +200,8 @@ static const char *compile7(struct compiler *comp, const char *s, int is_in_brac
       if(add_match(comp, s[1]) == -1) return NULL;
     }
     break;
+  case ']':
+    return s;
   case '\\':
     if(s[1] == '\0') {
       comp->error_code = REG_EESCAPE;
