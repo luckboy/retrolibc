@@ -24,6 +24,7 @@ struct compiler
   ssize_t bytecode_size;
   ssize_t bytecode_capacity;
   size_t nsub;
+  signed char processeds[9];
   signed char errcode;
 };
 
@@ -270,9 +271,11 @@ static const char *compile5(struct compiler *comp, const char *s)
       size_t sub = comp->nsub;
       s++;
       if(add_op_with_size(comp, RE_OP_SAVE_SO, sub) == -1) return NULL;
+      if(sub < 9) comp->processeds[sub] = 1;
       comp->nsub++;
       if((s = compile1(comp, s)) == NULL) return NULL;
       if(add_op_with_size(comp, RE_OP_SAVE_EO, sub) == -1) return NULL;
+      if(sub < 9) comp->processeds[sub] = 0;
       if(*s != ')') {
         comp->errcode = REG_EPAREN;
         return NULL;
@@ -286,20 +289,23 @@ static const char *compile5(struct compiler *comp, const char *s)
       size_t sub = comp->nsub;
       s += 2;
       if(add_op_with_size(comp, RE_OP_SAVE_SO, sub) == -1) return NULL;
+      if(sub < 9) comp->processeds[sub] = 1;
       comp->nsub++;
       if((s = compile2(comp, s)) == NULL) return NULL;
       if(add_op_with_size(comp, RE_OP_SAVE_EO, sub) == -1) return NULL;
+      if(sub < 9) comp->processeds[sub] = 0;
       if(*s != '\\' || s[1] != ')') {
         comp->errcode = REG_EPAREN;
         return NULL;
       }
       s += 2;
-    } else if(*s == '\\' && *s >= '1' && *s <= '9') {
-      if(*s - '1' < comp->nsub) {
+    } else if(*s == '\\' && s[1] >= '1' && s[1] <= '9') {
+      int back_ref = s[1] - '1';
+      if(back_ref < comp->nsub || comp->processeds[back_ref]) {
         comp->errcode = REG_ESUBREG;
         return NULL;
       }
-      if(add_op_with_char(comp, RE_OP_BACK_REF, *s - '1') == -1) return NULL;
+      if(add_op_with_char(comp, RE_OP_BACK_REF, back_ref) == -1) return NULL;
       s += 2;
     } else {
       if((s = compile6(comp, s)) == NULL) return NULL;
@@ -504,12 +510,14 @@ static int compile_ere(struct compiler *comp, const char *s)
 int regcomp(regex_t *reg, const char *pattern, int cflags)
 {
   struct compiler comp;
+  size_t i;
   int r;
   comp.cflags = cflags;
   comp.bytecode = NULL;
   comp.bytecode_size = 0;
   comp.bytecode_capacity = 0;
   comp.nsub = 0;
+  for(i = 0; i < 9; i++) comp.processeds[i] = 0;
   comp.errcode = 0;
   if((cflags & REG_EXTENDED) == 0) {
     r = compile_ere(&comp, pattern);
