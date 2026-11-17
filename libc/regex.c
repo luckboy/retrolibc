@@ -519,7 +519,7 @@ int regcomp(regex_t *reg, const char *pattern, int cflags)
   comp.sub_count = 0;
   for(i = 0; i < 9; i++) comp.processeds[i] = 0;
   comp.error_code = 0;
-  if((cflags & REG_EXTENDED) == 0) {
+  if((cflags & REG_EXTENDED) != 0) {
     r = compile_ere(&comp, pattern);
   } else {
     r = compile_bre(&comp, pattern);
@@ -530,6 +530,7 @@ int regcomp(regex_t *reg, const char *pattern, int cflags)
     reg->__cflags = cflags;
     return 0;
   } else {
+    if(comp.bytecode != NULL) free(comp.bytecode);
     return comp.error_code;
   }
 }
