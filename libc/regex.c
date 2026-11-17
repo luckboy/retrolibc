@@ -517,8 +517,8 @@ struct stack_elem
 {
   ssize_t ip;
   regoff_t o;
-  size_t sub;
-  size_t sub1;
+  int sub;
+  int sub1;
 };
 
 struct interpreter
@@ -528,8 +528,8 @@ struct interpreter
   unsigned char *bytecode;
   ssize_t ip;
   regoff_t o;
-  size_t sub;
-  size_t sub1;
+  int sub;
+  int sub1;
   size_t sp;
   struct stack_elem *stack;
   size_t stack_capacity;
@@ -596,10 +596,10 @@ static void match_failure(struct interpreter *interp)
       interp->sp--;
       if(interp->nmatches > 0) {
         n = (old_sub + 1 < interp->nmatches - 1 ? old_sub + 1 : interp->nmatches - 1);
-        for(i = interp->sub; i < n; i++) interp->matches[i + 1].re_so = interp->matches[i + 1].re_eo = -1;
+        for(i = interp->sub + 1; i < n; i++) interp->matches[i + 1].re_so = interp->matches[i + 1].re_eo = -1;
       }
-      n = (old_sub1 + 1 ? old_sub1 : 9);
-      for(i = interp->sub1; i < n; i++) interp->subs1[i].re_so = interp->subs1[i].re_eo = -1;
+      n = (old_sub1 + 1 ? old_sub1 + 1 : 9);
+      for(i = interp->sub1 + 1; i < n; i++) interp->subs1[i].re_so = interp->subs1[i].re_eo = -1;
     } else {
       interp->is_stopped = 1;
       interp->errcode = REG_NOTMATCH;
@@ -684,13 +684,13 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
       interp->ip += 5;
       tmp = interp_get_int(interp, old_ip + 1);
       if(tmp >= 0 && ((size_t) tmp + 1) < interp->nmatches) interp->matches[tmp].re_so = interp->o;
-      interp->sub = (tmp > interp->sub ? (size_t) tmp : interp->sub);
+      interp->sub = (tmp > interp->sub ? tmp : interp->sub);
       break;
     case RE_OP_SAVE_MEO:
       interp->ip += 5;
       tmp = interp_get_int(interp, old_ip + 1);
       if(tmp >= 0 && ((size_t) tmp + 1) < interp->nmatches) interp->matches[tmp].re_eo = interp->o;
-      interp->sub = (tmp > interp->sub ? (size_t) tmp : interp->sub);
+      interp->sub = (tmp > interp->sub ? tmp : interp->sub);
       break;
     case RE_OP_SAVE_S1SO:
       interp->ip += 5;
@@ -858,8 +858,8 @@ int regexec(const regex_t *reg, const char *s, size_t nmatches, regmatch_t match
   while(1) {
     interp.ip = 0;
     interp.o = o;
-    interp.sub = 0;
-    interp.sub1 = 0;
+    interp.sub = -1;
+    interp.sub1 = -1;
     interp.sp = 0;
     if(interp.nmatches > 0) {
       for(i = 0; i < interp.nmatches; i++) interp.matches[i].re_so = interp.matches[i].re_eo = -1;
