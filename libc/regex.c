@@ -856,6 +856,7 @@ int regexec(const regex_t *reg, const char *s, size_t nmatches, regmatch_t match
   regoff_t o = 0;
   size_t i;
   interp.cflags = reg->__cflags;
+  interp.bytecode = reg->__bytecode;
   interp.stack = NULL;
   interp.stack_capacity = 0;
   if((reg->__cflags & REG_NOSUB) == 0) {
@@ -867,6 +868,7 @@ int regexec(const regex_t *reg, const char *s, size_t nmatches, regmatch_t match
   }
   o = 0;
   while(1) {
+    interp.eflags = eflags;
     interp.ip = 0;
     interp.o = o;
     interp.sub = -1;
