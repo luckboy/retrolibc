@@ -630,8 +630,7 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
 {
   if(interp->match_count > 0) interp->matches[0].re_so = interp->o;
   while(!interp->is_stopped) {
-    ssize_t old_ip = interp->ip;
-    int tmp, tmp2;
+    int n, m;
     switch(interp->bytecode[interp->ip]) {
     case RE_OP_END:
       interp->ip++;
@@ -647,8 +646,9 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
       }
       break;
     case RE_OP_MATCH:
+      n = interp->bytecode[interp->ip + 1];
       interp->ip += 2;
-      if((unsigned char) get_char(interp, s) == interp->bytecode[old_ip + 1]) {
+      if((unsigned char) get_char(interp, s) == n) {
         match_success(interp, s);
       } else {
         match_failure(interp);
@@ -688,40 +688,43 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
       interp->ip += 5;
       break;
     case RE_OP_B:
+      n = interp_get_int(interp, interp->ip + 1);
       interp->ip += 5;
-      if(push(interp, interp->ip + interp_get_int(interp, old_ip + 1)) == -1) return -1;
+      if(push(interp, interp->ip + n) == -1) return -1;
       break;
     case RE_OP_BFJ:
+      n = interp_get_int(interp, interp->ip + 1);
       interp->ip += 5;
       if(push(interp, interp->ip) == -1) return -1;
-      interp->ip += interp_get_int(interp, old_ip + 1);
+      interp->ip += n;
       break;
     case RE_OP_JUMP:
+      n = interp_get_int(interp, interp->ip + 1);
       interp->ip += 5;
-      interp->ip += interp_get_int(interp, old_ip + 1);
+      interp->ip += n;
       break;
     case RE_OP_SAVE_SO:
+      n = interp_get_int(interp, interp->ip + 1);
       interp->ip += 5;
-      tmp = interp_get_int(interp, old_ip + 1);
-      if(tmp >= 0 && ((size_t) tmp + 1) < interp->match_count) interp->matches[tmp + 1].re_so = interp->o;
-      if(tmp >= 0 && tmp < 9) interp->subs[tmp].re_so = interp->o;
-      interp->sub = (tmp > interp->sub ? tmp : interp->sub);
+      if(n >= 0 && ((size_t) n + 1) < interp->match_count) interp->matches[n + 1].re_so = interp->o;
+      if(n >= 0 && n < 9) interp->subs[n].re_so = interp->o;
+      interp->sub = (n > interp->sub ? n : interp->sub);
       break;
     case RE_OP_SAVE_EO:
+      n = interp_get_int(interp, interp->ip + 1);
       interp->ip += 5;
-      tmp = interp_get_int(interp, old_ip + 1);
-      if(tmp >= 0 && ((size_t) tmp + 1) < interp->match_count) interp->matches[tmp + 1].re_eo = interp->o;
-      if(tmp >= 0 && tmp < 9) interp->subs[tmp].re_eo = interp->o;
-      interp->sub = (tmp > interp->sub ? tmp : interp->sub);
+      if(n >= 0 && ((size_t) n + 1) < interp->match_count) interp->matches[n + 1].re_eo = interp->o;
+      if(n >= 0 && n < 9) interp->subs[n].re_eo = interp->o;
+      interp->sub = (n > interp->sub ? n : interp->sub);
       break;
     case RE_OP_BACK_REF:
+      n = interp->bytecode[interp->ip + 1];
       interp->ip += 2;
-      tmp = interp->bytecode[old_ip + 1];
-      if(tmp >= 0 && tmp < 9 && interp->subs[tmp].re_so != -1 && interp->subs[tmp].re_eo != -1) {
-        if(strncmp(s + interp->o, s + interp->subs[tmp].re_so, interp->subs[tmp].re_eo - interp->subs[tmp].re_so) == 0) {
+      if(n >= 0 && n < 9 && interp->subs[n].re_so != -1 && interp->subs[n].re_eo != -1) {
+        if(strncmp(s + interp->o, s + interp->subs[n].re_so, interp->subs[n].re_eo - interp->subs[n].re_so) == 0) {
           if(!interp->br_mode) {
             regoff_t i;
-            for(i = 0; i < interp->subs[tmp].re_eo - interp->subs[tmp].re_so; i++, interp->o++) {
+            for(i = 0; i < interp->subs[n].re_eo - interp->subs[n].re_so; i++, interp->o++) {
               if((interp->cflags & REG_NEWLINE) != 0 && s[interp->o] == '\n') {
                 interp->eflags &= ~REG_NOTBOL;
               } else {
@@ -739,10 +742,10 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
       }
       break;
     case RE_OP_RANGE:
+      n = interp->bytecode[interp->ip + 1];
+      m = interp->bytecode[interp->ip + 2];
       interp->ip += 3;
-      tmp = interp->bytecode[old_ip + 1];
-      tmp2 = interp->bytecode[old_ip + 2];
-      if(get_char(interp, s) >= tmp && get_char(interp, s) <= tmp2) {
+      if(get_char(interp, s) >= n && get_char(interp, s) <= m) {
         match_success(interp, s);
       } else {
         match_failure(interp);
@@ -837,8 +840,9 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
       }
       break;
     default:
+      n = interp->bytecode[interp->ip];
       interp->ip++;
-      if((unsigned char) get_char(interp, s) == interp->bytecode[old_ip]) {
+      if((unsigned char) get_char(interp, s) == (unsigned char) n) {
         match_success(interp, s);
       } else {
         match_failure(interp);
