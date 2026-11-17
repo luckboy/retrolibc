@@ -23,9 +23,9 @@ struct compiler
   unsigned char *bytecode;
   ssize_t bytecode_size;
   ssize_t bytecode_capacity;
-  size_t nsub;
+  size_t sub_count;
   signed char processeds[9];
-  signed char errcode;
+  signed char error_code;
 };
 
 static int comp_get_int(struct compiler *comp, ssize_t i)
@@ -50,7 +50,7 @@ static int comp_set_addr(struct compiler *comp, ssize_t i, ssize_t addr, ssize_t
 static int add_block(struct compiler *comp, unsigned char *s, ssize_t n)
 {
   if(comp->bytecode_size > LONG_MAX - n) {
-    comp->errcode = REG_ESPACE;
+    comp->error_code = REG_ESPACE;
     return -1;
   }
   if(comp->bytecode_size + n > comp->bytecode_capacity) {
@@ -58,7 +58,7 @@ static int add_block(struct compiler *comp, unsigned char *s, ssize_t n)
     comp->bytecode_capacity = ((comp->bytecode_size + n + BYTECODE_STEP - 1) / BYTECODE_STEP) * BYTECODE_STEP;
     new_bytecode = realloc(comp->bytecode, comp->bytecode_capacity);
     if(new_bytecode == NULL) {
-      comp->errcode = REG_ESPACE;
+      comp->error_code = REG_ESPACE;
       return -1;
     }
     comp->bytecode = new_bytecode;
@@ -98,7 +98,7 @@ static int add_op_with_addr(struct compiler *comp, int op, ssize_t addr)
   ssize_t ip = comp->bytecode_size + 5;
   ssize_t diff = addr - ip;
   if(diff > INT_MAX || diff < INT_MAX) {
-    comp->errcode = REG_ESPACE;
+    comp->error_code = REG_ESPACE;
     return -1;
   }
   return add_op_with_int(comp, op, diff);
@@ -107,7 +107,7 @@ static int add_op_with_addr(struct compiler *comp, int op, ssize_t addr)
 static int add_op_with_size(struct compiler *comp, int op, size_t x)
 {
   if(x >= (size_t) INT_MAX) {
-    comp->errcode = REG_ESPACE;
+    comp->error_code = REG_ESPACE;
     return -1;
   }
   return add_op_with_int(comp, op, (int) x);
@@ -186,12 +186,12 @@ static const char *compile7(struct compiler *comp, const char *s, int is_in_brac
         if(add_op(comp, RE_OP_XDIGIT) == -1) return NULL;
         s++;
       } else {
-        comp->errcode = REG_ECTYPE;
+        comp->error_code = REG_ECTYPE;
         return NULL;
       }
       s += 5;
       if(*s != ':' || s[1] != ']') {
-        comp->errcode = REG_EBRACK;
+        comp->error_code = REG_EBRACK;
         return NULL;
       }
       s += 2;
@@ -202,7 +202,7 @@ static const char *compile7(struct compiler *comp, const char *s, int is_in_brac
     break;
   case '\\':
     if(s[1] == '\0') {
-      comp->errcode = REG_EESCAPE;
+      comp->error_code = REG_EESCAPE;
       return NULL;
     }
     if(!is_in_brackets) {
@@ -228,7 +228,7 @@ static const char *compile7(struct compiler *comp, const char *s, int is_in_brac
     } else {
       if(s[1] == '-') {
         if(s[2] == ']' || s[2] == '\0') {
-          comp->errcode = REG_ERANGE;
+          comp->error_code = REG_ERANGE;
           return NULL;
         }
         if(add_op_with_range(comp, RE_OP_RANGE, *s, s[2]) == -1) return NULL;
@@ -268,16 +268,16 @@ static const char *compile5(struct compiler *comp, const char *s)
 {
   if((comp->cflags & REG_EXTENDED) != 0) {
     if(*s == '(') {
-      size_t sub = comp->nsub;
+      size_t sub = comp->sub_count;
       s++;
       if(add_op_with_size(comp, RE_OP_SAVE_SO, sub) == -1) return NULL;
       if(sub < 9) comp->processeds[sub] = 1;
-      comp->nsub++;
+      comp->sub_count++;
       if((s = compile1(comp, s)) == NULL) return NULL;
       if(add_op_with_size(comp, RE_OP_SAVE_EO, sub) == -1) return NULL;
       if(sub < 9) comp->processeds[sub] = 0;
       if(*s != ')') {
-        comp->errcode = REG_EPAREN;
+        comp->error_code = REG_EPAREN;
         return NULL;
       }
       s++;
@@ -286,23 +286,23 @@ static const char *compile5(struct compiler *comp, const char *s)
     }
   } else {
     if(*s == '\\' && s[1] == '(') {
-      size_t sub = comp->nsub;
+      size_t sub = comp->sub_count;
       s += 2;
       if(add_op_with_size(comp, RE_OP_SAVE_SO, sub) == -1) return NULL;
       if(sub < 9) comp->processeds[sub] = 1;
-      comp->nsub++;
+      comp->sub_count++;
       if((s = compile2(comp, s)) == NULL) return NULL;
       if(add_op_with_size(comp, RE_OP_SAVE_EO, sub) == -1) return NULL;
       if(sub < 9) comp->processeds[sub] = 0;
       if(*s != '\\' || s[1] != ')') {
-        comp->errcode = REG_EPAREN;
+        comp->error_code = REG_EPAREN;
         return NULL;
       }
       s += 2;
     } else if(*s == '\\' && s[1] >= '1' && s[1] <= '9') {
       int back_ref = s[1] - '1';
-      if(back_ref < comp->nsub || comp->processeds[back_ref]) {
-        comp->errcode = REG_ESUBREG;
+      if(back_ref < comp->sub_count || comp->processeds[back_ref]) {
+        comp->error_code = REG_ESUBREG;
         return NULL;
       }
       if(add_op_with_char(comp, RE_OP_BACK_REF, back_ref) == -1) return NULL;
@@ -354,17 +354,17 @@ static const char *compile4(struct compiler *comp, const char *s)
       size_t block_size;
       long i;
       if((n = parse_long(s, (char **) (&s))) == -1L) {
-        comp->errcode = REG_BADBR;
+        comp->error_code = REG_BADBR;
         return NULL;
       }
       if(*s == ',') {
-        comp->errcode = REG_BADBR;
+        comp->error_code = REG_BADBR;
         return NULL;
       }
       s++;
       if(isdigit(*s)) {
         if((m = parse_long(s, (char **) (&s))) == -1L) {
-          comp->errcode = REG_BADBR;
+          comp->error_code = REG_BADBR;
           return NULL;
         }
       } else {
@@ -372,19 +372,19 @@ static const char *compile4(struct compiler *comp, const char *s)
       }
       if((comp->cflags & REG_EXTENDED) != 0) {
         if(*s != '}') {
-          comp->errcode = REG_EBRACE;
+          comp->error_code = REG_EBRACE;
           return NULL;
         }
         s++;
       } else {
         if(*s != '\\' || s[1] != '}') {
-          comp->errcode = REG_EBRACE;
+          comp->error_code = REG_EBRACE;
           return NULL;
         }
         s += 2;
       }
       if(n > m) {
-        comp->errcode = REG_BADBR;
+        comp->error_code = REG_BADBR;
         return NULL;
       }
       block = comp->bytecode + ip;
@@ -458,35 +458,35 @@ static int compile_end(struct compiler *comp, const char *s)
 {
   if(*s != '\0') {
     if(*s == ']') {
-      comp->errcode = REG_EBRACK;
+      comp->error_code = REG_EBRACK;
       return -1;
     } else if(*s == '*') {
-      comp->errcode = REG_BADRPT;
+      comp->error_code = REG_BADRPT;
       return -1;
     }
     if((comp->cflags & REG_EXTENDED) != 0) {
       if(*s == ')') {
-        comp->errcode = REG_EPAREN;
+        comp->error_code = REG_EPAREN;
         return -1;
       } else if(*s == '}') {
-        comp->errcode = REG_EBRACE;
+        comp->error_code = REG_EBRACE;
         return -1;
       } else if(*s == '+' || *s == '?') {
-        comp->errcode = REG_BADRPT;
+        comp->error_code = REG_BADRPT;
         return -1;
       }
     } else {
       if(*s == '\\') {
         if(s[1] == ')') {
-          comp->errcode = REG_EPAREN;
+          comp->error_code = REG_EPAREN;
           return -1;
         } else if(s[1] == '}') {
-          comp->errcode = REG_EBRACE;
+          comp->error_code = REG_EBRACE;
           return -1;
         }
       }
     }
-    comp->errcode = REG_BADPAT;
+    comp->error_code = REG_BADPAT;
     return -1;
   }
   if(add_op(comp, RE_OP_END) == -1) return -1;
@@ -516,9 +516,9 @@ int regcomp(regex_t *reg, const char *pattern, int cflags)
   comp.bytecode = NULL;
   comp.bytecode_size = 0;
   comp.bytecode_capacity = 0;
-  comp.nsub = 0;
+  comp.sub_count = 0;
   for(i = 0; i < 9; i++) comp.processeds[i] = 0;
-  comp.errcode = 0;
+  comp.error_code = 0;
   if((cflags & REG_EXTENDED) == 0) {
     r = compile_ere(&comp, pattern);
   } else {
@@ -526,11 +526,11 @@ int regcomp(regex_t *reg, const char *pattern, int cflags)
   }
   if(r != -1) {
     reg->__bytecode = comp.bytecode;
-    reg->re_nsub = comp.nsub;
+    reg->re_nsub = comp.sub_count;
     reg->__cflags = cflags;
     return 0;
   } else {
-    return comp.errcode;
+    return comp.error_code;
   }
 }
 
@@ -553,12 +553,12 @@ struct interpreter
   struct stack_elem *stack;
   size_t stack_capacity;
   regmatch_t *matches;
-  size_t nmatches;
+  size_t match_count;
   regmatch_t subs[9];
   signed char br_mode;
   signed char is_success;
   signed char is_stopped;
-  signed char errcode;
+  signed char error_code;
 };
 
 static int interp_get_int(struct interpreter *interp, ssize_t i)
@@ -574,7 +574,7 @@ static int push(struct interpreter *interp, ssize_t ip)
     interp->stack_capacity = ((interp->sp + 1 + STACK_STEP - 1) / STACK_STEP) * STACK_STEP;
     new_stack = realloc(interp->stack, interp->stack_capacity * sizeof(struct stack_elem));
     if(new_stack == NULL) {
-      interp->errcode = REG_ESPACE;
+      interp->error_code = REG_ESPACE;
       return -1;
     }
     interp->stack = new_stack;
@@ -610,25 +610,25 @@ static void match_failure(struct interpreter *interp)
       interp->o = interp->stack[interp->sp].o;
       interp->sub = interp->stack[interp->sp].sub;
       interp->sp--;
-      if(interp->nmatches > 0) {
-        n = (old_sub + 1 < interp->nmatches - 1 ? old_sub + 1 : interp->nmatches - 1);
+      if(interp->match_count > 0) {
+        n = (old_sub + 1 < interp->match_count - 1 ? old_sub + 1 : interp->match_count - 1);
         for(i = interp->sub + 1; i < n; i++) interp->matches[i + 1].re_so = interp->matches[i + 1].re_eo = -1;
       }
       n = (old_sub + 1 ? old_sub + 1 : 9);
       for(i = interp->sub + 1; i < n; i++) interp->subs[i].re_so = interp->subs[i].re_eo = -1;
     } else {
       size_t i;
-      for(i = 0; i < interp->nmatches; i++) interp->matches[i].re_so = interp->matches[i].re_eo = -1;
+      for(i = 0; i < interp->match_count; i++) interp->matches[i].re_so = interp->matches[i].re_eo = -1;
       for(i = 0; i < 9; i++) interp->subs[i].re_so = interp->subs[i].re_eo = -1;
       interp->is_stopped = 1;
-      interp->errcode = REG_NOTMATCH;
+      interp->error_code = REG_NOTMATCH;
     }
   }
 }
 
 static int interpret_bytecode(struct interpreter *interp, const char *s)
 {
-  if(interp->nmatches > 0) interp->matches[0].re_so = interp->o;
+  if(interp->match_count > 0) interp->matches[0].re_so = interp->o;
   while(!interp->is_stopped) {
     ssize_t old_ip = interp->ip;
     int tmp, tmp2;
@@ -636,7 +636,7 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
     case RE_OP_END:
       interp->ip++;
       interp->is_stopped = 1;
-      interp->errcode = 0;
+      interp->error_code = 0;
       break;
     case RE_OP_ANY:
       interp->ip++;
@@ -703,14 +703,14 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
     case RE_OP_SAVE_SO:
       interp->ip += 5;
       tmp = interp_get_int(interp, old_ip + 1);
-      if(tmp >= 0 && ((size_t) tmp + 1) < interp->nmatches) interp->matches[tmp + 1].re_so = interp->o;
+      if(tmp >= 0 && ((size_t) tmp + 1) < interp->match_count) interp->matches[tmp + 1].re_so = interp->o;
       if(tmp >= 0 && tmp < 9) interp->subs[tmp].re_so = interp->o;
       interp->sub = (tmp > interp->sub ? tmp : interp->sub);
       break;
     case RE_OP_SAVE_EO:
       interp->ip += 5;
       tmp = interp_get_int(interp, old_ip + 1);
-      if(tmp >= 0 && ((size_t) tmp + 1) < interp->nmatches) interp->matches[tmp + 1].re_eo = interp->o;
+      if(tmp >= 0 && ((size_t) tmp + 1) < interp->match_count) interp->matches[tmp + 1].re_eo = interp->o;
       if(tmp >= 0 && tmp < 9) interp->subs[tmp].re_eo = interp->o;
       interp->sub = (tmp > interp->sub ? tmp : interp->sub);
       break;
@@ -846,7 +846,7 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
       break;
     }
   }
-  if(interp->errcode == 0 && interp->nmatches > 0) interp->matches[0].re_eo = interp->o;
+  if(interp->error_code == 0 && interp->match_count > 0) interp->matches[0].re_eo = interp->o;
   return 0;
 }
 
@@ -860,10 +860,10 @@ int regexec(const regex_t *reg, const char *s, size_t nmatches, regmatch_t match
   interp.stack_capacity = 0;
   if((reg->__cflags & REG_NOSUB) == 0) {
     interp.matches = matches;
-    interp.nmatches = nmatches;
+    interp.match_count = nmatches;
   } else {
     interp.matches = NULL;
-    interp.nmatches = 0;
+    interp.match_count = 0;
   }
   o = 0;
   while(1) {
@@ -871,16 +871,16 @@ int regexec(const regex_t *reg, const char *s, size_t nmatches, regmatch_t match
     interp.o = o;
     interp.sub = -1;
     interp.sp = 0;
-    if(interp.nmatches > 0) {
-      for(i = 0; i < interp.nmatches; i++) interp.matches[i].re_so = interp.matches[i].re_eo = -1;
+    if(interp.match_count > 0) {
+      for(i = 0; i < interp.match_count; i++) interp.matches[i].re_so = interp.matches[i].re_eo = -1;
     }
     for(i = 0; i < 9; i++) interp.subs[i].re_so = interp.subs[i].re_eo = -1;
     interp.br_mode = 0;
     interp.is_success = 0;
     interp.is_stopped = 0;
-    interp.errcode = 0;
+    interp.error_code = 0;
     if(interpret_bytecode(&interp, s) == -1) break;
-    if(interp.errcode == 0) break;
+    if(interp.error_code == 0) break;
     if((interp.cflags & REG_NEWLINE) != 0 && s[o] == '\n') {
       eflags &= ~REG_NOTBOL;
     } else {
@@ -890,12 +890,12 @@ int regexec(const regex_t *reg, const char *s, size_t nmatches, regmatch_t match
     o++;
   }
   if(interp.stack != NULL) free(interp.stack);
-  return interp.errcode;
+  return interp.error_code;
 }
 
 size_t regerror(int errcode, const regex_t *reg, char *errbuf, size_t errbuf_size)
 {
-  static const char *errlist[16] = {
+  static const char *msgs[16] = {
     "Success",
     "No match",
     "Invalid regular expression",
@@ -915,11 +915,11 @@ size_t regerror(int errcode, const regex_t *reg, char *errbuf, size_t errbuf_siz
   };
   size_t len;
   if(errcode < 0 || errcode > 14) errcode = 15;
-  len = strlen(errlist[errcode]);
+  len = strlen(msgs[errcode]);
   if(errbuf_size > 0) {
     size_t n = errbuf_size - 1;
     n = (len < n ? len : n);
-    memcpy(errbuf, errlist[errcode], n);
+    memcpy(errbuf, msgs[errcode], n);
     errbuf[n] = '\0';
   }
   return len + 1;
