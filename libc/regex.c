@@ -202,6 +202,10 @@ static const char *compile7(struct compiler *comp, const char *s, int is_in_brac
     }
     break;
   case '\\':
+    if(s[1] == '\0') {
+      comp->errcode = REG_EESCAPE;
+      return NULL;
+    }
     if(!is_in_brackets) {
       if((comp->cflags & REG_EXTENDED) == 0) {
         if(s[1] == '(' || s[1] == ')' || s[1] == '{' || s[1] == '}' || (s[1] >= '1' && s[1] <= '9')) return s;
