@@ -9,9 +9,9 @@
 #include <ctype.h>
 #include <errno.h>
 #include <limits.h>
-#include <regex.h>
 #include <stdlib.h>
 #include <string.h>
+#include <regex.h>
 #include "priv_regex.h"
 
 #define BYTECODE_STEP   1024
