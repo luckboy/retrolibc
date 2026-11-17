@@ -864,7 +864,7 @@ int regexec(const regex_t *reg, const char *s, size_t nmatches, regmatch_t match
     if(interp.nmatches > 0) {
       for(i = 0; i < interp.nmatches; i++) interp.matches[i].re_so = interp.matches[i].re_eo = -1;
     }
-    for(i = 0; i < interp.nmatches; i++) interp.matches[i].re_so = interp.subs1[i].re_eo = -1;
+    for(i = 0; i < 9; i++) interp.subs1[i].re_so = interp.subs1[i].re_eo = -1;
     interp.br_mode = 0;
     interp.is_success = 0;
     interp.is_stopped = 0;
