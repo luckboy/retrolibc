@@ -845,9 +845,15 @@ int regexec(const regex_t *reg, const char *s, size_t nmatches, regmatch_t match
   regoff_t o = 0;
   size_t i;
   interp.cflags = reg->__cflags;
-  interp.stack = malloc(STACK_STEP * sizeof(struct stack_elem));
-  if(interp.stack == NULL) return REG_ESPACE;
-  interp.stack_capacity = STACK_STEP;
+  interp.stack = NULL;
+  interp.stack_capacity = 0;
+  if((reg->__cflags & REG_NOSUB) == 0) {
+    interp.matches = matches;
+    interp.nmatches = nmatches;
+  } else {
+    interp.matches = NULL;
+    interp.nmatches = 0;
+  }
   o = 0;
   while(1) {
     interp.ip = 0;
@@ -855,25 +861,22 @@ int regexec(const regex_t *reg, const char *s, size_t nmatches, regmatch_t match
     interp.sub = 0;
     interp.br = 0;
     interp.sp = 0;
-    if((reg->__cflags & REG_NOSUB) == 0) {
-      interp.matches = matches;
-      interp.nmatches = nmatches;
+    if(interp.nmatches > 0) {
       for(i = 0; i < interp.nmatches; i++) interp.matches[i].re_so = interp.matches[i].re_eo = -1;
-    } else {
-      interp.matches = NULL;
-      interp.nmatches = 0;
     }
     for(i = 0; i < interp.nmatches; i++) interp.matches[i].re_so = interp.brs[i].re_eo = -1;
     interp.br_mode = 0;
     interp.is_success = 0;
     interp.is_stopped = 0;
     interp.errcode = 0;
-    interpret_bytecode(&interp, s);
-    if(interp.errcode == 0 && interp.nmatches >= 1) {
-      interp.matches[0].re_so = o;
-      interp.matches[0].re_eo = interp.o;
+    if(interpret_bytecode(&interp, s) == -1) break;
+    if(interp.errcode == 0) {
+      if(interp.nmatches > 0) {
+        interp.matches[0].re_so = o;
+        interp.matches[0].re_eo = interp.o;
+      }
+      break;
     }
-    if(interp.errcode == 0 || interp.errcode == REG_ESPACE) break;
     if((interp.cflags & REG_NEWLINE) != 0 && s[o] == '\n') {
       eflags &= ~REG_NOTBOL;
     } else {
@@ -882,7 +885,7 @@ int regexec(const regex_t *reg, const char *s, size_t nmatches, regmatch_t match
     if(s[i] == '\0') break;
     o++;
   }
-  free(interp.stack);
+  if(interp.stack != NULL) free(interp.stack);
   return interp.errcode;
 }
 
