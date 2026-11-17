@@ -23,9 +23,7 @@ struct compiler
   unsigned char *bytecode;
   ssize_t bytecode_size;
   ssize_t bytecode_capacity;
-  size_t paren_level;
   size_t nsub;
-  size_t nsub1;
   signed char errcode;
 };
 
@@ -271,12 +269,10 @@ static const char *compile5(struct compiler *comp, const char *s)
     if(*s == '(') {
       size_t sub = comp->nsub;
       s++;
-      if(add_op_with_size(comp, RE_OP_SAVE_MSO, sub) == -1) return NULL;
+      if(add_op_with_size(comp, RE_OP_SAVE_SO, sub) == -1) return NULL;
       comp->nsub++;
-      comp->paren_level++;
       if((s = compile1(comp, s)) == NULL) return NULL;
-      comp->paren_level--;
-      if(add_op_with_size(comp, RE_OP_SAVE_MEO, sub) == -1) return NULL;
+      if(add_op_with_size(comp, RE_OP_SAVE_EO, sub) == -1) return NULL;
       if(*s != ')') {
         comp->errcode = REG_EPAREN;
         return NULL;
@@ -288,28 +284,18 @@ static const char *compile5(struct compiler *comp, const char *s)
   } else {
     if(*s == '\\' && s[1] == '(') {
       size_t sub = comp->nsub;
-      size_t sub1 = comp->nsub1;
       s += 2;
-      if(add_op_with_size(comp, RE_OP_SAVE_MSO, sub) == -1) return NULL;
+      if(add_op_with_size(comp, RE_OP_SAVE_SO, sub) == -1) return NULL;
       comp->nsub++;
-      if(comp->paren_level == 0) {
-        if(add_op_with_size(comp, RE_OP_SAVE_S1SO, sub1) == -1) return NULL;
-        comp->nsub1++;
-      }
-      comp->paren_level++;
       if((s = compile2(comp, s)) == NULL) return NULL;
-      comp->paren_level--;
-      if(add_op_with_size(comp, RE_OP_SAVE_MEO, sub) == -1) return NULL;
-      if(comp->paren_level == 0) {
-        if(add_op_with_size(comp, RE_OP_SAVE_S1EO, sub1) == -1) return NULL;
-      }
+      if(add_op_with_size(comp, RE_OP_SAVE_EO, sub) == -1) return NULL;
       if(*s != '\\' || s[1] != ')') {
         comp->errcode = REG_EPAREN;
         return NULL;
       }
       s += 2;
     } else if(*s == '\\' && *s >= '1' && *s <= '9') {
-      if(*s - '1' < comp->nsub1) {
+      if(*s - '1' < comp->nsub) {
         comp->errcode = REG_ESUBREG;
         return NULL;
       }
@@ -523,9 +509,7 @@ int regcomp(regex_t *reg, const char *pattern, int cflags)
   comp.bytecode = NULL;
   comp.bytecode_size = 0;
   comp.bytecode_capacity = 0;
-  comp.paren_level = 0;
   comp.nsub = 0;
-  comp.nsub1 = 0;
   comp.errcode = 0;
   if((cflags & REG_EXTENDED) == 0) {
     r = compile_ere(&comp, pattern);
@@ -547,7 +531,6 @@ struct stack_elem
   ssize_t ip;
   regoff_t o;
   int sub;
-  int sub1;
 };
 
 struct interpreter
@@ -558,13 +541,12 @@ struct interpreter
   ssize_t ip;
   regoff_t o;
   int sub;
-  int sub1;
   size_t sp;
   struct stack_elem *stack;
   size_t stack_capacity;
   regmatch_t *matches;
   size_t nmatches;
-  regmatch_t subs1[9];
+  regmatch_t subs[9];
   signed char br_mode;
   signed char is_success;
   signed char is_stopped;
@@ -592,7 +574,6 @@ static int push(struct interpreter *interp, ssize_t ip)
   interp->stack[interp->sp].ip = ip;
   interp->stack[interp->sp].o = interp->o;
   interp->stack[interp->sp].sub = interp->sub;
-  interp->stack[interp->sp].sub1 = interp->sub1;
   interp->sp++;
   return 0;
 }
@@ -616,19 +597,17 @@ static void match_failure(struct interpreter *interp)
   if(!interp->br_mode) {
     if(interp->sp > 0) {
       size_t old_sub = interp->sub;
-      size_t old_sub1 = interp->sub1;
       size_t i, n;
       interp->ip = interp->stack[interp->sp].ip;
       interp->o = interp->stack[interp->sp].o;
       interp->sub = interp->stack[interp->sp].sub;
-      interp->sub1 = interp->stack[interp->sp].sub1;
       interp->sp--;
       if(interp->nmatches > 0) {
         n = (old_sub + 1 < interp->nmatches - 1 ? old_sub + 1 : interp->nmatches - 1);
         for(i = interp->sub + 1; i < n; i++) interp->matches[i + 1].re_so = interp->matches[i + 1].re_eo = -1;
       }
-      n = (old_sub1 + 1 ? old_sub1 + 1 : 9);
-      for(i = interp->sub1 + 1; i < n; i++) interp->subs1[i].re_so = interp->subs1[i].re_eo = -1;
+      n = (old_sub + 1 ? old_sub + 1 : 9);
+      for(i = interp->sub + 1; i < n; i++) interp->subs[i].re_so = interp->subs[i].re_eo = -1;
     } else {
       interp->is_stopped = 1;
       interp->errcode = REG_NOTMATCH;
@@ -709,47 +688,37 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
       interp->ip += 5;
       interp->ip += interp_get_int(interp, old_ip + 1);
       break;
-    case RE_OP_SAVE_MSO:
+    case RE_OP_SAVE_SO:
       interp->ip += 5;
       tmp = interp_get_int(interp, old_ip + 1);
-      if(tmp >= 0 && ((size_t) tmp + 1) < interp->nmatches) interp->matches[tmp].re_so = interp->o;
+      if(tmp >= 0 && ((size_t) tmp + 1) < interp->nmatches) interp->matches[tmp + 1].re_so = interp->o;
+      if(tmp >= 0 && tmp < 9) interp->subs[tmp].re_so = interp->o;
       interp->sub = (tmp > interp->sub ? tmp : interp->sub);
       break;
-    case RE_OP_SAVE_MEO:
+    case RE_OP_SAVE_EO:
       interp->ip += 5;
       tmp = interp_get_int(interp, old_ip + 1);
-      if(tmp >= 0 && ((size_t) tmp + 1) < interp->nmatches) interp->matches[tmp].re_eo = interp->o;
+      if(tmp >= 0 && ((size_t) tmp + 1) < interp->nmatches) interp->matches[tmp + 1].re_eo = interp->o;
+      if(tmp >= 0 && tmp < 9) interp->subs[tmp].re_eo = interp->o;
       interp->sub = (tmp > interp->sub ? tmp : interp->sub);
-      break;
-    case RE_OP_SAVE_S1SO:
-      interp->ip += 5;
-      tmp = interp_get_int(interp, old_ip + 1);
-      if(tmp >= 0 && tmp < 9) interp->subs1[tmp].re_so = interp->o;
-      interp->sub1 = (tmp > interp->sub1 ? (size_t) tmp : interp->sub1);
-      break;
-    case RE_OP_SAVE_S1EO:
-      interp->ip += 5;
-      tmp = interp_get_int(interp, old_ip + 1);
-      if(tmp >= 0 && tmp < 9) interp->subs1[tmp].re_eo = interp->o;
-      interp->sub1 = (tmp > interp->sub1 ? (size_t) tmp : interp->sub1);
       break;
     case RE_OP_BACK_REF:
       interp->ip += 2;
       tmp = interp->bytecode[old_ip + 1];
-      if(tmp >= 0 && tmp < 9 && interp->subs1[tmp].re_so != -1 && interp->subs1[tmp].re_eo != -1) {
-        if(strncmp(s + interp->o, s + interp->subs1[tmp].re_so, interp->subs1[tmp].re_eo - interp->subs1[tmp].re_so) == 0) {
-            if(!interp->br_mode) {
-              regoff_t i;
-              for(i = 0; i < interp->subs1[tmp].re_eo - interp->subs1[tmp].re_so; i++, interp->o++) {
-                if((interp->cflags & REG_NEWLINE) != 0 && s[interp->o] == '\n') {
-                  interp->eflags &= ~REG_NOTBOL;
-                } else {
-                  interp->eflags |= REG_NOTBOL;
-                }
+      if(tmp >= 0 && tmp < 9 && interp->subs[tmp].re_so != -1 && interp->subs[tmp].re_eo != -1) {
+        if(strncmp(s + interp->o, s + interp->subs[tmp].re_so, interp->subs[tmp].re_eo - interp->subs[tmp].re_so) == 0) {
+          if(!interp->br_mode) {
+            regoff_t i;
+            for(i = 0; i < interp->subs[tmp].re_eo - interp->subs[tmp].re_so; i++, interp->o++) {
+              if((interp->cflags & REG_NEWLINE) != 0 && s[interp->o] == '\n') {
+                interp->eflags &= ~REG_NOTBOL;
+              } else {
+                interp->eflags |= REG_NOTBOL;
               }
-            } else {
-              interp->is_success = 1;
             }
+          } else {
+            interp->is_success = 1;
+          }
         } else {
           match_failure(interp);
         }
@@ -888,12 +857,11 @@ int regexec(const regex_t *reg, const char *s, size_t nmatches, regmatch_t match
     interp.ip = 0;
     interp.o = o;
     interp.sub = -1;
-    interp.sub1 = -1;
     interp.sp = 0;
     if(interp.nmatches > 0) {
       for(i = 0; i < interp.nmatches; i++) interp.matches[i].re_so = interp.matches[i].re_eo = -1;
     }
-    for(i = 0; i < 9; i++) interp.subs1[i].re_so = interp.subs1[i].re_eo = -1;
+    for(i = 0; i < 9; i++) interp.subs[i].re_so = interp.subs[i].re_eo = -1;
     interp.br_mode = 0;
     interp.is_success = 0;
     interp.is_stopped = 0;
