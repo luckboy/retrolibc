@@ -124,7 +124,7 @@ static int add_op_with_range(struct compiler *comp, int op, int c, int c2)
 
 static int add_match(struct compiler *comp, int c)
 {
-  if(c <= 127) {
+  if(c >= 0 && c <= 127) {
     if(add_op(comp, c) == -1) return -1;
   } else {
     if(add_op_with_char(comp, RE_OP_MATCH, c) == -1) return -1;
