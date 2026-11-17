@@ -23,8 +23,8 @@
 #define RE_OP_JUMP      0x8a
 #define RE_OP_SAVE_MSO  0x8b
 #define RE_OP_SAVE_MEO  0x8c
-#define RE_OP_SAVE_BRSO 0x8d
-#define RE_OP_SAVE_BREO 0x8e
+#define RE_OP_SAVE_S1SO 0x8d
+#define RE_OP_SAVE_S1EO 0x8e
 #define RE_OP_BACK_REF  0x8f
 #define RE_OP_RANGE     0x90
 #define RE_OP_ALNUM     0x91
