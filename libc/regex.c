@@ -617,6 +617,9 @@ static void match_failure(struct interpreter *interp)
       n = (old_sub + 1 ? old_sub + 1 : 9);
       for(i = interp->sub + 1; i < n; i++) interp->subs[i].re_so = interp->subs[i].re_eo = -1;
     } else {
+      size_t i;
+      for(i = 0; i < interp->nmatches; i++) interp->matches[i].re_so = interp->matches[i].re_eo = -1;
+      for(i = 0; i < 9; i++) interp->subs[i].re_so = interp->subs[i].re_eo = -1;
       interp->is_stopped = 1;
       interp->errcode = REG_NOTMATCH;
     }
@@ -625,6 +628,7 @@ static void match_failure(struct interpreter *interp)
 
 static int interpret_bytecode(struct interpreter *interp, const char *s)
 {
+  if(interp->nmatches > 0) interp->matches[0].re_so = interp->o;
   while(!interp->is_stopped) {
     ssize_t old_ip = interp->ip;
     int tmp, tmp2;
@@ -842,6 +846,7 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
       break;
     }
   }
+  if(interp->errcode == 0 && interp->nmatches > 0) interp->matches[0].re_eo = interp->o;
   return 0;
 }
 
@@ -875,13 +880,7 @@ int regexec(const regex_t *reg, const char *s, size_t nmatches, regmatch_t match
     interp.is_stopped = 0;
     interp.errcode = 0;
     if(interpret_bytecode(&interp, s) == -1) break;
-    if(interp.errcode == 0) {
-      if(interp.nmatches > 0) {
-        interp.matches[0].re_so = o;
-        interp.matches[0].re_eo = interp.o;
-      }
-      break;
-    }
+    if(interp.errcode == 0) break;
     if((interp.cflags & REG_NEWLINE) != 0 && s[o] == '\n') {
       eflags &= ~REG_NOTBOL;
     } else {
