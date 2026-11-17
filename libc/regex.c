@@ -465,6 +465,35 @@ static const char *compile1(struct compiler *comp, const char *s)
 static int compile_end(struct compiler *comp, const char *s)
 {
   if(*s != '\0') {
+    if(*s == ']') {
+      comp->errcode = REG_EBRACK;
+      return -1;
+    } else if(*s == '*') {
+      comp->errcode = REG_BADRPT;
+      return -1;
+    }
+    if((comp->cflags & REG_EXTENDED) != 0) {
+      if(*s == ')') {
+        comp->errcode = REG_EPAREN;
+        return -1;
+      } else if(*s == '}') {
+        comp->errcode = REG_EBRACE;
+        return -1;
+      } else if(*s == '+' || *s == '?') {
+        comp->errcode = REG_BADRPT;
+        return -1;
+      }
+    } else {
+      if(*s == '\\') {
+        if(s[1] == ')') {
+          comp->errcode = REG_EPAREN;
+          return -1;
+        } else if(s[1] == '}') {
+          comp->errcode = REG_EBRACE;
+          return -1;
+        }
+      }
+    }
     comp->errcode = REG_BADPAT;
     return -1;
   }
