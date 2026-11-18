@@ -11,6 +11,7 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #ifndef TEST
 #include <regex.h>
 #else
@@ -608,9 +609,6 @@ struct interpreter
 static int interp_get_int(struct interpreter *interp, ssize_t i)
 { return (int) ((interp->bytecode[i] << 24) | (interp->bytecode[i + 1] << 16) | (interp->bytecode[i + 2] << 8) | interp->bytecode[i + 3]); }
 
-static int get_char(struct interpreter *interp, const char *s)
-{ return (interp->cflags & REG_ICASE) != 0 ? tolower(s[interp->o]) : s[interp->o]; }
-
 static int push(struct interpreter *interp, ssize_t ip)
 {
   if(interp->sp + 1 > interp->stack_capacity) {
@@ -628,6 +626,42 @@ static int push(struct interpreter *interp, ssize_t ip)
   interp->stack[interp->sp].sub = interp->sub;
   interp->sp++;
   return 0;
+}
+
+static int match(struct interpreter *interp, int c, int n)
+{
+  if((interp->cflags & REG_ICASE) != 0) {
+    return (unsigned char) tolower(c) == (unsigned char) n || (unsigned char) toupper(c) == (unsigned char) n;
+  } else {
+    return (unsigned char) c == (unsigned char) n;
+  }
+}
+
+static int match_range(struct interpreter *interp, int c, int n, int m)
+{
+  if((interp->cflags & REG_ICASE) != 0) {
+    return ((unsigned char) tolower(c) >= (unsigned char) n && (unsigned char) tolower(c) <= (unsigned char) m) || ((unsigned char) toupper(c) >= (unsigned char) n && (unsigned char) toupper(c) <= (unsigned char) m);
+  } else {
+    return (unsigned char) c >= (unsigned char) n && (unsigned char) c <= (unsigned char) m;
+  }
+}
+
+static int match_lower(struct interpreter *interp, int c)
+{
+  if((interp->cflags & REG_ICASE) != 0) {
+    return isalpha(c);
+  } else {
+    return islower(c);
+  }
+}
+
+static int match_upper(struct interpreter *interp, int c)
+{
+  if((interp->cflags & REG_ICASE) != 0) {
+    return isalpha(c);
+  } else {
+    return isupper(c);
+  }
 }
 
 static void match_success(struct interpreter *interp, const char *s)
@@ -692,7 +726,7 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
     case RE_OP_MATCH:
       n = interp->bytecode[interp->ip + 1];
       interp->ip += 2;
-      if((unsigned char) get_char(interp, s) == (unsigned char) n) {
+      if(match(interp, s[interp->o], n)) {
         match_success(interp, s);
       } else {
         match_failure(interp);
@@ -765,7 +799,13 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
       n = interp->bytecode[interp->ip + 1];
       interp->ip += 2;
       if(n >= 0 && n < 9 && interp->subs[n].re_so != -1 && interp->subs[n].re_eo != -1) {
-        if(strncmp(s + interp->o, s + interp->subs[n].re_so, interp->subs[n].re_eo - interp->subs[n].re_so) == 0) {
+        int r;
+        if((interp->cflags & REG_ICASE) != 0) {
+          r = strncasecmp(s + interp->o, s + interp->subs[n].re_so, interp->subs[n].re_eo - interp->subs[n].re_so);
+        } else {
+          r = strncmp(s + interp->o, s + interp->subs[n].re_so, interp->subs[n].re_eo - interp->subs[n].re_so);
+        }
+        if(r == 0) {
           if(!interp->br_mode) {
             regoff_t i;
             for(i = 0; i < interp->subs[n].re_eo - interp->subs[n].re_so; i++, interp->o++) {
@@ -789,7 +829,7 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
       n = interp->bytecode[interp->ip + 1];
       m = interp->bytecode[interp->ip + 2];
       interp->ip += 3;
-      if(get_char(interp, s) >= n && get_char(interp, s) <= m) {
+      if(match_range(interp, s[interp->o], n, m)) {
         match_success(interp, s);
       } else {
         match_failure(interp);
@@ -797,7 +837,7 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
       break;
     case RE_OP_ALNUM:
       interp->ip++;
-      if(isalnum(get_char(interp, s))) {
+      if(isalnum(s[interp->o])) {
         match_success(interp, s);
       } else {
         match_failure(interp);
@@ -805,7 +845,7 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
       break;
     case RE_OP_BLANK:
       interp->ip++;
-      if(get_char(interp, s) == ' ' || get_char(interp, s) == '\t') {
+      if(s[interp->o] == ' ' || s[interp->o] == '\t') {
         match_success(interp, s);
       } else {
         match_failure(interp);
@@ -813,7 +853,7 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
       break;
     case RE_OP_CNTRL:
       interp->ip++;
-      if(iscntrl(get_char(interp, s))) {
+      if(iscntrl(s[interp->o])) {
         match_success(interp, s);
       } else {
         match_failure(interp);
@@ -821,7 +861,7 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
       break;
     case RE_OP_DIGIT:
       interp->ip++;
-      if(isdigit(get_char(interp, s))) {
+      if(isdigit(s[interp->o])) {
         match_success(interp, s);
       } else {
         match_failure(interp);
@@ -829,7 +869,7 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
       break;
     case RE_OP_GRAPH:
       interp->ip++;
-      if(isgraph(get_char(interp, s))) {
+      if(isgraph(s[interp->o])) {
         match_success(interp, s);
       } else {
         match_failure(interp);
@@ -837,7 +877,7 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
       break;
     case RE_OP_LOWER:
       interp->ip++;
-      if(islower(get_char(interp, s))) {
+      if(match_lower(interp, s[interp->o])) {
         match_success(interp, s);
       } else {
         match_failure(interp);
@@ -845,7 +885,7 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
       break;
     case RE_OP_PRINT:
       interp->ip++;
-      if(isprint(get_char(interp, s))) {
+      if(isprint(s[interp->o])) {
         match_success(interp, s);
       } else {
         match_failure(interp);
@@ -853,7 +893,7 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
       break;
     case RE_OP_PUNCT:
       interp->ip++;
-      if(ispunct(get_char(interp, s))) {
+      if(ispunct(s[interp->o])) {
         match_success(interp, s);
       } else {
         match_failure(interp);
@@ -861,7 +901,7 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
       break;
     case RE_OP_SPACE:
       interp->ip++;
-      if(isspace(get_char(interp, s))) {
+      if(isspace(s[interp->o])) {
         match_success(interp, s);
       } else {
         match_failure(interp);
@@ -869,7 +909,7 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
       break;
     case RE_OP_UPPER:
       interp->ip++;
-      if(isupper(get_char(interp, s))) {
+      if(match_upper(interp, s[interp->o])) {
         match_success(interp, s);
       } else {
         match_failure(interp);
@@ -877,7 +917,7 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
       break;
     case RE_OP_XDIGIT:
       interp->ip++;
-      if(isxdigit(get_char(interp, s))) {
+      if(isxdigit(s[interp->o])) {
         match_success(interp, s);
       } else {
         match_failure(interp);
@@ -886,7 +926,7 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
     default:
       n = interp->bytecode[interp->ip];
       interp->ip++;
-      if((unsigned char) get_char(interp, s) == (unsigned char) n) {
+      if(match(interp, s[interp->o], n)) {
         match_success(interp, s);
       } else {
         match_failure(interp);
