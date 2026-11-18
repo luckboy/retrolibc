@@ -8,6 +8,7 @@
 #ifndef _RETROLIBC_H
 #define _RETROLIBC_H
 
+#include <sys/types.h>
 #include <inttypes.h>
 #include <stdarg.h>
 #include <stddef.h>
@@ -55,6 +56,87 @@ int retrolibc_toupper(int c);
 #define toascii retrolibc_toascii
 #define tolower retrolibc_tolower
 #define toupper retrolibc_toupper
+#endif
+
+/* regex.c */
+
+#define RETROLIBC_REG_EXTENDED  (1 << 0)
+#define RETROLIBC_REG_ICASE     (1 << 1)
+#define RETROLIBC_REG_NOSUB     (1 << 2)
+#define RETROLIBC_REG_NEWLINE   (1 << 3)
+
+#define RETROLIBC_REG_NOTBOL    (1 << 0)
+#define RETROLIBC_REG_NOTEOL    (1 << 1)
+
+#define RETROLIBC_REG_NOTMATCH  1
+#define RETROLIBC_REG_BADPAT    2
+#define RETROLIBC_REG_ECOLLATE  3
+#define RETROLIBC_REG_ECTYPE    4
+#define RETROLIBC_REG_EESCAPE   5
+#define RETROLIBC_REG_ESUBREG   6
+#define RETROLIBC_REG_EBRACK    7
+#define RETROLIBC_REG_EPAREN    8
+#define RETROLIBC_REG_EBRACE    9
+#define RETROLIBC_REG_BADBR     10
+#define RETROLIBC_REG_ERANGE    11
+#define RETROLIBC_REG_ESPACE    12
+#define RETROLIBC_REG_BADRPT    13
+#define RETROLIBC_REG_ENOSYS    14
+
+typedef struct
+{
+  unsigned char *__bytecode;
+  size_t re_nsub;
+  int __cflags;
+} retrolibc_regex_t;
+
+typedef ssize_t retrolibc_regoff_t;
+
+typedef struct
+{
+  retrolibc_regoff_t re_so;
+  retrolibc_regoff_t re_eo;
+} retrolibc_regmatch_t;
+
+int retrolibc_regcomp(retrolibc_regex_t *reg, const char *pattern, int cflags);
+int retrolibc_regexec(const retrolibc_regex_t *reg, const char *s, size_t nmatches, retrolibc_regmatch_t matches[], int eflags);
+size_t retrolibc_regerror(int errcode, const retrolibc_regex_t *reg, char *errbuf, size_t errbuf_size);
+void retrolibc_regfree(retrolibc_regex_t *reg);
+
+#ifdef RETROLIBC_REGEX
+
+#define REG_EXTENDED    RETROLIBC_REG_EXTENDED
+#define REG_ICASE       RETROLIBC_REG_ICASE
+#define REG_NOSUB       RETROLIBC_REG_NOSUB
+#define REG_NEWLINE     RETROLIBC_REG_NEWLINE
+
+#define REG_NOTBOL      RETROLIBC_REG_NOTBOL
+#define REG_NOTEOL      RETROLIBC_REG_NOTEOL
+
+#define REG_NOTMATCH    RETROLIBC_REG_NOTMATCH
+#define REG_BADPAT      RETROLIBC_REG_BADPAT
+#define REG_ECOLLATE    RETROLIBC_REG_ECOLLATE
+#define REG_ECTYPE      RETROLIBC_REG_ECTYPE
+#define REG_EESCAPE     RETROLIBC_REG_EESCAPE
+#define REG_ESUBREG     RETROLIBC_REG_ESUBREG
+#define REG_EBRACK      RETROLIBC_REG_EBRACK
+#define REG_EPAREN      RETROLIBC_REG_EPAREN
+#define REG_EBRACE      RETROLIBC_REG_EBRACE
+#define REG_BADBR       RETROLIBC_REG_BADBR
+#define REG_ERANGE      RETROLIBC_REG_ERANGE
+#define REG_ESPACE      RETROLIBC_REG_ESPACE
+#define REG_BADRPT      RETROLIBC_REG_BADRPT
+#define REG_ENOSYS      RETROLIBC_REG_ENOSYS
+
+#define regex_t retrolibc_regex_t
+#define regoff_t retrolibc_regoff_t
+#define regmatch_t retrolibc_regmatch_t
+
+#define regcomp retrolibc_regcomp
+#define regexec retrolibc_regexec
+#define regerror retrolibc_regerror
+#define regfree retrolibc_regfree
+
 #endif
 
 /* stdio.c */

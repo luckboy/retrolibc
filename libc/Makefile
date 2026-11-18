@@ -278,6 +278,8 @@ TEST_OBJS = \
 	$(TEST_BUILD_DIR)/month_names.o \
 	$(TEST_BUILD_DIR)/qsort.o \
 	$(TEST_BUILD_DIR)/test_qsort_suite.o \
+	$(TEST_BUILD_DIR)/regex.o \
+	$(TEST_BUILD_DIR)/test_regex_suite.o \
 	$(TEST_BUILD_DIR)/strftime.o \
 	$(TEST_BUILD_DIR)/test_strftime_suite.o \
 	$(TEST_BUILD_DIR)/strptime.o \

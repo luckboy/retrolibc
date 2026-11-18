@@ -11,7 +11,12 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef TEST
 #include <regex.h>
+#else
+#define RETROLIBC_REGEX
+#include "retrolibc.h"
+#endif
 #include "priv_regex.h"
 
 #define BYTECODE_STEP   1024
@@ -42,7 +47,10 @@ static void comp_set_int(struct compiler *comp, ssize_t i, int x)
 static int comp_set_addr(struct compiler *comp, ssize_t i, ssize_t addr, ssize_t ip)
 {
   ssize_t diff = addr - ip;
-  if(diff > INT_MAX || diff < INT_MAX) return -1;
+  if(diff > INT_MAX || diff < INT_MIN) {
+    comp->error_code = REG_ESPACE;
+    return -1;
+  }
   comp_set_int(comp, i, diff);
   return 0;
 }
@@ -97,7 +105,7 @@ static int add_op_with_addr(struct compiler *comp, int op, ssize_t addr)
 {
   ssize_t ip = comp->bytecode_size + 5;
   ssize_t diff = addr - ip;
-  if(diff > INT_MAX || diff < INT_MAX) {
+  if(diff > INT_MAX || diff < INT_MIN) {
     comp->error_code = REG_ESPACE;
     return -1;
   }
@@ -155,53 +163,57 @@ static const char *compile1(struct compiler *comp, const char *s);
 static const char *compile7(struct compiler *comp, const char *s, int is_in_brackets)
 {
   switch(*s) {
+  case '\0':
+    break;
   case '[':
-    if(s[1] == ':') {
-      s += 2;
-      if(strncmp(s, "alnum", 5) == 0) {
-        if(add_op(comp, RE_OP_ALNUM) == -1) return NULL;
-      } else if(strncmp(s, "alpha", 5) == 0) {
-        if(add_op(comp, RE_OP_ALPHA) == -1) return NULL;
-      } else if(strncmp(s, "blank", 5) == 0) {
-        if(add_op(comp, RE_OP_BLANK) == -1) return NULL;
-      } else if(strncmp(s, "cntrl", 5) == 0) {
-        if(add_op(comp, RE_OP_CNTRL) == -1) return NULL;
-      } else if(strncmp(s, "digit", 5) == 0) {
-        if(add_op(comp, RE_OP_DIGIT) == -1) return NULL;
-      } else if(strncmp(s, "graph", 5) == 0) {
-        if(add_op(comp, RE_OP_GRAPH) == -1) return NULL;
-      } else if(strncmp(s, "lower", 5) == 0) {
-        if(add_op(comp, RE_OP_LOWER) == -1) return NULL;
-      } else if(strncmp(s, "print", 5) == 0) {
-        if(add_op(comp, RE_OP_PRINT) == -1) return NULL;
-      } else if(strncmp(s, "punct", 5) == 0) {
-        if(add_op(comp, RE_OP_PUNCT) == -1) return NULL;
-      } else if(strncmp(s, "punct", 5) == 0) {
-        if(add_op(comp, RE_OP_PUNCT) == -1) return NULL;
-      } else if(strncmp(s, "space", 5) == 0) {
-        if(add_op(comp, RE_OP_SPACE) == -1) return NULL;
-      } else if(strncmp(s, "upper", 5) == 0) {
-        if(add_op(comp, RE_OP_UPPER) == -1) return NULL;
-      } else if(strncmp(s, "xdigit", 6) == 0) {
-        if(add_op(comp, RE_OP_XDIGIT) == -1) return NULL;
-        s++;
+    if(is_in_brackets) {
+      if(s[1] == ':') {
+        s += 2;
+        if(strncmp(s, "alnum", 5) == 0) {
+          if(add_op(comp, RE_OP_ALNUM) == -1) return NULL;
+        } else if(strncmp(s, "alpha", 5) == 0) {
+          if(add_op(comp, RE_OP_ALPHA) == -1) return NULL;
+        } else if(strncmp(s, "blank", 5) == 0) {
+          if(add_op(comp, RE_OP_BLANK) == -1) return NULL;
+        } else if(strncmp(s, "cntrl", 5) == 0) {
+          if(add_op(comp, RE_OP_CNTRL) == -1) return NULL;
+        } else if(strncmp(s, "digit", 5) == 0) {
+          if(add_op(comp, RE_OP_DIGIT) == -1) return NULL;
+        } else if(strncmp(s, "graph", 5) == 0) {
+          if(add_op(comp, RE_OP_GRAPH) == -1) return NULL;
+        } else if(strncmp(s, "lower", 5) == 0) {
+          if(add_op(comp, RE_OP_LOWER) == -1) return NULL;
+        } else if(strncmp(s, "print", 5) == 0) {
+          if(add_op(comp, RE_OP_PRINT) == -1) return NULL;
+        } else if(strncmp(s, "punct", 5) == 0) {
+          if(add_op(comp, RE_OP_PUNCT) == -1) return NULL;
+        } else if(strncmp(s, "punct", 5) == 0) {
+          if(add_op(comp, RE_OP_PUNCT) == -1) return NULL;
+        } else if(strncmp(s, "space", 5) == 0) {
+          if(add_op(comp, RE_OP_SPACE) == -1) return NULL;
+        } else if(strncmp(s, "upper", 5) == 0) {
+          if(add_op(comp, RE_OP_UPPER) == -1) return NULL;
+        } else if(strncmp(s, "xdigit", 6) == 0) {
+          if(add_op(comp, RE_OP_XDIGIT) == -1) return NULL;
+          s++;
+        } else {
+          comp->error_code = REG_ECTYPE;
+          return NULL;
+        }
+        s += 5;
+        if(*s != ':' || s[1] != ']') {
+          comp->error_code = REG_EBRACK;
+          return NULL;
+        }
+        s += 2;
       } else {
-        comp->error_code = REG_ECTYPE;
-        return NULL;
+        if(add_match(comp, *s) == -1) return NULL;
+        s++;
       }
-      s += 5;
-      if(*s != ':' || s[1] != ']') {
-        comp->error_code = REG_EBRACK;
-        return NULL;
-      }
-      s += 2;
-    } else {
-      if(!is_in_brackets)
-      if(add_match(comp, s[1]) == -1) return NULL;
     }
     break;
   case ']':
-    return s;
+    break;
   case '\\':
     if(s[1] == '\0') {
       comp->error_code = REG_EESCAPE;
@@ -255,11 +267,17 @@ static const char *compile6(struct compiler *comp, const char *s)
       if(add_op(comp, RE_OP_BR) == -1) return NULL;
       s++;
     }
-    while(*s != ']') {
+    while(1) {
+      const char *t = s; 
       if((s = compile7(comp, s, 1)) == NULL) return NULL;
+      if(s == t) break;
     }
-    if(add_op(comp, RE_OP_BR_END) == -1) return NULL;
+    if(*s != ']') {
+      comp->error_code = REG_EBRACK;
+      return NULL;
+    }
     s++;
+    if(add_op(comp, RE_OP_BR_END) == -1) return NULL;
   } else {
     if((s = compile7(comp, s, 0)) == NULL) return NULL;
   }
@@ -303,7 +321,7 @@ static const char *compile5(struct compiler *comp, const char *s)
       s += 2;
     } else if(*s == '\\' && s[1] >= '1' && s[1] <= '9') {
       int back_ref = s[1] - '1';
-      if(back_ref < comp->sub_count || comp->processeds[back_ref]) {
+      if(back_ref >= comp->sub_count || comp->processeds[back_ref]) {
         comp->error_code = REG_ESUBREG;
         return NULL;
       }
@@ -318,28 +336,38 @@ static const char *compile5(struct compiler *comp, const char *s)
 
 static const char *compile4(struct compiler *comp, const char *s)
 {
+  const char *t = s;
   ssize_t ip = comp->bytecode_size;
-  long m, n;
-  if(add_op_with_addr(comp, RE_OP_NOP, 0) == -1) return NULL;
+  if(add_op_with_int(comp, RE_OP_NOP, 0) == -1) return NULL;
   if((s = compile5(comp, s)) == NULL) return NULL;
+  if(s == t) {
+    comp->bytecode_size -= 5;
+    return s;
+  }
   if(*s == '*') {
     comp->bytecode[ip] = RE_OP_B;
     if(add_op_with_addr(comp, RE_OP_B, ip + 5) == -1) return NULL;
     if(comp_set_addr(comp, ip + 1, comp->bytecode_size, ip + 5) == -1) return NULL;
+    s++;
   } else {
+    long m, n;
+    int is_n_m_dup = 0;
     int is_dup = 0;
     if((comp->cflags & REG_EXTENDED) != 0) {
       switch(*s) {
       case '+':
         if(add_op_with_addr(comp, RE_OP_B, ip + 5) == -1) return NULL;
+        is_dup = 1;
         s++;
         break;
       case '?':
+        comp->bytecode[ip] = RE_OP_B;
         if(comp_set_addr(comp, ip + 1, comp->bytecode_size, ip + 5) == -1) return NULL;
+        is_dup = 1;
         s++;
         break;
       case '{':
-        is_dup = 1;
+        is_n_m_dup = 1;
         s++;
         break;
       default:
@@ -347,11 +375,11 @@ static const char *compile4(struct compiler *comp, const char *s)
       }
     } else {
       if(*s == '\\' && s[1] == '{') {
-        is_dup = 1;
+        is_n_m_dup = 1;
         s += 2;
       }
     }
-    if(is_dup) {
+    if(is_n_m_dup) {
       unsigned char *block;
       size_t block_size;
       long i;
@@ -360,14 +388,14 @@ static const char *compile4(struct compiler *comp, const char *s)
         return NULL;
       }
       if(*s == ',') {
-        comp->error_code = REG_BADBR;
-        return NULL;
-      }
-      s++;
-      if(isdigit(*s)) {
-        if((m = parse_long(s, (char **) (&s))) == -1L) {
-          comp->error_code = REG_BADBR;
-          return NULL;
+        s++;
+        if(isdigit(*s)) {
+          if((m = parse_long(s, (char **) (&s))) == -1L) {
+            comp->error_code = REG_BADBR;
+            return NULL;
+          }
+        } else {
+          m = n;
         }
       } else {
         m = n;
@@ -391,7 +419,7 @@ static const char *compile4(struct compiler *comp, const char *s)
       }
       block = comp->bytecode + ip;
       block_size = comp->bytecode_size - ip;
-      for(i = 1; i < n; i++) {
+      for(i = 1; i < m; i++) {
         if(add_block(comp, block, block_size) == -1) return NULL;
       }
       if(n > 0) {
@@ -404,6 +432,9 @@ static const char *compile4(struct compiler *comp, const char *s)
         comp->bytecode[ip] = RE_OP_JUMP;
         if(comp_set_addr(comp, ip + 1, comp->bytecode_size, ip + 5) == -1) return NULL;
       }
+    } else if(!is_dup) {
+      memmove(comp->bytecode + ip, comp->bytecode + ip + 5, comp->bytecode_size - ip - 5);
+      comp->bytecode_size -= 5;
     }
   }
   return s;
@@ -412,8 +443,11 @@ static const char *compile4(struct compiler *comp, const char *s)
 static const char *compile3(struct compiler *comp, const char *s)
 {
   while(1) {
-    if(*s == '$' || ((comp->cflags & REG_EXTENDED) != 0 && *s == '|') || *s == '\0') break;
     if((s = compile4(comp, s)) == NULL) return NULL;
+    if((comp->cflags & REG_EXTENDED) != 0 ? *s == ')' : (*s == '\\' && s[1] == ')')) break;
+    if((comp->cflags & REG_EXTENDED) != 0 ? *s == '{' : (*s == '\\' && s[1] == '{')) break;
+    if((comp->cflags & REG_EXTENDED) != 0 ? *s == '}' : (*s == '\\' && s[1] == '}')) break;
+    if(*s == '^' || *s == '$' || *s == '*' || ((comp->cflags & REG_EXTENDED) != 0 && (*s == '+' || *s == '?' || *s == '|')) || *s == ']' || *s == '\0') break;
   }
   return s;
 }
@@ -435,23 +469,30 @@ static const char *compile2(struct compiler *comp, const char *s)
 static const char *compile1(struct compiler *comp, const char *s)
 {
   ssize_t ip = comp->bytecode_size;
+  int is_first = 1;
   while(1) {
     ssize_t tmp_ip = comp->bytecode_size;
-    if(add_op_with_addr(comp, RE_OP_NOP, 0) == -1) return NULL;
+    if(add_op_with_int(comp, RE_OP_NOP, 0) == -1) return NULL;
     if((s = compile2(comp, s)) == NULL) return NULL;
     if(*s == '|') {
-      if(add_op_with_addr(comp, RE_OP_JUMP, 0) == -1) return NULL;
+      if(add_op_with_int(comp, RE_OP_JUMP, 0) == -1) return NULL;
     }
     if(comp_set_addr(comp, tmp_ip + 1, comp->bytecode_size, tmp_ip + 5) == -1) return NULL;
     if(*s != '|') break;
+    is_first = 0;
     s++;
   }
-  while(1) {
-    int diff = comp_get_int(comp, ip + 1);
-    if(ip + 5 + diff >= comp->bytecode_size) break;
-    comp->bytecode[ip] = RE_OP_B;
-    ip += 5 + diff;
-    if(comp_set_addr(comp, ip - 5, comp->bytecode_size, ip) == -1) return NULL;
+  if(!is_first) {
+    while(1) {
+      int diff = comp_get_int(comp, ip + 1);
+      if(ip + 5 + diff >= comp->bytecode_size) break;
+      comp->bytecode[ip] = RE_OP_B;
+      ip += 5 + diff;
+      if(comp_set_addr(comp, ip - 5 + 1, comp->bytecode_size, ip) == -1) return NULL;
+    }
+  } else {
+    memmove(comp->bytecode + ip, comp->bytecode + ip + 5, comp->bytecode_size - ip - 5);
+    comp->bytecode_size -= 5;
   }
   return s;
 }
@@ -470,7 +511,7 @@ static int compile_end(struct compiler *comp, const char *s)
       if(*s == ')') {
         comp->error_code = REG_EPAREN;
         return -1;
-      } else if(*s == '}') {
+      } else if(*s == '{' || *s == '}') {
         comp->error_code = REG_EBRACE;
         return -1;
       } else if(*s == '+' || *s == '?') {
@@ -482,7 +523,7 @@ static int compile_end(struct compiler *comp, const char *s)
         if(s[1] == ')') {
           comp->error_code = REG_EPAREN;
           return -1;
-        } else if(s[1] == '}') {
+        } else if(s[1] == '{' || s[1] == '}') {
           comp->error_code = REG_EBRACE;
           return -1;
         }
@@ -907,7 +948,6 @@ size_t regerror(int errcode, const regex_t *reg, char *errbuf, size_t errbuf_siz
   static const char *msgs[16] = {
     "Success",
     "No match",
-    "Invalid regular expression",
     "Invalid collation character",
     "Invalid character class name",
     "Trailing backslash",
