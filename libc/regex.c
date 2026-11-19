@@ -56,7 +56,7 @@ static int comp_set_addr(struct compiler *comp, ssize_t i, ssize_t addr, ssize_t
   return 0;
 }
 
-static int add_block(struct compiler *comp, unsigned char *s, ssize_t n)
+static int add_bytecode(struct compiler *comp, unsigned char *s, ssize_t n)
 {
   if(comp->bytecode_size > LONG_MAX - n) {
     comp->error_code = REG_ESPACE;
@@ -80,7 +80,7 @@ static int add_block(struct compiler *comp, unsigned char *s, ssize_t n)
 static int add_op(struct compiler *comp, int op)
 {
   unsigned char instr = op;
-  return add_block(comp, &instr, 1);
+  return add_bytecode(comp, &instr, 1);
 }
 
 static int add_op_with_char(struct compiler *comp, int op, int c)
@@ -88,7 +88,7 @@ static int add_op_with_char(struct compiler *comp, int op, int c)
   unsigned char instr[2];
   instr[0] = op;
   instr[1] = c;
-  return add_block(comp, instr, 2);
+  return add_bytecode(comp, instr, 2);
 }
 
 static int add_op_with_int(struct compiler *comp, int op, int x)
@@ -99,7 +99,7 @@ static int add_op_with_int(struct compiler *comp, int op, int x)
   instr[2] = x >> 16;
   instr[3] = x >> 8;
   instr[4] = x;
-  return add_block(comp, instr, 5);
+  return add_bytecode(comp, instr, 5);
 }
 
 static int add_op_with_addr(struct compiler *comp, int op, ssize_t addr)
@@ -128,7 +128,7 @@ static int add_op_with_range(struct compiler *comp, int op, int c, int c2)
   instr[0] = op;
   instr[1] = c;
   instr[2] = c2;
-  return add_block(comp, instr, 3);
+  return add_bytecode(comp, instr, 3);
 }
 
 static int add_match(struct compiler *comp, int c)
@@ -421,12 +421,12 @@ static const char *compile4(struct compiler *comp, const char *s)
       block = comp->bytecode + ip;
       block_size = comp->bytecode_size - ip;
       for(i = 1; i < m; i++) {
-        if(add_block(comp, block, block_size) == -1) return NULL;
+        if(add_bytecode(comp, block, block_size) == -1) return NULL;
       }
       if(n > 0) {
         ip += block_size * n;
         for(i = n; i < m; i++, ip += block_size) {
-          comp->bytecode[ip] = RE_OP_BFJ;
+          comp->bytecode[ip] = RE_OP_B_JUMP;
           if(comp_set_addr(comp, ip + 1, comp->bytecode_size, ip + 5) == -1) return NULL;
         }
       } else {
@@ -772,7 +772,7 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
       interp->ip += 5;
       if(push(interp, interp->ip + n) == -1) return -1;
       break;
-    case RE_OP_BFJ:
+    case RE_OP_B_JUMP:
       n = interp_get_int(interp, interp->ip + 1);
       interp->ip += 5;
       if(push(interp, interp->ip) == -1) return -1;

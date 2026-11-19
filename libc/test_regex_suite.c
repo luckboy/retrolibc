@@ -177,7 +177,7 @@ static void test_regcomp_compiles_regular_expression_for_bre_and_2_3_duplication
   CU_ASSERT_EQUAL(eq_op(&reg, &ip, 'b'), 1);
   CU_ASSERT_EQUAL(eq_op_with_int(&reg, &ip, RE_OP_NOP, 0), 1);
   CU_ASSERT_EQUAL(eq_op(&reg, &ip, 'b'), 1);
-  CU_ASSERT_EQUAL(eq_op_with_int(&reg, &ip, RE_OP_BFJ, 1), 1);
+  CU_ASSERT_EQUAL(eq_op_with_int(&reg, &ip, RE_OP_B_JUMP, 1), 1);
   CU_ASSERT_EQUAL(eq_op(&reg, &ip, 'b'), 1);
   CU_ASSERT_EQUAL(eq_op(&reg, &ip, 'c'), 1);
   CU_ASSERT_EQUAL(eq_op(&reg, &ip, RE_OP_END), 1);
@@ -194,9 +194,9 @@ static void test_regcomp_compiles_regular_expression_for_bre_and_1_3_duplication
   CU_ASSERT_EQUAL(eq_op(&reg, &ip, 'a'), 1);
   CU_ASSERT_EQUAL(eq_op_with_int(&reg, &ip, RE_OP_NOP, 0), 1);
   CU_ASSERT_EQUAL(eq_op(&reg, &ip, 'b'), 1);
-  CU_ASSERT_EQUAL(eq_op_with_int(&reg, &ip, RE_OP_BFJ, 7), 1);
+  CU_ASSERT_EQUAL(eq_op_with_int(&reg, &ip, RE_OP_B_JUMP, 7), 1);
   CU_ASSERT_EQUAL(eq_op(&reg, &ip, 'b'), 1);
-  CU_ASSERT_EQUAL(eq_op_with_int(&reg, &ip, RE_OP_BFJ, 1), 1);
+  CU_ASSERT_EQUAL(eq_op_with_int(&reg, &ip, RE_OP_B_JUMP, 1), 1);
   CU_ASSERT_EQUAL(eq_op(&reg, &ip, 'b'), 1);
   CU_ASSERT_EQUAL(eq_op(&reg, &ip, 'c'), 1);
   CU_ASSERT_EQUAL(eq_op(&reg, &ip, RE_OP_END), 1);
@@ -830,7 +830,7 @@ static void test_regcomp_compiles_regular_expression_for_ere_and_2_3_duplication
   CU_ASSERT_EQUAL(eq_op(&reg, &ip, 'b'), 1);
   CU_ASSERT_EQUAL(eq_op_with_int(&reg, &ip, RE_OP_NOP, 0), 1);
   CU_ASSERT_EQUAL(eq_op(&reg, &ip, 'b'), 1);
-  CU_ASSERT_EQUAL(eq_op_with_int(&reg, &ip, RE_OP_BFJ, 1), 1);
+  CU_ASSERT_EQUAL(eq_op_with_int(&reg, &ip, RE_OP_B_JUMP, 1), 1);
   CU_ASSERT_EQUAL(eq_op(&reg, &ip, 'b'), 1);
   CU_ASSERT_EQUAL(eq_op(&reg, &ip, 'c'), 1);
   CU_ASSERT_EQUAL(eq_op(&reg, &ip, RE_OP_END), 1);
@@ -847,9 +847,9 @@ static void test_regcomp_compiles_regular_expression_for_ere_and_1_3_duplication
   CU_ASSERT_EQUAL(eq_op(&reg, &ip, 'a'), 1);
   CU_ASSERT_EQUAL(eq_op_with_int(&reg, &ip, RE_OP_NOP, 0), 1);
   CU_ASSERT_EQUAL(eq_op(&reg, &ip, 'b'), 1);
-  CU_ASSERT_EQUAL(eq_op_with_int(&reg, &ip, RE_OP_BFJ, 7), 1);
+  CU_ASSERT_EQUAL(eq_op_with_int(&reg, &ip, RE_OP_B_JUMP, 7), 1);
   CU_ASSERT_EQUAL(eq_op(&reg, &ip, 'b'), 1);
-  CU_ASSERT_EQUAL(eq_op_with_int(&reg, &ip, RE_OP_BFJ, 1), 1);
+  CU_ASSERT_EQUAL(eq_op_with_int(&reg, &ip, RE_OP_B_JUMP, 1), 1);
   CU_ASSERT_EQUAL(eq_op(&reg, &ip, 'b'), 1);
   CU_ASSERT_EQUAL(eq_op(&reg, &ip, 'c'), 1);
   CU_ASSERT_EQUAL(eq_op(&reg, &ip, RE_OP_END), 1);

@@ -19,7 +19,7 @@
 #define RE_OP_BR_END    0x86
 #define RE_OP_NOP       0x87
 #define RE_OP_B         0x88
-#define RE_OP_BFJ       0x89
+#define RE_OP_B_JUMP    0x89
 #define RE_OP_JUMP      0x8a
 #define RE_OP_SAVE_SO   0x8b
 #define RE_OP_SAVE_EO   0x8c
