@@ -117,19 +117,19 @@ static int parse_tz_rule(const char *s, struct tz_rule *rule, char **endptr)
   switch(tmp_rule.type) {
   case '\0':
   case 'J':
-    tmp_rule.u.n = parse_int(s, (char **) (&s), 3);
+    if((tmp_rule.u.n = parse_int(s, (char **) (&s), 3)) == -1) return -1;
     if(tmp_rule.u.n < (tmp_rule.type == 'J' ? 1 : 0) || tmp_rule.u.n > 365) return -1;
     break;
   case 'M':
-    tmp_rule.u.m.m = parse_int(s, (char **) (&s), 3);
+    if((tmp_rule.u.m.m = parse_int(s, (char **) (&s), 3)) == -1) return -1;
     if(tmp_rule.u.m.m < 1 || tmp_rule.u.m.m > 12) return -1;
     if(*s != '.') return -1;
     s++;
-    tmp_rule.u.m.w = parse_int(s, (char **) (&s), 1);
+    if((tmp_rule.u.m.w = parse_int(s, (char **) (&s), 1)) == -1) return -1;
     if(tmp_rule.u.m.w < 1 || tmp_rule.u.m.w > 5) return -1;
     if(*s != '.') return -1;
     s++;
-    tmp_rule.u.m.d = parse_int(s, (char **) (&s), 1);
+    if((tmp_rule.u.m.d = parse_int(s, (char **) (&s), 1)) == -1) return -1;
     if(tmp_rule.u.m.d < 0 || tmp_rule.u.m.d > 6) return -1;
     break;
   }
@@ -163,10 +163,10 @@ static int parse_tz(const char *s)
     .u = { .n = 0 },
     .time = 0L
   };
-  if(parse_tzname(s, tmp_std, (char **) (&s))) return -1;
+  if(parse_tzname(s, tmp_std, (char **) (&s)) == -1) return -1;
   if(parse_offset(s, &tz_std_offset, (char **) (&s)) == -1) return -1;
   if(*s != '\0') {
-    if(parse_tzname(s, tmp_dst, (char **) (&s))) return -1;
+    if(parse_tzname(s, tmp_dst, (char **) (&s)) == -1) return -1;
     if(*s != ',') {
       if(parse_offset(s, &tz_dst_offset, (char **) (&s)) == -1) return -1;
       if(*s != ',') return -1;
