@@ -2397,6 +2397,9 @@ static void test_regexec_interprets_bytecode_for_caret_and_reg_newline(void)
   CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abc", 1, matches, RETROLIBC_REG_NOTBOL), RETROLIBC_REG_NOTMATCH);
   CU_ASSERT_EQUAL(matches[0].re_so, -1);
   CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "\nabc", 1, matches, RETROLIBC_REG_NOTBOL), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 4);
   CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abc", 1, matches, RETROLIBC_REG_NOTEOL), 0);
   CU_ASSERT_EQUAL(matches[0].re_so, 0);
   CU_ASSERT_EQUAL(matches[0].re_eo, 3);
@@ -2423,6 +2426,9 @@ static void test_regexec_interprets_bytecode_for_dollar_and_reg_newline(void)
   CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abc", 1, matches, RETROLIBC_REG_NOTEOL), RETROLIBC_REG_NOTMATCH);
   CU_ASSERT_EQUAL(matches[0].re_so, -1);
   CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abc\n", 1, matches, RETROLIBC_REG_NOTEOL), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 3);
   retrolibc_regfree(&reg);
 }
 
