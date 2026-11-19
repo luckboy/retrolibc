@@ -1009,7 +1009,7 @@ size_t regerror(int errcode, const regex_t *reg, char *errbuf, size_t errbuf_siz
     "Invalid range end",
     "Memory exhausted",
     "Premature end of regular expression",
-    "Not implemented function",
+    "Unimplemented function",
     "Unknown error"
   };
   size_t len;
