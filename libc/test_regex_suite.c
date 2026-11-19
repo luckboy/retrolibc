@@ -1872,6 +1872,9 @@ static void test_regexec_interprets_bytecode_for_dot(void)
   CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "1", 1, matches, 0), 0);
   CU_ASSERT_EQUAL(matches[0].re_so, 0);
   CU_ASSERT_EQUAL(matches[0].re_eo, 1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "\n", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 1);
   CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "", 1, matches, 0), RETROLIBC_REG_NOTMATCH);
   CU_ASSERT_EQUAL(matches[0].re_so, -1);
   CU_ASSERT_EQUAL(matches[0].re_eo, -1);
@@ -2449,6 +2452,35 @@ static void test_regexec_interprets_bytecode_for_brackets_with_caret_and_reg_new
   retrolibc_regfree(&reg);
 }
 
+static void test_regexec_interprets_bytecode_for_dot_and_reg_newline(void)
+{
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, ".", RETROLIBC_REG_NEWLINE), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "a", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "b", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "c", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "A", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "1", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "\n", 1, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "", 1, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  retrolibc_regfree(&reg);
+}
+
 static void test_regerror_copies_error_message(void)
 {
   static char buf[100];
@@ -2672,7 +2704,7 @@ int add_regex_suite(void)
   if(CU_add_test(suite, "regexec interprets bytecode for brackets with ^", test_regexec_interprets_bytecode_for_brackets_with_caret) == NULL) return -1;
   if(CU_add_test(suite, "regexec interprets bytecode for brackets with ctype", test_regexec_interprets_bytecode_for_brackets_with_ctype) == NULL) return -1;
   if(CU_add_test(suite, "regexec interprets bytecode for brackets with range", test_regexec_interprets_bytecode_for_brackets_with_range) == NULL) return -1;
-  if(CU_add_test(suite, "regexec interprets bytecode for dot", test_regexec_interprets_bytecode_for_dot) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for .", test_regexec_interprets_bytecode_for_dot) == NULL) return -1;
   if(CU_add_test(suite, "regexec interprets bytecode for 0234", test_regexec_interprets_bytecode_for_0234) == NULL) return -1;
   if(CU_add_test(suite, "regexec interprets bytecode for lowercase letter", test_regexec_interprets_bytecode_for_lowercase_letter) == NULL) return -1;
   if(CU_add_test(suite, "regexec interprets bytecode for uppercase letter", test_regexec_interprets_bytecode_for_uppercase_letter) == NULL) return -1;
@@ -2704,6 +2736,7 @@ int add_regex_suite(void)
   if(CU_add_test(suite, "regexec interprets bytecode for ^ and REG_NEWLINE", test_regexec_interprets_bytecode_for_caret_and_reg_newline) == NULL) return -1;
   if(CU_add_test(suite, "regexec interprets bytecode for $ and REG_NEWLINE", test_regexec_interprets_bytecode_for_dollar_and_reg_newline) == NULL) return -1;
   if(CU_add_test(suite, "regexec interprets bytecode for brackets with ^ and REG_NEWLINE", test_regexec_interprets_bytecode_for_brackets_with_caret_and_reg_newline) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for . and REG_NEWLINE", test_regexec_interprets_bytecode_for_dot_and_reg_newline) == NULL) return -1;
   if(CU_add_test(suite, "regerror copies error message", test_regerror_copies_error_message) == NULL) return -1;
   if(CU_add_test(suite, "regerror copies error message part", test_regerror_copies_error_message_part) == NULL) return -1;
   if(CU_add_test(suite, "regerror returns number of bytes", test_regerror_returns_number_of_bytes) == NULL) return -1;
