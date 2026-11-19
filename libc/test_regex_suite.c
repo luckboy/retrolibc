@@ -5,6 +5,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+#include <ctype.h>
+#include <string.h>
 #include <CUnit/Basic.h>
 #include "retrolibc.h"
 #include "priv_regex.h"
@@ -1391,6 +1393,1062 @@ static void test_regcomp_complains_on_premature_end_of_regular_expression_for_er
   CU_ASSERT_EQUAL(retrolibc_regcomp(&reg, "?", RETROLIBC_REG_EXTENDED), RETROLIBC_REG_BADRPT);
 }
 
+static void test_regexec_interprets_bytecode(void)
+{
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "abc", 0), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abc", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 3);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "aaaabc", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 3);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 6);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "def", 1, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_star(void)
+{
+  static retrolibc_regmatch_t matches[2];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "\\(abc\\)*d", 0), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abcd", 2, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 4);
+  CU_ASSERT_EQUAL(matches[1].re_so, 0);
+  CU_ASSERT_EQUAL(matches[1].re_eo, 3);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abcabcd", 2, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 7);
+  CU_ASSERT_EQUAL(matches[1].re_so, 3);
+  CU_ASSERT_EQUAL(matches[1].re_eo, 6);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abcabcabcd", 2, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 10);
+  CU_ASSERT_EQUAL(matches[1].re_so, 6);
+  CU_ASSERT_EQUAL(matches[1].re_eo, 9);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "d", 2, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 1);
+  CU_ASSERT_EQUAL(matches[1].re_so, -1);
+  CU_ASSERT_EQUAL(matches[1].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "ghi", 2, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(matches[1].re_so, -1);
+  CU_ASSERT_EQUAL(matches[1].re_eo, -1);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_2_3_duplication(void)
+{
+  static retrolibc_regmatch_t matches[2];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "\\(abc\\)\\{2,3\\}d", 0), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abcabcd", 2, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 7);
+  CU_ASSERT_EQUAL(matches[1].re_so, 3);
+  CU_ASSERT_EQUAL(matches[1].re_eo, 6);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abcabcabcd", 2, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 10);
+  CU_ASSERT_EQUAL(matches[1].re_so, 6);
+  CU_ASSERT_EQUAL(matches[1].re_eo, 9);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abcabcabce", 2, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(matches[1].re_so, -1);
+  CU_ASSERT_EQUAL(matches[1].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "def", 2, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(matches[1].re_so, -1);
+  CU_ASSERT_EQUAL(matches[1].re_eo, -1);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_1_3_duplication(void)
+{
+  static retrolibc_regmatch_t matches[2];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "\\(abc\\)\\{1,3\\}d", 0), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abcd", 2, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 4);
+  CU_ASSERT_EQUAL(matches[1].re_so, 0);
+  CU_ASSERT_EQUAL(matches[1].re_eo, 3);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abcabcd", 2, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 7);
+  CU_ASSERT_EQUAL(matches[1].re_so, 3);
+  CU_ASSERT_EQUAL(matches[1].re_eo, 6);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abcabcabcd", 2, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 10);
+  CU_ASSERT_EQUAL(matches[1].re_so, 6);
+  CU_ASSERT_EQUAL(matches[1].re_eo, 9);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abcabcabce", 2, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(matches[1].re_so, -1);
+  CU_ASSERT_EQUAL(matches[1].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "def", 2, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(matches[1].re_so, -1);
+  CU_ASSERT_EQUAL(matches[1].re_eo, -1);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_plus(void)
+{
+  static retrolibc_regmatch_t matches[2];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "(abc)+d", RETROLIBC_REG_EXTENDED), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abcd", 2, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 4);
+  CU_ASSERT_EQUAL(matches[1].re_so, 0);
+  CU_ASSERT_EQUAL(matches[1].re_eo, 3);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abcabcd", 2, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 7);
+  CU_ASSERT_EQUAL(matches[1].re_so, 3);
+  CU_ASSERT_EQUAL(matches[1].re_eo, 6);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abcabcabcd", 2, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 10);
+  CU_ASSERT_EQUAL(matches[1].re_so, 6);
+  CU_ASSERT_EQUAL(matches[1].re_eo, 9);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "d", 2, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(matches[1].re_so, -1);
+  CU_ASSERT_EQUAL(matches[1].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "ghi", 2, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(matches[1].re_so, -1);
+  CU_ASSERT_EQUAL(matches[1].re_eo, -1);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_question(void)
+{
+  static retrolibc_regmatch_t matches[2];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "(abc)?d", RETROLIBC_REG_EXTENDED), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abcd", 2, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 4);
+  CU_ASSERT_EQUAL(matches[1].re_so, 0);
+  CU_ASSERT_EQUAL(matches[1].re_eo, 3);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "d", 2, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 1);
+  CU_ASSERT_EQUAL(matches[1].re_so, -1);
+  CU_ASSERT_EQUAL(matches[1].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "ghi", 2, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(matches[1].re_so, -1);
+  CU_ASSERT_EQUAL(matches[1].re_eo, -1);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_alternation(void)
+{
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "abc|def|ghi", RETROLIBC_REG_EXTENDED), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abc", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 3);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "def", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 3);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "ghi", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 3);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "jkl", 1, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_star_with_alternation(void)
+{
+  static retrolibc_regmatch_t matches[2];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "(abc|def)*g", RETROLIBC_REG_EXTENDED), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abcg", 2, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 4);
+  CU_ASSERT_EQUAL(matches[1].re_so, 0);
+  CU_ASSERT_EQUAL(matches[1].re_eo, 3);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "defg", 2, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 4);
+  CU_ASSERT_EQUAL(matches[1].re_so, 0);
+  CU_ASSERT_EQUAL(matches[1].re_eo, 3);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abcabcg", 2, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 7);
+  CU_ASSERT_EQUAL(matches[1].re_so, 3);
+  CU_ASSERT_EQUAL(matches[1].re_eo, 6);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abcdefg", 2, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 7);
+  CU_ASSERT_EQUAL(matches[1].re_so, 3);
+  CU_ASSERT_EQUAL(matches[1].re_eo, 6);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "defabcg", 2, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 7);
+  CU_ASSERT_EQUAL(matches[1].re_so, 3);
+  CU_ASSERT_EQUAL(matches[1].re_eo, 6);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "defdefg", 2, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 7);
+  CU_ASSERT_EQUAL(matches[1].re_so, 3);
+  CU_ASSERT_EQUAL(matches[1].re_eo, 6);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "g", 2, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 1);
+  CU_ASSERT_EQUAL(matches[1].re_so, -1);
+  CU_ASSERT_EQUAL(matches[1].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "jkl", 2, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(matches[1].re_so, -1);
+  CU_ASSERT_EQUAL(matches[1].re_eo, -1);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_attack_by_star_with_alternation(void)
+{
+  static retrolibc_regmatch_t matches[2];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "(a|aa)*b", RETROLIBC_REG_EXTENDED), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "ab", 2, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 2);
+  CU_ASSERT_EQUAL(matches[1].re_so, 0);
+  CU_ASSERT_EQUAL(matches[1].re_eo, 1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "aaaab", 2, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 5);
+  CU_ASSERT_EQUAL(matches[1].re_so, 3);
+  CU_ASSERT_EQUAL(matches[1].re_eo, 4);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "aaaac", 2, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(matches[1].re_so, -1);
+  CU_ASSERT_EQUAL(matches[1].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "aaaaaac", 2, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(matches[1].re_so, -1);
+  CU_ASSERT_EQUAL(matches[1].re_eo, -1);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_2_subexpressions(void)
+{
+  static retrolibc_regmatch_t matches[3];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "\\(abc\\)\\(def\\)", 0), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abcdef", 3, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 6);
+  CU_ASSERT_EQUAL(matches[1].re_so, 0);
+  CU_ASSERT_EQUAL(matches[1].re_eo, 3);
+  CU_ASSERT_EQUAL(matches[2].re_so, 3);
+  CU_ASSERT_EQUAL(matches[2].re_eo, 6);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "def", 3, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(matches[1].re_so, -1);
+  CU_ASSERT_EQUAL(matches[1].re_eo, -1);
+  CU_ASSERT_EQUAL(matches[2].re_so, -1);
+  CU_ASSERT_EQUAL(matches[2].re_eo, -1);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_nested_subexpression(void)
+{
+  static retrolibc_regmatch_t matches[3];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "\\(abc\\(def\\)ghi\\)", 0), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abcdefghi", 3, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 9);
+  CU_ASSERT_EQUAL(matches[1].re_so, 0);
+  CU_ASSERT_EQUAL(matches[1].re_eo, 9);
+  CU_ASSERT_EQUAL(matches[2].re_so, 3);
+  CU_ASSERT_EQUAL(matches[2].re_eo, 6);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "def", 3, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(matches[1].re_so, -1);
+  CU_ASSERT_EQUAL(matches[1].re_eo, -1);
+  CU_ASSERT_EQUAL(matches[2].re_so, -1);
+  CU_ASSERT_EQUAL(matches[2].re_eo, -1);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_2_back_references(void)
+{
+  static retrolibc_regmatch_t matches[3];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "\\(abc\\)\\(def\\)\\1\\2", 0), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abcdefabcdef", 3, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 12);
+  CU_ASSERT_EQUAL(matches[1].re_so, 0);
+  CU_ASSERT_EQUAL(matches[1].re_eo, 3);
+  CU_ASSERT_EQUAL(matches[2].re_so, 3);
+  CU_ASSERT_EQUAL(matches[2].re_eo, 6);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abcdef", 3, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(matches[1].re_so, -1);
+  CU_ASSERT_EQUAL(matches[1].re_eo, -1);
+  CU_ASSERT_EQUAL(matches[2].re_so, -1);
+  CU_ASSERT_EQUAL(matches[2].re_eo, -1);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_back_references_with_nested_subexpression(void)
+{
+  static retrolibc_regmatch_t matches[3];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "\\(abc\\(def\\)\\2ghi\\)\\1", 0), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abcdefdefghiabcdefdefghi", 3, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 24);
+  CU_ASSERT_EQUAL(matches[1].re_so, 0);
+  CU_ASSERT_EQUAL(matches[1].re_eo, 12);
+  CU_ASSERT_EQUAL(matches[2].re_so, 3);
+  CU_ASSERT_EQUAL(matches[2].re_eo, 6);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abcdef", 3, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(matches[1].re_so, -1);
+  CU_ASSERT_EQUAL(matches[1].re_eo, -1);
+  CU_ASSERT_EQUAL(matches[2].re_so, -1);
+  CU_ASSERT_EQUAL(matches[2].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abcdefdefghi", 3, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(matches[1].re_so, -1);
+  CU_ASSERT_EQUAL(matches[1].re_eo, -1);
+  CU_ASSERT_EQUAL(matches[2].re_so, -1);
+  CU_ASSERT_EQUAL(matches[2].re_eo, -1);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_brackets(void)
+{
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "[abc]def", 0), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "adef", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 4);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "bdef", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 4);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "cdef", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 4);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "ddef", 1, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "", 1, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_brackets_with_caret(void)
+{
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "[^abc]def", 0), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "adef", 1, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "bdef", 1, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "cdef", 1, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "ddef", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 4);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "\ndef", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 4);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "", 1, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_brackets_with_ctype(void)
+{
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "[a[:alpha:]c]def", 0), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "adef", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 4);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "bdef", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 4);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "cdef", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 4);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "Adef", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 4);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "1def", 1, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_brackets_with_range(void)
+{
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "[ad-fi]def", 0), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "adef", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 4);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "cdef", 1, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "ddef", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 4);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "edef", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 4);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "fdef", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 4);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "gdef", 1, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "idef", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 4);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_dot(void)
+{
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, ".", 0), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "a", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "b", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "c", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "A", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "1", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "", 1, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_0234(void)
+{
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "\234", 0), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "\234", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "a", 1, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "b", 1, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "c", 1, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_lowercase_letter(void)
+{
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "a", 0), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "a", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "A", 1, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_uppercase_letter(void)
+{
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "A", 0), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "a", 1, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "A", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 1);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_alnum(void)
+{
+  static char buf[128];
+  static char expected_buf[128];
+  static char s[2];
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "[[:alnum:]]", 0), 0);
+  int c;
+  for(c = 0; c < 128; c++) expected_buf[c] = (isalnum(c) ? '1' : '0');
+  for(c = 0; c < 128; c++) {
+    s[0] = c;
+    s[1] = '\0';
+    buf[c] = (retrolibc_regexec(&reg, s, 1, matches, 0) == 0 ? '1' : '0');
+  }
+  CU_ASSERT_EQUAL(memcmp(buf, expected_buf, 128), 0);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_alpha(void)
+{
+  static char buf[128];
+  static char expected_buf[128];
+  static char s[2];
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "[[:alpha:]]", 0), 0);
+  int c;
+  for(c = 0; c < 128; c++) expected_buf[c] = (isalpha(c) ? '1' : '0');
+  for(c = 0; c < 128; c++) {
+    s[0] = c;
+    s[1] = '\0';
+    buf[c] = (retrolibc_regexec(&reg, s, 1, matches, 0) == 0 ? '1' : '0');
+  }
+  CU_ASSERT_EQUAL(memcmp(buf, expected_buf, 128), 0);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_blank(void)
+{
+  static char buf[128];
+  static char expected_buf[128];
+  static char s[2];
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "[[:blank:]]", 0), 0);
+  int c;
+  for(c = 0; c < 128; c++) expected_buf[c] = ((c == ' ' || c == '\t') ? '1' : '0');
+  for(c = 0; c < 128; c++) {
+    s[0] = c;
+    s[1] = '\0';
+    buf[c] = (retrolibc_regexec(&reg, s, 1, matches, 0) == 0 ? '1' : '0');
+  }
+  CU_ASSERT_EQUAL(memcmp(buf, expected_buf, 128), 0);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_cntrl(void)
+{
+  static char buf[128];
+  static char expected_buf[128];
+  static char s[2];
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "[[:cntrl:]]", 0), 0);
+  int c;
+  for(c = 0; c < 128; c++) expected_buf[c] = ((iscntrl(c) && c != '\0') ? '1' : '0');
+  for(c = 0; c < 128; c++) {
+    s[0] = c;
+    s[1] = '\0';
+    buf[c] = (retrolibc_regexec(&reg, s, 1, matches, 0) == 0 ? '1' : '0');
+  }
+  CU_ASSERT_EQUAL(memcmp(buf, expected_buf, 128), 0);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_digit(void)
+{
+  static char buf[128];
+  static char expected_buf[128];
+  static char s[2];
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "[[:digit:]]", 0), 0);
+  int c;
+  for(c = 0; c < 128; c++) expected_buf[c] = (isdigit(c) ? '1' : '0');
+  for(c = 0; c < 128; c++) {
+    s[0] = c;
+    s[1] = '\0';
+    buf[c] = (retrolibc_regexec(&reg, s, 1, matches, 0) == 0 ? '1' : '0');
+  }
+  CU_ASSERT_EQUAL(memcmp(buf, expected_buf, 128), 0);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_graph(void)
+{
+  static char buf[128];
+  static char expected_buf[128];
+  static char s[2];
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "[[:graph:]]", 0), 0);
+  int c;
+  for(c = 0; c < 128; c++) expected_buf[c] = (isgraph(c) ? '1' : '0');
+  for(c = 0; c < 128; c++) {
+    s[0] = c;
+    s[1] = '\0';
+    buf[c] = (retrolibc_regexec(&reg, s, 1, matches, 0) == 0 ? '1' : '0');
+  }
+  CU_ASSERT_EQUAL(memcmp(buf, expected_buf, 128), 0);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_lower(void)
+{
+  static char buf[128];
+  static char expected_buf[128];
+  static char s[2];
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "[[:lower:]]", 0), 0);
+  int c;
+  for(c = 0; c < 128; c++) expected_buf[c] = (islower(c) ? '1' : '0');
+  for(c = 0; c < 128; c++) {
+    s[0] = c;
+    s[1] = '\0';
+    buf[c] = (retrolibc_regexec(&reg, s, 1, matches, 0) == 0 ? '1' : '0');
+  }
+  CU_ASSERT_EQUAL(memcmp(buf, expected_buf, 128), 0);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_print(void)
+{
+  static char buf[128];
+  static char expected_buf[128];
+  static char s[2];
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "[[:print:]]", 0), 0);
+  int c;
+  for(c = 0; c < 128; c++) expected_buf[c] = (isprint(c) ? '1' : '0');
+  for(c = 0; c < 128; c++) {
+    s[0] = c;
+    s[1] = '\0';
+    buf[c] = (retrolibc_regexec(&reg, s, 1, matches, 0) == 0 ? '1' : '0');
+  }
+  CU_ASSERT_EQUAL(memcmp(buf, expected_buf, 128), 0);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_punct(void)
+{
+  static char buf[128];
+  static char expected_buf[128];
+  static char s[2];
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "[[:punct:]]", 0), 0);
+  int c;
+  for(c = 0; c < 128; c++) expected_buf[c] = (ispunct(c) ? '1' : '0');
+  for(c = 0; c < 128; c++) {
+    s[0] = c;
+    s[1] = '\0';
+    buf[c] = (retrolibc_regexec(&reg, s, 1, matches, 0) == 0 ? '1' : '0');
+  }
+  CU_ASSERT_EQUAL(memcmp(buf, expected_buf, 128), 0);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_space(void)
+{
+  static char buf[128];
+  static char expected_buf[128];
+  static char s[2];
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "[[:space:]]", 0), 0);
+  int c;
+  for(c = 0; c < 128; c++) expected_buf[c] = (isspace(c) ? '1' : '0');
+  for(c = 0; c < 128; c++) {
+    s[0] = c;
+    s[1] = '\0';
+    buf[c] = (retrolibc_regexec(&reg, s, 1, matches, 0) == 0 ? '1' : '0');
+  }
+  CU_ASSERT_EQUAL(memcmp(buf, expected_buf, 128), 0);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_upper(void)
+{
+  static char buf[128];
+  static char expected_buf[128];
+  static char s[2];
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "[[:upper:]]", 0), 0);
+  int c;
+  for(c = 0; c < 128; c++) expected_buf[c] = (isupper(c) ? '1' : '0');
+  for(c = 0; c < 128; c++) {
+    s[0] = c;
+    s[1] = '\0';
+    buf[c] = (retrolibc_regexec(&reg, s, 1, matches, 0) == 0 ? '1' : '0');
+  }
+  CU_ASSERT_EQUAL(memcmp(buf, expected_buf, 128), 0);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_xdigit(void)
+{
+  static char buf[128];
+  static char expected_buf[128];
+  static char s[2];
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "[[:xdigit:]]", 0), 0);
+  int c;
+  for(c = 0; c < 128; c++) expected_buf[c] = (isxdigit(c) ? '1' : '0');
+  for(c = 0; c < 128; c++) {
+    s[0] = c;
+    s[1] = '\0';
+    buf[c] = (retrolibc_regexec(&reg, s, 1, matches, 0) == 0 ? '1' : '0');
+  }
+  CU_ASSERT_EQUAL(memcmp(buf, expected_buf, 128), 0);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_back_reference_with_lowercase_subexpression(void)
+{
+  static retrolibc_regmatch_t matches[2];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "\\(abc\\)\\1", 0), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abcabc", 2, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 6);
+  CU_ASSERT_EQUAL(matches[1].re_so, 0);
+  CU_ASSERT_EQUAL(matches[1].re_eo, 3);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abcABC", 2, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(matches[1].re_so, -1);
+  CU_ASSERT_EQUAL(matches[1].re_eo, -1);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_back_reference_with_uppercase_subexpression(void)
+{
+  static retrolibc_regmatch_t matches[2];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "\\(ABC\\)\\1", 0), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "ABCabc", 2, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(matches[1].re_so, -1);
+  CU_ASSERT_EQUAL(matches[1].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "ABCABC", 2, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 6);
+  CU_ASSERT_EQUAL(matches[1].re_so, 0);
+  CU_ASSERT_EQUAL(matches[1].re_eo, 3);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_lowercase_letter_and_reg_icase(void)
+{
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "a", RETROLIBC_REG_ICASE), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "a", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "A", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 1);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_uppercase_letter_and_reg_icase(void)
+{
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "A", RETROLIBC_REG_ICASE), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "a", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "A", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 1);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_lowercase_range_and_reg_icase(void)
+{
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "[a-z]", RETROLIBC_REG_ICASE), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "a", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "A", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 1);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_uppercase_range_and_reg_icase(void)
+{
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "[A-Z]", RETROLIBC_REG_ICASE), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "a", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "A", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 1);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_lower_and_reg_icase(void)
+{
+  static char buf[128];
+  static char expected_buf[128];
+  static char s[2];
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "[[:lower:]]", RETROLIBC_REG_ICASE), 0);
+  int c;
+  for(c = 0; c < 128; c++) expected_buf[c] = (isalpha(c) ? '1' : '0');
+  for(c = 0; c < 128; c++) {
+    s[0] = c;
+    s[1] = '\0';
+    buf[c] = (retrolibc_regexec(&reg, s, 1, matches, 0) == 0 ? '1' : '0');
+  }
+  CU_ASSERT_EQUAL(memcmp(buf, expected_buf, 128), 0);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_upper_and_reg_icase(void)
+{
+  static char buf[128];
+  static char expected_buf[128];
+  static char s[2];
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "[[:upper:]]", RETROLIBC_REG_ICASE), 0);
+  int c;
+  for(c = 0; c < 128; c++) expected_buf[c] = (isalpha(c) ? '1' : '0');
+  for(c = 0; c < 128; c++) {
+    s[0] = c;
+    s[1] = '\0';
+    buf[c] = (retrolibc_regexec(&reg, s, 1, matches, 0) == 0 ? '1' : '0');
+  }
+  CU_ASSERT_EQUAL(memcmp(buf, expected_buf, 128), 0);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_back_reference_with_lowercase_subexpression_and_reg_icase(void)
+{
+  static retrolibc_regmatch_t matches[2];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "\\(abc\\)\\1", RETROLIBC_REG_ICASE), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abcabc", 2, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 6);
+  CU_ASSERT_EQUAL(matches[1].re_so, 0);
+  CU_ASSERT_EQUAL(matches[1].re_eo, 3);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abcABC", 2, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 6);
+  CU_ASSERT_EQUAL(matches[1].re_so, 0);
+  CU_ASSERT_EQUAL(matches[1].re_eo, 3);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_back_reference_with_uppercase_subexpression_and_reg_icase(void)
+{
+  static retrolibc_regmatch_t matches[2];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "\\(ABC\\)\\1", RETROLIBC_REG_ICASE), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "ABCabc", 2, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 6);
+  CU_ASSERT_EQUAL(matches[1].re_so, 0);
+  CU_ASSERT_EQUAL(matches[1].re_eo, 3);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "ABCABC", 2, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 6);
+  CU_ASSERT_EQUAL(matches[1].re_so, 0);
+  CU_ASSERT_EQUAL(matches[1].re_eo, 3);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_reg_nosub(void)
+{
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "abc", RETROLIBC_REG_NOSUB), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abc", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "aaaabc", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "def", 1, matches, 0), RETROLIBC_REG_NOTMATCH);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_caret(void)
+{
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "^abc", 0), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abc", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 3);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "aaaabc", 1, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "aa\nabcaaa", 1, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abc", 1, matches, RETROLIBC_REG_NOTBOL), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abc", 1, matches, RETROLIBC_REG_NOTEOL), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 3);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_dollar(void)
+{
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "abc$", 0), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abc", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 3);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "aaaabc", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 3);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 6);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "aaaabc\naa", 1, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abc", 1, matches, RETROLIBC_REG_NOTBOL), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 3);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abc", 1, matches, RETROLIBC_REG_NOTEOL), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_caret_and_reg_newline(void)
+{
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "^abc", RETROLIBC_REG_NEWLINE), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abc", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 3);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "aaaabc", 1, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "aa\nabcaaa", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 3);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 6);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abc", 1, matches, RETROLIBC_REG_NOTBOL), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abc", 1, matches, RETROLIBC_REG_NOTEOL), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 3);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_dollar_and_reg_newline(void)
+{
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "abc$", RETROLIBC_REG_NEWLINE), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abc", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 3);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "aaaabc", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 3);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 6);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "aaaabc\naa", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 3);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 6);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abc", 1, matches, RETROLIBC_REG_NOTBOL), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 3);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "abc", 1, matches, RETROLIBC_REG_NOTEOL), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  retrolibc_regfree(&reg);
+}
+
+static void test_regexec_interprets_bytecode_for_brackets_with_caret_and_reg_newline(void)
+{
+  static retrolibc_regmatch_t matches[1];
+  retrolibc_regex_t reg;
+  CU_ASSERT_EQUAL_FATAL(retrolibc_regcomp(&reg, "[^abc]def", RETROLIBC_REG_NEWLINE), 0);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "adef", 1, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "bdef", 1, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "cdef", 1, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "ddef", 1, matches, 0), 0);
+  CU_ASSERT_EQUAL(matches[0].re_so, 0);
+  CU_ASSERT_EQUAL(matches[0].re_eo, 4);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "\ndef", 1, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  CU_ASSERT_EQUAL(retrolibc_regexec(&reg, "", 1, matches, 0), RETROLIBC_REG_NOTMATCH);
+  CU_ASSERT_EQUAL(matches[0].re_so, -1);
+  CU_ASSERT_EQUAL(matches[0].re_eo, -1);
+  retrolibc_regfree(&reg);
+}
+
 int add_regex_suite(void)
 {
   CU_pSuite suite;
@@ -1489,5 +2547,54 @@ int add_regex_suite(void)
   if(CU_add_test(suite, "regcomp complains on invalid content of \\{\\} for BRE", test_regcomp_complains_on_invalid_content_of_backslahs_left_brace_backslash_right_brace_for_ere) == NULL) return -1;
   if(CU_add_test(suite, "regcomp complains on invalid range end for ERE", test_regcomp_complains_on_invalid_range_end_for_ere) == NULL) return -1;
   if(CU_add_test(suite, "regcomp complains on premature end of regular expression for ERE", test_regcomp_complains_on_premature_end_of_regular_expression_for_ere) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode", test_regexec_interprets_bytecode) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for *", test_regexec_interprets_bytecode_for_star) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for 2,3 duplication", test_regexec_interprets_bytecode_for_2_3_duplication) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for 1,3 duplication", test_regexec_interprets_bytecode_for_1_3_duplication) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for +", test_regexec_interprets_bytecode_for_plus) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for ?", test_regexec_interprets_bytecode_for_question) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for alternation", test_regexec_interprets_bytecode_for_alternation) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for * with alternation", test_regexec_interprets_bytecode_for_star_with_alternation) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for attack by * with alternation", test_regexec_interprets_bytecode_for_attack_by_star_with_alternation) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for 2 subexpressions", test_regexec_interprets_bytecode_for_2_subexpressions) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for nested subexpression", test_regexec_interprets_bytecode_for_nested_subexpression) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for 2 back references", test_regexec_interprets_bytecode_for_2_back_references) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for back references with nested subexpression", test_regexec_interprets_bytecode_for_back_references_with_nested_subexpression) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for brackets", test_regexec_interprets_bytecode_for_brackets) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for brackets with ^", test_regexec_interprets_bytecode_for_brackets_with_caret) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for brackets with ctype", test_regexec_interprets_bytecode_for_brackets_with_ctype) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for brackets with range", test_regexec_interprets_bytecode_for_brackets_with_range) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for dot", test_regexec_interprets_bytecode_for_dot) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for 0234", test_regexec_interprets_bytecode_for_0234) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for lowercase letter", test_regexec_interprets_bytecode_for_lowercase_letter) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for uppercase letter", test_regexec_interprets_bytecode_for_uppercase_letter) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for alnum", test_regexec_interprets_bytecode_for_alnum) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for alpha", test_regexec_interprets_bytecode_for_alpha) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for blank", test_regexec_interprets_bytecode_for_blank) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for cntrl", test_regexec_interprets_bytecode_for_cntrl) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for digit", test_regexec_interprets_bytecode_for_digit) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for graph", test_regexec_interprets_bytecode_for_graph) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for lower", test_regexec_interprets_bytecode_for_lower) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for print", test_regexec_interprets_bytecode_for_print) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for punct", test_regexec_interprets_bytecode_for_punct) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for space", test_regexec_interprets_bytecode_for_space) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for upper", test_regexec_interprets_bytecode_for_upper) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for xdigit", test_regexec_interprets_bytecode_for_xdigit) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for back reference with lowercase subexpression", test_regexec_interprets_bytecode_for_back_reference_with_lowercase_subexpression) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for back reference with uppercase subexpression", test_regexec_interprets_bytecode_for_back_reference_with_uppercase_subexpression) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for lowercase letter and REG_ICASE", test_regexec_interprets_bytecode_for_lowercase_letter_and_reg_icase) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for uppercase letter and REG_ICASE", test_regexec_interprets_bytecode_for_uppercase_letter_and_reg_icase) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for lowercase range and REG_ICASE", test_regexec_interprets_bytecode_for_lowercase_range_and_reg_icase) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for uppercase range and REG_ICASE", test_regexec_interprets_bytecode_for_uppercase_range_and_reg_icase) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for lower and REG_ICASE", test_regexec_interprets_bytecode_for_lower_and_reg_icase) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for upper and REG_ICASE", test_regexec_interprets_bytecode_for_upper_and_reg_icase) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for back reference with lowercase subexpression and REG_ICASE", test_regexec_interprets_bytecode_for_back_reference_with_lowercase_subexpression_and_reg_icase) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for back reference with uppercase subexpression and REG_ICASE", test_regexec_interprets_bytecode_for_back_reference_with_uppercase_subexpression_and_reg_icase) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for REG_NOSUB", test_regexec_interprets_bytecode_for_reg_nosub) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for ^", test_regexec_interprets_bytecode_for_caret) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for $", test_regexec_interprets_bytecode_for_dollar) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for ^ and REG_NEWLINE", test_regexec_interprets_bytecode_for_caret_and_reg_newline) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for $ and REG_NEWLINE", test_regexec_interprets_bytecode_for_dollar_and_reg_newline) == NULL) return -1;
+  if(CU_add_test(suite, "regexec interprets bytecode for brackets with ^ and REG_NEWLINE", test_regexec_interprets_bytecode_for_brackets_with_caret_and_reg_newline) == NULL) return -1;
   return 0;
 }

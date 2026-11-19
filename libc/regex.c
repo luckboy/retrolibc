@@ -684,10 +684,10 @@ static void match_failure(struct interpreter *interp)
     if(interp->sp > 0) {
       size_t old_sub = interp->sub;
       size_t i, n;
+      interp->sp--;
       interp->ip = interp->stack[interp->sp].ip;
       interp->o = interp->stack[interp->sp].o;
       interp->sub = interp->stack[interp->sp].sub;
-      interp->sp--;
       if(interp->match_count > 0) {
         n = (old_sub + 1 < interp->match_count - 1 ? old_sub + 1 : interp->match_count - 1);
         for(i = interp->sub + 1; i < n; i++) interp->matches[i + 1].re_so = interp->matches[i + 1].re_eo = -1;
@@ -739,8 +739,8 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
     case RE_OP_EANCHOR:
       interp->ip++;
       if((interp->cflags & REG_NEWLINE) != 0 && s[interp->o] == '\n') {
-        match_success(interp, s);
-      } else if((interp->eflags & REG_NOTEOL) != 0 || s[interp->o] != '\0' ) {
+        if((interp->cflags & REG_NEWLINE) != 0) interp->is_stopped = 1;
+      } else if((interp->eflags & REG_NOTEOL) != 0 || s[interp->o] != '\0') {
         match_failure(interp);
       }
     case RE_OP_BR:
@@ -755,7 +755,9 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
       break;
     case RE_OP_BR_END:
       interp->ip++;
-      if(interp->br_mode == 1 ? interp->is_success : (!interp->is_success && s[interp->o] != '\0' && ((interp->cflags & REG_NEWLINE) == 0 || s[interp->o] != '\n'))) {
+      int n = (interp->br_mode == 1 ? interp->is_success : (!interp->is_success && s[interp->o] != '\0' && ((interp->cflags & REG_NEWLINE) == 0 || s[interp->o] != '\n')));
+      interp->br_mode = 0;
+      if(n) {
         match_success(interp, s);
       } else {
         match_failure(interp);
@@ -843,6 +845,14 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
         match_failure(interp);
       }
       break;
+    case RE_OP_ALPHA:
+      interp->ip++;
+      if(isalpha(s[interp->o])) {
+        match_success(interp, s);
+      } else {
+        match_failure(interp);
+      }
+      break;
     case RE_OP_BLANK:
       interp->ip++;
       if(s[interp->o] == ' ' || s[interp->o] == '\t') {
@@ -853,7 +863,7 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
       break;
     case RE_OP_CNTRL:
       interp->ip++;
-      if(iscntrl(s[interp->o])) {
+      if(iscntrl(s[interp->o]) && s[interp->o] != '\0') {
         match_success(interp, s);
       } else {
         match_failure(interp);
@@ -976,7 +986,7 @@ int regexec(const regex_t *reg, const char *s, size_t nmatches, regmatch_t match
     } else {
       eflags |= REG_NOTBOL;
     }
-    if(s[i] == '\0') break;
+    if(s[o] == '\0') break;
     o++;
   }
   if(interp.stack != NULL) free(interp.stack);
