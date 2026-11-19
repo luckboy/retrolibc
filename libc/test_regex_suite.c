@@ -2449,6 +2449,114 @@ static void test_regexec_interprets_bytecode_for_brackets_with_caret_and_reg_new
   retrolibc_regfree(&reg);
 }
 
+static void test_regerror_copies_error_message(void)
+{
+  static char buf[100];
+  retrolibc_regex_t reg = { NULL, 0, 0 };
+  const char *s;
+  s = "Success";
+  CU_ASSERT_EQUAL(retrolibc_regerror(0, &reg, buf, 100), strlen(s) + 1);
+  CU_ASSERT_STRING_EQUAL(buf, s);
+  s = "No match";
+  CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_NOTMATCH, &reg, buf, 100), strlen(s) + 1);
+  CU_ASSERT_STRING_EQUAL(buf, s);
+  s = "Invalid regular expression";
+  CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_BADPAT, &reg, buf, 100), strlen(s) + 1);
+  CU_ASSERT_STRING_EQUAL(buf, s);
+  s = "Invalid collation character";
+  CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_ECOLLATE, &reg, buf, 100), strlen(s) + 1);
+  CU_ASSERT_STRING_EQUAL(buf, s);
+  s = "Invalid character class name";
+  CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_ECTYPE, &reg, buf, 100), strlen(s) + 1);
+  CU_ASSERT_STRING_EQUAL(buf, s);
+  s = "Trailing backslash";
+  CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_EESCAPE, &reg, buf, 100), strlen(s) + 1);
+  CU_ASSERT_STRING_EQUAL(buf, s);
+  s = "Invalid back reference";
+  CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_ESUBREG, &reg, buf, 100), strlen(s) + 1);
+  CU_ASSERT_STRING_EQUAL(buf, s);
+  s = "Unmatched [ or [^";
+  CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_EBRACK, &reg, buf, 100), strlen(s) + 1);
+  CU_ASSERT_STRING_EQUAL(buf, s);
+  s = "Unmatched ( or \\(";
+  CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_EPAREN, &reg, buf, 100), strlen(s) + 1);
+  CU_ASSERT_STRING_EQUAL(buf, s);
+  s = "Unmatched \\{";
+  CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_EBRACE, &reg, buf, 100), strlen(s) + 1);
+  CU_ASSERT_STRING_EQUAL(buf, s);
+  s = "Invalid content of \\{\\}";
+  CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_BADBR, &reg, buf, 100), strlen(s) + 1);
+  CU_ASSERT_STRING_EQUAL(buf, s);
+  s = "Invalid range end";
+  CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_ERANGE, &reg, buf, 100), strlen(s) + 1);
+  CU_ASSERT_STRING_EQUAL(buf, s);
+  s = "Memory exhausted";
+  CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_ESPACE, &reg, buf, 100), strlen(s) + 1);
+  CU_ASSERT_STRING_EQUAL(buf, s);
+  s = "Premature end of regular expression";
+  CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_BADRPT, &reg, buf, 100), strlen(s) + 1);
+  CU_ASSERT_STRING_EQUAL(buf, s);
+  s = "Unimplemented function";
+  CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_ENOSYS, &reg, buf, 100), strlen(s) + 1);
+  CU_ASSERT_STRING_EQUAL(buf, s);
+  s = "Unknown error";
+  CU_ASSERT_EQUAL(retrolibc_regerror(-1, &reg, buf, 100), strlen(s) + 1);
+  CU_ASSERT_STRING_EQUAL(buf, s);
+  s = "Unknown error";
+  CU_ASSERT_EQUAL(retrolibc_regerror(15, &reg, buf, 100), strlen(s) + 1);
+  CU_ASSERT_STRING_EQUAL(buf, s);
+}
+
+static void test_regerror_copies_error_message_part(void)
+{
+  static char buf[10];
+  retrolibc_regex_t reg = { NULL, 0, 0 };
+  const char *s;
+  s = "Invalid regular expression";
+  CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_BADPAT, &reg, buf, 10), strlen(s) + 1);
+  CU_ASSERT_STRING_EQUAL(buf, "Invalid r");
+}
+
+static void test_regerror_returns_number_of_bytes(void)
+{
+  retrolibc_regex_t reg = { NULL, 0, 0 };
+  const char *s;
+  s = "Success";
+  CU_ASSERT_EQUAL(retrolibc_regerror(0, &reg, NULL, 0), strlen(s) + 1);
+  s = "No match";
+  CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_NOTMATCH, &reg, NULL, 0), strlen(s) + 1);
+  s = "Invalid regular expression";
+  CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_BADPAT, &reg, NULL, 0), strlen(s) + 1);
+  s = "Invalid collation character";
+  CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_ECOLLATE, &reg, NULL, 0), strlen(s) + 1);
+  s = "Invalid character class name";
+  CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_ECTYPE, &reg, NULL, 0), strlen(s) + 1);
+  s = "Trailing backslash";
+  CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_EESCAPE, &reg, NULL, 0), strlen(s) + 1);
+  s = "Invalid back reference";
+  CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_ESUBREG, &reg, NULL, 0), strlen(s) + 1);
+  s = "Unmatched [ or [^";
+  CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_EBRACK, &reg, NULL, 0), strlen(s) + 1);
+  s = "Unmatched ( or \\(";
+  CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_EPAREN, &reg, NULL, 0), strlen(s) + 1);
+  s = "Unmatched \\{";
+  CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_EBRACE, &reg, NULL, 0), strlen(s) + 1);
+  s = "Invalid content of \\{\\}";
+  CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_BADBR, &reg, NULL, 0), strlen(s) + 1);
+  s = "Invalid range end";
+  CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_ERANGE, &reg, NULL, 0), strlen(s) + 1);
+  s = "Memory exhausted";
+  CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_ESPACE, &reg, NULL, 0), strlen(s) + 1);
+  s = "Premature end of regular expression";
+  CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_BADRPT, &reg, NULL, 0), strlen(s) + 1);
+  s = "Unimplemented function";
+  CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_ENOSYS, &reg, NULL, 0), strlen(s) + 1);
+  s = "Unknown error";
+  CU_ASSERT_EQUAL(retrolibc_regerror(-1, &reg, NULL, 0), strlen(s) + 1);
+  s = "Unknown error";
+  CU_ASSERT_EQUAL(retrolibc_regerror(15, &reg, NULL, 0), strlen(s) + 1);
+}
+
 int add_regex_suite(void)
 {
   CU_pSuite suite;
@@ -2596,5 +2704,8 @@ int add_regex_suite(void)
   if(CU_add_test(suite, "regexec interprets bytecode for ^ and REG_NEWLINE", test_regexec_interprets_bytecode_for_caret_and_reg_newline) == NULL) return -1;
   if(CU_add_test(suite, "regexec interprets bytecode for $ and REG_NEWLINE", test_regexec_interprets_bytecode_for_dollar_and_reg_newline) == NULL) return -1;
   if(CU_add_test(suite, "regexec interprets bytecode for brackets with ^ and REG_NEWLINE", test_regexec_interprets_bytecode_for_brackets_with_caret_and_reg_newline) == NULL) return -1;
+  if(CU_add_test(suite, "regerror copies error message", test_regerror_copies_error_message) == NULL) return -1;
+  if(CU_add_test(suite, "regerror copies error message part", test_regerror_copies_error_message_part) == NULL) return -1;
+  if(CU_add_test(suite, "regerror returns number of bytes", test_regerror_returns_number_of_bytes) == NULL) return -1;
   return 0;
 }

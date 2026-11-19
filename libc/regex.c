@@ -998,6 +998,7 @@ size_t regerror(int errcode, const regex_t *reg, char *errbuf, size_t errbuf_siz
   static const char *msgs[16] = {
     "Success",
     "No match",
+    "Invalid regular expression",
     "Invalid collation character",
     "Invalid character class name",
     "Trailing backslash",
