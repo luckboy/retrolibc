@@ -216,17 +216,29 @@ static const char *compile7(struct compiler *comp, const char *s, int is_in_brac
   case ']':
     break;
   case '\\':
-    if(s[1] == '\0') {
-      comp->error_code = REG_EESCAPE;
-      return NULL;
-    }
     if(!is_in_brackets) {
+      if(s[1] == '\0') {
+        comp->error_code = REG_EESCAPE;
+        return NULL;
+      }
       if((comp->cflags & REG_EXTENDED) == 0) {
         if(s[1] == '(' || s[1] == ')' || s[1] == '{' || s[1] == '}' || (s[1] >= '1' && s[1] <= '9')) return s;
       }
+      if(add_match(comp, s[1]) == -1) return NULL;
+      s += 2;
+    } else {
+      if(s[1] == '-') {
+        if(s[2] == ']' || s[2] == '\0') {
+          comp->error_code = REG_ERANGE;
+          return NULL;
+        }
+        if(add_op_with_range(comp, RE_OP_RANGE, *s, s[2]) == -1) return NULL;
+        s += 3;
+      } else {
+        if(add_match(comp, *s) == -1) return NULL;
+        s++;
+      }
     }
-    if(add_match(comp, s[1]) == -1) return NULL;
-    s += 2;
     break;
   default:
     if(!is_in_brackets) {
