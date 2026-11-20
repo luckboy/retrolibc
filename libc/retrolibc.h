@@ -282,6 +282,28 @@ size_t retrolibc_strxfrm(char *d, const char *s2, size_t n);
 #define strxfrm retrolibc_strxfrm
 #endif
 
+/* strings.c */
+
+int retrolibc_bcmp(const void *s, const void *s2, size_t n);
+void retrolibc_bcopy(const void *s, void *d, size_t n);
+void retrolibc_bzero(void *d, size_t n);
+int retrolibc_ffs(int i);
+char *retrolibc_index(const char *s, int c);
+char *retrolibc_rindex(const char *s, int c);
+int retrolibc_strcasecmp(const char *s, const char *s2);
+int retrolibc_strncasecmp(const char *s, const char *s2, size_t n);
+
+#ifdef RETROLIBC_STRINGS
+#define bcmp retrolibc_bcmp
+#define bcopy retrolibc_bcopy
+#define bzero retrolibc_bzero
+#define ffs retrolibc_ffs
+#define index retrolibc_index
+#define rindex retrolibc_rindex
+#define strcasecmp retrolibc_strcasecmp
+#define strncasecmp retrolibc_strncasecmp
+#endif
+
 /* bsearch.c */
 
 void *retrolibc_bsearch(const void *key, const void *base, size_t n, size_t width, int (*cmp)(const void *, const void *));

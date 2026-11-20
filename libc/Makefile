@@ -116,13 +116,13 @@ STRING_OBJS = \
 STRINGS_OBJS = \
 	$(BUILD_DIR)/strings_bcmp.o \
 	$(BUILD_DIR)/strings_bcopy.o \
-	$(BUILD_DIR)/strings_bset.o \
+	$(BUILD_DIR)/strings_bzero.o \
 	$(BUILD_DIR)/strings_ffs.o \
 	$(BUILD_DIR)/strings_index.o \
 	$(BUILD_DIR)/strings_rindex.o \
 	$(BUILD_DIR)/strings_strcasecmp.o \
 	$(BUILD_DIR)/strings_strncasecmp.o
-	
+
 OBJS = \
 	$(CTYPE_OBJS) \
 	$(FILE_OBJS) \
@@ -260,6 +260,16 @@ TEST_STRING_OBJS = \
 	$(TEST_BUILD_DIR)/string_strtok_r.o \
 	$(TEST_BUILD_DIR)/string_strxfrm.o
 
+TEST_STRINGS_OBJS = \
+	$(TEST_BUILD_DIR)/strings_bcmp.o \
+	$(TEST_BUILD_DIR)/strings_bcopy.o \
+	$(TEST_BUILD_DIR)/strings_bzero.o \
+	$(TEST_BUILD_DIR)/strings_ffs.o \
+	$(TEST_BUILD_DIR)/strings_index.o \
+	$(TEST_BUILD_DIR)/strings_rindex.o \
+	$(TEST_BUILD_DIR)/strings_strcasecmp.o \
+	$(TEST_BUILD_DIR)/strings_strncasecmp.o
+	
 TEST_OBJS = \
 	$(TEST_BUILD_DIR)/test_file_helpers.o \
 	$(TEST_CTYPE_OBJS) \
@@ -272,6 +282,8 @@ TEST_OBJS = \
 	$(TEST_BUILD_DIR)/test_stdlib_suite.o \
 	$(TEST_STRING_OBJS) \
 	$(TEST_BUILD_DIR)/test_string_suite.o \
+	$(TEST_STRINGS_OBJS) \
+	$(TEST_BUILD_DIR)/test_strings_suite.o \
 	$(TEST_BUILD_DIR)/bsearch.o \
 	$(TEST_BUILD_DIR)/test_bsearch_suite.o \
 	$(TEST_BUILD_DIR)/efcvt.o \
@@ -350,7 +362,7 @@ $(BUILD_DIR)/string_%.o.d: string.c $(BUILD_DIR)/.empty
 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -MM -MT $(BUILD_DIR)/string_$*.o $< > $@
 
 $(BUILD_DIR)/strings_%.o.d: strings.c $(BUILD_DIR)/.empty
-	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -MM -MT $(BUILD_DIR)/string_$*.o $< > $@
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -MM -MT $(BUILD_DIR)/strings_$*.o $< > $@
 
 # Rules for host objects.
 
@@ -369,6 +381,9 @@ $(TEST_BUILD_DIR)/stdlib_%.o: stdlib.c $(TEST_BUILD_DIR)/.empty
 $(TEST_BUILD_DIR)/string_%.o: string.c $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -c -o $@ $<
 
+$(TEST_BUILD_DIR)/strings_%.o: strings.c $(TEST_BUILD_DIR)/.empty
+	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -c -o $@ $<
+
 # Rules for host dependencies.
 
 $(TEST_BUILD_DIR)/ctype_%.o.d: ctype.c $(TEST_BUILD_DIR)/.empty
@@ -385,6 +400,9 @@ $(TEST_BUILD_DIR)/stdlib_%.o.d: stdlib.c $(TEST_BUILD_DIR)/.empty
 
 $(TEST_BUILD_DIR)/string_%.o.d: string.c $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -MM -MT $(TEST_BUILD_DIR)/string_$*.o $< > $@
+
+$(TEST_BUILD_DIR)/strings_%.o.d: strings.c $(TEST_BUILD_DIR)/.empty
+	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -MM -MT $(TEST_BUILD_DIR)/strings_$*.o $< > $@
 
 include $(TOP_DIR)/Rules.mk
 

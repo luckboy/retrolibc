@@ -7,7 +7,12 @@
  */
 #include <ctype.h>
 #include <string.h>
+#ifndef TEST
 #include <strings.h>
+#else
+#define RETROLIBC_STRINGS
+#include "retrolibc.h"
+#endif
 
 #ifdef L_bcmp
 int bcmp(const void *s, const void *s2, size_t n)
@@ -39,7 +44,7 @@ char *index(const char *s, int c)
 #endif
 
 #ifdef L_rindex
-char *index(const char *s, int c)
+char *rindex(const char *s, int c)
 { return strrchr(s, c); }
 #endif
 
