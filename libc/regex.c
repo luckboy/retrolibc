@@ -1013,7 +1013,7 @@ size_t regerror(int errcode, const regex_t *reg, char *errbuf, size_t errbuf_siz
     "Unknown error"
   };
   size_t len;
-  if(errcode < 0 || errcode > 14) errcode = 15;
+  if(errcode < 0 || errcode >= sizeof(msgs) / sizeof(char *) - 1) errcode = sizeof(msgs) / sizeof(char *) - 1;
   len = strlen(msgs[errcode]);
   if(errbuf_size > 0) {
     size_t n = errbuf_size - 1;
