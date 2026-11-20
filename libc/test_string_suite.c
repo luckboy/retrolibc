@@ -111,13 +111,13 @@ static void test_strcmp_returns_zero(void)
 static void test_strcmp_returns_number_that_is_less_than_zero(void)
 {
   CU_ASSERT_EQUAL(retrolibc_strcmp("abcDef", "abcdef"), 'D' - 'd');
-  CU_ASSERT_EQUAL(retrolibc_strcmp("abcdef", "abc"), 'd');
+  CU_ASSERT_EQUAL(retrolibc_strcmp("abc", "abcdef"), -'d');
 }
 
 static void test_strcmp_returns_number_that_is_greater_than_zero(void)
 {
   CU_ASSERT_EQUAL(retrolibc_strcmp("abcdef", "abcdEf"), 'e' - 'E');
-  CU_ASSERT_EQUAL(retrolibc_strcmp("abc", "abcdef"), -'d');
+  CU_ASSERT_EQUAL(retrolibc_strcmp("abcdef", "abc"), 'd');
 }
 
 static void test_strcoll_returns_zero(void)
@@ -192,17 +192,17 @@ static void test_strncmp_returns_zero(void)
 static void test_strncmp_returns_number_that_is_less_than_zero(void)
 {
   CU_ASSERT_EQUAL(retrolibc_strncmp("abcDef", "abcdef", 8), 'D' - 'd');
-  CU_ASSERT_EQUAL(retrolibc_strncmp("abcdef", "abc", 8), 'd');
+  CU_ASSERT_EQUAL(retrolibc_strncmp("abc", "abcdef", 8), -'d');
   CU_ASSERT_EQUAL(retrolibc_strncmp("abcDef", "abcdef", 4), 'D' - 'd');
-  CU_ASSERT_EQUAL(retrolibc_strncmp("abcdef", "abc", 4), 'd');
+  CU_ASSERT_EQUAL(retrolibc_strncmp("abc", "abcdef", 4), -'d');
 }
 
 static void test_strncmp_returns_number_that_is_greater_than_zero(void)
 {
   CU_ASSERT_EQUAL(retrolibc_strncmp("abcdef", "abcdEf", 8), 'e' - 'E');
-  CU_ASSERT_EQUAL(retrolibc_strncmp("abc", "abcdef", 8), -'d');
+  CU_ASSERT_EQUAL(retrolibc_strncmp("abcdef", "abc", 8), 'd');
   CU_ASSERT_EQUAL(retrolibc_strncmp("abcdef", "abcdEf", 5), 'e' - 'E');
-  CU_ASSERT_EQUAL(retrolibc_strncmp("abc", "abcdef", 5), -'d');
+  CU_ASSERT_EQUAL(retrolibc_strncmp("abcdef", "abc", 5), 'd');
 }
 
 static void test_strncpy_copies_string(void)
