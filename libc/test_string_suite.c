@@ -6,6 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 #include <stdlib.h>
+#include <string.h>
 #include <CUnit/Basic.h>
 #include "retrolibc.h"
 
