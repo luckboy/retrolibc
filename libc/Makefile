@@ -113,12 +113,23 @@ STRING_OBJS = \
 	$(BUILD_DIR)/string_strtok_r.o \
 	$(BUILD_DIR)/string_strxfrm.o
 
+STRINGS_OBJS = \
+	$(BUILD_DIR)/strings_bcmp.o \
+	$(BUILD_DIR)/strings_bcopy.o \
+	$(BUILD_DIR)/strings_bset.o \
+	$(BUILD_DIR)/strings_ffs.o \
+	$(BUILD_DIR)/strings_index.o \
+	$(BUILD_DIR)/strings_rindex.o \
+	$(BUILD_DIR)/strings_strcasecmp.o \
+	$(BUILD_DIR)/strings_strncasecmp.o
+	
 OBJS = \
 	$(CTYPE_OBJS) \
 	$(FILE_OBJS) \
 	$(STDIO_OBJS) \
 	$(STDLIB_OBJS) \
 	$(STRING_OBJS) \
+	$(STRINGS_OBJS) \
 	$(BUILD_DIR)/bsearch.o \
 	$(BUILD_DIR)/efcvt.o \
 	$(BUILD_DIR)/fprintf.o \
@@ -318,6 +329,9 @@ $(BUILD_DIR)/stdlib_%.o: stdlib.c $(BUILD_DIR)/.empty
 $(BUILD_DIR)/string_%.o: string.c $(BUILD_DIR)/.empty
 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -c -o $@ $<
 
+$(BUILD_DIR)/strings_%.o: strings.c $(BUILD_DIR)/.empty
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -c -o $@ $<
+	
 # Rules for target dependencies.
 
 $(BUILD_DIR)/ctype_%.o.d: ctype.c $(BUILD_DIR)/.empty
@@ -333,6 +347,9 @@ $(BUILD_DIR)/stdlib_%.o.d: stdlib.c $(BUILD_DIR)/.empty
 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -MM -MT $(BUILD_DIR)/stdlib_$*.o $< > $@
 
 $(BUILD_DIR)/string_%.o.d: string.c $(BUILD_DIR)/.empty
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -MM -MT $(BUILD_DIR)/string_$*.o $< > $@
+
+$(BUILD_DIR)/strings_%.o.d: strings.c $(BUILD_DIR)/.empty
 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -MM -MT $(BUILD_DIR)/string_$*.o $< > $@
 
 # Rules for host objects.
