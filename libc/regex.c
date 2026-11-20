@@ -25,7 +25,7 @@
 
 struct compiler
 {
-  short cflags;
+  int cflags;
   unsigned char *bytecode;
   ssize_t bytecode_size;
   ssize_t bytecode_capacity;
