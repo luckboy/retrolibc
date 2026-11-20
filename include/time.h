@@ -47,6 +47,7 @@ char *strptime(const char *buf, const char *format, struct tm *tm);
 void tzset(void);
 
 #ifdef __cplusplus
+}
 #endif
 
 #endif
