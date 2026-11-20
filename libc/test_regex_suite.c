@@ -2537,10 +2537,10 @@ static void test_regerror_copies_error_message(void)
   s = "Unimplemented function";
   CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_ENOSYS, &reg, buf, 100), strlen(s) + 1);
   CU_ASSERT_STRING_EQUAL(buf, s);
-  s = "Unknown error";
+  s = "Unknown Error";
   CU_ASSERT_EQUAL(retrolibc_regerror(-1, &reg, buf, 100), strlen(s) + 1);
   CU_ASSERT_STRING_EQUAL(buf, s);
-  s = "Unknown error";
+  s = "Unknown Error";
   CU_ASSERT_EQUAL(retrolibc_regerror(15, &reg, buf, 100), strlen(s) + 1);
   CU_ASSERT_STRING_EQUAL(buf, s);
 }
@@ -2589,9 +2589,9 @@ static void test_regerror_returns_number_of_bytes(void)
   CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_BADRPT, &reg, NULL, 0), strlen(s) + 1);
   s = "Unimplemented function";
   CU_ASSERT_EQUAL(retrolibc_regerror(RETROLIBC_REG_ENOSYS, &reg, NULL, 0), strlen(s) + 1);
-  s = "Unknown error";
+  s = "Unknown Error";
   CU_ASSERT_EQUAL(retrolibc_regerror(-1, &reg, NULL, 0), strlen(s) + 1);
-  s = "Unknown error";
+  s = "Unknown Error";
   CU_ASSERT_EQUAL(retrolibc_regerror(15, &reg, NULL, 0), strlen(s) + 1);
 }
 

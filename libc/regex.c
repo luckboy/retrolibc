@@ -1010,7 +1010,7 @@ size_t regerror(int errcode, const regex_t *reg, char *errbuf, size_t errbuf_siz
     "Memory exhausted",
     "Premature end of regular expression",
     "Unimplemented function",
-    "Unknown error"
+    "Unknown Error"
   };
   size_t len;
   if(errcode < 0 || errcode >= sizeof(msgs) / sizeof(char *) - 1) errcode = sizeof(msgs) / sizeof(char *) - 1;
