@@ -303,6 +303,8 @@ TEST_OBJS = \
 	$(TEST_BUILD_DIR)/test_qsort_suite.o \
 	$(TEST_BUILD_DIR)/regex.o \
 	$(TEST_BUILD_DIR)/test_regex_suite.o \
+	$(TEST_BUILD_DIR)/strerror.o \
+	$(TEST_BUILD_DIR)/test_strerror_suite.o \
 	$(TEST_BUILD_DIR)/strftime.o \
 	$(TEST_BUILD_DIR)/test_strftime_suite.o \
 	$(TEST_BUILD_DIR)/strptime.o \
@@ -311,6 +313,7 @@ TEST_OBJS = \
 	$(TEST_BUILD_DIR)/test_strtod_suite.o \
 	$(TEST_BUILD_DIR)/strtol.o \
 	$(TEST_BUILD_DIR)/test_strtol_suite.o \
+	$(TEST_BUILD_DIR)/sys_errlist.o \
 	$(TEST_BUILD_DIR)/tzset.o \
 	$(TEST_BUILD_DIR)/test_tzset_suite.o \
 	$(TEST_BUILD_DIR)/ulltostr.o \

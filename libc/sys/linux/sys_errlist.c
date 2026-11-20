@@ -7,6 +7,10 @@
  */
 #include <stddef.h>
 #include <errno.h>
+#ifdef TEST
+#define RETROLIBC_STRERROR
+#include "retrolibc.h"
+#endif
 
 const char *sys_errlist[] = {
   [0] = "Success",

@@ -6,7 +6,12 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 #include <errno.h>
+#ifndef TEST
 #include <string.h>
+#else
+#define RETROLIBC_STRERROR
+#include "retrolibc.h"
+#endif
 
 char *strerror(int errnum)
 {

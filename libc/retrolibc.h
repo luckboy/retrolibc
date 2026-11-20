@@ -551,6 +551,22 @@ void retrolibc_qsort(void *base, size_t n, size_t size, int (*cmp)(const void *,
 #define qsort retrolibc_qsort
 #endif
 
+/* strerror.c */
+
+extern int retrolibc_sys_nerr;
+extern const char *retrolibc_sys_errlist[];
+
+char *retrolibc_strerror(int errnum);
+
+#ifdef RETROLIBC_STRERROR
+
+#define sys_nerr retrolibc_sys_nerr
+#define sys_errlist retrolibc_sys_errlist
+
+#define strerror retrolibc_strerror
+
+#endif
+
 /* strftime.c */
 
 size_t retrolibc_strftime(char *s, size_t maxsize, const char *format, const struct retrolibc_tm *retrolibc_tm);

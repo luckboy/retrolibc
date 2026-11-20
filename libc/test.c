@@ -36,6 +36,7 @@ int add_gmtime_r_suite(void);
 int add_localtime_r_suite(void);
 int add_malloc_suite(void);
 int add_qsort_suite(void);
+int add_strerror_suite(void);
 int add_strftime_suite(void);
 int add_strptime_suite(void);
 int add_strtod_suite(void);
@@ -113,6 +114,10 @@ int main(int argc, char **argv)
     return CU_get_error();
   }
   if(add_qsort_suite() == -1) {
+    CU_cleanup_registry();
+    return CU_get_error();
+  }
+  if(add_strerror_suite() == -1) {
     CU_cleanup_registry();
     return CU_get_error();
   }
