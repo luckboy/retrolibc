@@ -41,8 +41,8 @@ static int eq_op_with_int(retrolibc_regex_t *reg, ssize_t *ip, int op, int x)
   int r;
   if(reg->__bytecode == NULL) return 0;
   r = (reg->__bytecode[*ip] == op);
-  r &= ((reg->__bytecode[*ip + 1]) == ((x >> 24) & 0xff));
-  r &= ((reg->__bytecode[*ip + 2]) == ((x >> 16) & 0xff));
+  r &= (reg->__bytecode[*ip + 1] == ((x >> 24) & 0xff));
+  r &= (reg->__bytecode[*ip + 2] == ((x >> 16) & 0xff));
   r &= (reg->__bytecode[*ip + 3] == ((x >> 8) & 0xff));
   r &= (reg->__bytecode[*ip + 4] == (x & 0xff));
   (*ip) += 5;
