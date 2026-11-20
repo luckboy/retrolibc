@@ -754,7 +754,7 @@ static int interpret_bytecode(struct interpreter *interp, const char *s)
       break;
     case RE_OP_BR_END:
       interp->ip++;
-      int n = (interp->br_mode == 1 ? interp->is_success : (!interp->is_success && s[interp->o] != '\0' && ((interp->cflags & REG_NEWLINE) == 0 || s[interp->o] != '\n')));
+      n = (interp->br_mode == 1 ? interp->is_success : (!interp->is_success && s[interp->o] != '\0' && ((interp->cflags & REG_NEWLINE) == 0 || s[interp->o] != '\n')));
       interp->br_mode = 0;
       if(n) {
         match_success(interp, s);
