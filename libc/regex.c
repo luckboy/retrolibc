@@ -34,7 +34,7 @@ struct compiler
   signed char error_code;
 };
 
-static int comp_get_int(struct compiler *comp, ssize_t i)
+static int comp_get_int(const struct compiler *comp, ssize_t i)
 { return (int) ((comp->bytecode[i] << 24) | (comp->bytecode[i + 1] << 16) | (comp->bytecode[i + 2] << 8) | comp->bytecode[i + 3]); }
 
 static void comp_set_int(struct compiler *comp, ssize_t i, int x)
@@ -606,7 +606,7 @@ struct interpreter
   signed char error_code;
 };
 
-static int interp_get_int(struct interpreter *interp, ssize_t i)
+static int interp_get_int(const struct interpreter *interp, ssize_t i)
 { return (int) ((interp->bytecode[i] << 24) | (interp->bytecode[i + 1] << 16) | (interp->bytecode[i + 2] << 8) | interp->bytecode[i + 3]); }
 
 static int push(struct interpreter *interp, ssize_t ip)
@@ -628,7 +628,7 @@ static int push(struct interpreter *interp, ssize_t ip)
   return 0;
 }
 
-static int match(struct interpreter *interp, int c, int n)
+static int match(const struct interpreter *interp, int c, int n)
 {
   if((interp->cflags & REG_ICASE) != 0) {
     return (unsigned char) tolower(c) == (unsigned char) n || (unsigned char) toupper(c) == (unsigned char) n;
@@ -637,7 +637,7 @@ static int match(struct interpreter *interp, int c, int n)
   }
 }
 
-static int match_range(struct interpreter *interp, int c, int n, int m)
+static int match_range(const struct interpreter *interp, int c, int n, int m)
 {
   if((interp->cflags & REG_ICASE) != 0) {
     return ((unsigned char) tolower(c) >= (unsigned char) n && (unsigned char) tolower(c) <= (unsigned char) m) || ((unsigned char) toupper(c) >= (unsigned char) n && (unsigned char) toupper(c) <= (unsigned char) m);
@@ -646,7 +646,7 @@ static int match_range(struct interpreter *interp, int c, int n, int m)
   }
 }
 
-static int match_lower(struct interpreter *interp, int c)
+static int match_lower(const struct interpreter *interp, int c)
 {
   if((interp->cflags & REG_ICASE) != 0) {
     return isalpha(c);
@@ -655,7 +655,7 @@ static int match_lower(struct interpreter *interp, int c)
   }
 }
 
-static int match_upper(struct interpreter *interp, int c)
+static int match_upper(const struct interpreter *interp, int c)
 {
   if((interp->cflags & REG_ICASE) != 0) {
     return isalpha(c);
