@@ -34,16 +34,26 @@ struct compiler
   signed char error_code;
 };
 
+#if defined(__i386__) || defined(__x86_64__)
+
+#define comp_get_int(comp, i)           (*((int *) ((comp)->bytecode + (i))))
+
+#define comp_set_int(comp, i, x)        do *((int *) ((comp)->bytecode + (i))) = (x); while(0)
+
+#else
+
 static int comp_get_int(const struct compiler *comp, ssize_t i)
-{ return (((int) (comp->bytecode[i]) << 24) | ((int) (comp->bytecode[i + 1]) << 16) | ((int) (comp->bytecode[i + 2]) << 8) | (int) (comp->bytecode[i + 3])); }
+{ return ((int) (comp->bytecode[i]) | ((int) (comp->bytecode[i + 1]) << 8) | ((int) (comp->bytecode[i + 2]) << 16) | ((int) (comp->bytecode[i + 3]) << 24)); }
 
 static void comp_set_int(struct compiler *comp, ssize_t i, int x)
 {
-  comp->bytecode[i] = x >> 24;
-  comp->bytecode[i + 1] = x >> 16;
-  comp->bytecode[i + 2] = x >> 8;
-  comp->bytecode[i + 3] = x;
+  comp->bytecode[i] = x;
+  comp->bytecode[i + 1] = x >> 8;
+  comp->bytecode[i + 2] = x >> 16;
+  comp->bytecode[i + 3] = x >> 24;
 }
+
+#endif
 
 static int comp_set_addr(struct compiler *comp, ssize_t i, ssize_t addr, ssize_t ip)
 {
@@ -95,10 +105,14 @@ static int add_op_with_int(struct compiler *comp, int op, int x)
 {
   unsigned char instr[5];
   instr[0] = op;
-  instr[1] = x >> 24;
-  instr[2] = x >> 16;
-  instr[3] = x >> 8;
-  instr[4] = x;
+#if defined(__i386__) || defined(__x86_64__)
+  *((int *) (instr + 1)) = x;
+#else
+  instr[1] = x;
+  instr[2] = x >> 8;
+  instr[3] = x >> 16;
+  instr[4] = x >> 24;
+#endif
   return add_bytecode(comp, instr, 5);
 }
 
@@ -614,8 +628,16 @@ struct interpreter
   signed char error_code;
 };
 
+#if defined(__i386__) || defined(__x86_64__)
+
+#define interp_get_int(interp, i)       (*((int *) ((interp)->bytecode + (i))))
+
+#else
+
 static int interp_get_int(const struct interpreter *interp, ssize_t i)
-{ return (((int) (interp->bytecode[i]) << 24) | ((int) (interp->bytecode[i + 1]) << 16) | ((int) (interp->bytecode[i + 2]) << 8) | (int) (interp->bytecode[i + 3])); }
+{ return ((int) (interp->bytecode[i]) | ((int) (interp->bytecode[i + 1]) << 8) | ((int) (interp->bytecode[i + 2]) << 16) | ((int) (interp->bytecode[i + 3]) << 24)); }
+
+#endif
 
 static int push(struct interpreter *interp, ssize_t ip)
 {
