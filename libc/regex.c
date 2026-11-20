@@ -35,7 +35,7 @@ struct compiler
 };
 
 static int comp_get_int(const struct compiler *comp, ssize_t i)
-{ return (int) ((comp->bytecode[i] << 24) | (comp->bytecode[i + 1] << 16) | (comp->bytecode[i + 2] << 8) | comp->bytecode[i + 3]); }
+{ return (((int) (comp->bytecode[i]) << 24) | ((int) (comp->bytecode[i + 1]) << 16) | ((int) (comp->bytecode[i + 2]) << 8) | (int) (comp->bytecode[i + 3])); }
 
 static void comp_set_int(struct compiler *comp, ssize_t i, int x)
 {
@@ -615,7 +615,7 @@ struct interpreter
 };
 
 static int interp_get_int(const struct interpreter *interp, ssize_t i)
-{ return (int) ((interp->bytecode[i] << 24) | (interp->bytecode[i + 1] << 16) | (interp->bytecode[i + 2] << 8) | interp->bytecode[i + 3]); }
+{ return (((int) (interp->bytecode[i]) << 24) | ((int) (interp->bytecode[i + 1]) << 16) | ((int) (interp->bytecode[i + 2]) << 8) | (int) (interp->bytecode[i + 3])); }
 
 static int push(struct interpreter *interp, ssize_t ip)
 {
