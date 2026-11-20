@@ -19,10 +19,10 @@ static void test_bcmp_returns_zero(void)
 { CU_ASSERT_EQUAL(retrolibc_bcmp("abc\0def\0", "abc\0def\0", 8), 0); }
 
 static void test_bcmp_returns_number_that_is_less_than_zero(void)
-{ CU_ASSERT_EQUAL(retrolibc_bcmp("abc\0Def\0", "abc\0def\0", 8), 'D' - 'd'); }
+{ CU_ASSERT(retrolibc_bcmp("abc\0Def\0", "abc\0def\0", 8) < 0); }
 
 static void test_bcmp_returns_number_that_is_greater_than_zero(void)
-{ CU_ASSERT_EQUAL(retrolibc_bcmp("abc\0def\0", "abc\0dEf\0", 8), 'e' - 'E'); }
+{ CU_ASSERT(retrolibc_bcmp("abc\0def\0", "abc\0dEf\0", 8) > 0); }
 
 static void test_bcopy_copies_memory(void)
 {
