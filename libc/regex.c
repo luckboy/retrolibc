@@ -161,6 +161,22 @@ static long parse_long(const char *s, char **endptr)
 static const char *compile2(struct compiler *comp, const char *s);
 static const char *compile1(struct compiler *comp, const char *s);
 
+static const char *compile_range_or_match(struct compiler *comp, const char *s)
+{
+  if(s[1] == '-') {
+    if(s[2] == ']' || s[2] == '\0') {
+      comp->error_code = REG_ERANGE;
+      return NULL;
+    }
+    if(add_op_with_range(comp, RE_OP_RANGE, *s, s[2]) == -1) return NULL;
+    s += 3;
+  } else {
+    if(add_match(comp, *s) == -1) return NULL;
+    s++;
+  }
+  return s;
+}
+
 static const char *compile7(struct compiler *comp, const char *s, int is_in_brackets)
 {
   switch(*s) {
@@ -227,17 +243,7 @@ static const char *compile7(struct compiler *comp, const char *s, int is_in_brac
       if(add_match(comp, s[1]) == -1) return NULL;
       s += 2;
     } else {
-      if(s[1] == '-') {
-        if(s[2] == ']' || s[2] == '\0') {
-          comp->error_code = REG_ERANGE;
-          return NULL;
-        }
-        if(add_op_with_range(comp, RE_OP_RANGE, *s, s[2]) == -1) return NULL;
-        s += 3;
-      } else {
-        if(add_match(comp, *s) == -1) return NULL;
-        s++;
-      }
+      if((s = compile_range_or_match(comp, s)) == NULL) return NULL;
     }
     break;
   default:
@@ -253,17 +259,7 @@ static const char *compile7(struct compiler *comp, const char *s, int is_in_brac
       }
       s++;
     } else {
-      if(s[1] == '-') {
-        if(s[2] == ']' || s[2] == '\0') {
-          comp->error_code = REG_ERANGE;
-          return NULL;
-        }
-        if(add_op_with_range(comp, RE_OP_RANGE, *s, s[2]) == -1) return NULL;
-        s += 3;
-      } else {
-        if(add_match(comp, *s) == -1) return NULL;
-        s++;
-      }
+      if((s = compile_range_or_match(comp, s)) == NULL) return NULL;
     }
     break;
   }
