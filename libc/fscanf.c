@@ -627,7 +627,7 @@ static int xscanf(struct xreader *xr, const char *format, va_list ap)
         xungetc(c, xr);
       } else {
         int c;
-        if((c = xgetc(xr)) == EOF || ((unsigned char) c) != ((unsigned char) (*format))) {
+        if((c = xgetc(xr)) == EOF || (unsigned char) c != (unsigned char) (*format)) {
           xungetc(c, xr);
           is_stop = 1;
         }

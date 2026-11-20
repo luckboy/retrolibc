@@ -199,7 +199,7 @@ static void xconv_f(struct xwriter *xw, double x, int flags, int width, int prec
   int i, n, len = 0;
   s = __efcvt(x, prec, &decpt, &is_sign, buf, DBL_DIG, is_g);
   if(is_g) {
-    for(i = ((int) strlen(buf)) - 1; i > 0 && buf[i] == '0'; i--);
+    for(i = (int) strlen(buf) - 1; i > 0 && buf[i] == '0'; i--);
     i++;
     buf[i] = '\0';
   }
@@ -297,7 +297,7 @@ static void xconv_e(struct xwriter *xw, double x, int conv_spec, int flags, int 
   }
   s = __efcvt(x, prec, &decpt, &is_sign, buf, DBL_DIG, 1);
   if(is_g) {
-    for(i = ((int) strlen(buf)) - 1; i > 0 && buf[i] == '0'; i--);
+    for(i = (int) strlen(buf) - 1; i > 0 && buf[i] == '0'; i--);
     i++;
     buf[i] = '\0';
   }
@@ -401,7 +401,7 @@ static void xconv_s(struct xwriter *xw, const char *s, int flags, int width, int
   } else {
     len = s_len;
   }
-  leni = (len < ((size_t) INT_MAX) ? ((int) len) : INT_MAX);
+  leni = (len < ((size_t) INT_MAX) ? (int) len : INT_MAX);
   /* Prints string. */
   /* space padding */
   if((flags & FLAG_MINUS) == 0) {
