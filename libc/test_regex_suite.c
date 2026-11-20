@@ -399,6 +399,22 @@ static void test_regcomp_compiles_regular_expression_for_bre_and_brackets_with_r
   if(reg.__bytecode != NULL) free(reg.__bytecode);
 }
 
+static void test_regcomp_compiles_regular_expression_for_bre_and_brackets_with_range_and_backslash(void)
+{
+  retrolibc_regex_t reg;
+  ssize_t ip = 0;
+  reg.__bytecode = NULL;
+  CU_ASSERT_EQUAL(retrolibc_regcomp(&reg, "[a\\-cd]", 0), 0);
+  CU_ASSERT_EQUAL(reg.re_nsub, 0);
+  CU_ASSERT_EQUAL(eq_op(&reg, &ip, RE_OP_BR), 1);
+  CU_ASSERT_EQUAL(eq_op(&reg, &ip, 'a'), 1);
+  CU_ASSERT_EQUAL(eq_op_with_range(&reg, &ip, RE_OP_RANGE, '\\', 'c'), 1);
+  CU_ASSERT_EQUAL(eq_op(&reg, &ip, 'd'), 1);
+  CU_ASSERT_EQUAL(eq_op(&reg, &ip, RE_OP_BR_END), 1);
+  CU_ASSERT_EQUAL(eq_op(&reg, &ip, RE_OP_END), 1);
+  if(reg.__bytecode != NULL) free(reg.__bytecode);
+}
+
 static void test_regcomp_compiles_regular_expression_for_bre_and_brackets_with_left_bracket(void)
 {
   retrolibc_regex_t reg;
@@ -997,6 +1013,22 @@ static void test_regcomp_compiles_regular_expression_for_ere_and_brackets_with_r
   CU_ASSERT_EQUAL(eq_op(&reg, &ip, RE_OP_BR), 1);
   CU_ASSERT_EQUAL(eq_op(&reg, &ip, 'a'), 1);
   CU_ASSERT_EQUAL(eq_op_with_range(&reg, &ip, RE_OP_RANGE, 'b', 'c'), 1);
+  CU_ASSERT_EQUAL(eq_op(&reg, &ip, 'd'), 1);
+  CU_ASSERT_EQUAL(eq_op(&reg, &ip, RE_OP_BR_END), 1);
+  CU_ASSERT_EQUAL(eq_op(&reg, &ip, RE_OP_END), 1);
+  if(reg.__bytecode != NULL) free(reg.__bytecode);
+}
+
+static void test_regcomp_compiles_regular_expression_for_ere_and_brackets_with_range_and_backslash(void)
+{
+  retrolibc_regex_t reg;
+  ssize_t ip = 0;
+  reg.__bytecode = NULL;
+  CU_ASSERT_EQUAL(retrolibc_regcomp(&reg, "[a\\-cd]", RETROLIBC_REG_EXTENDED), 0);
+  CU_ASSERT_EQUAL(reg.re_nsub, 0);
+  CU_ASSERT_EQUAL(eq_op(&reg, &ip, RE_OP_BR), 1);
+  CU_ASSERT_EQUAL(eq_op(&reg, &ip, 'a'), 1);
+  CU_ASSERT_EQUAL(eq_op_with_range(&reg, &ip, RE_OP_RANGE, '\\', 'c'), 1);
   CU_ASSERT_EQUAL(eq_op(&reg, &ip, 'd'), 1);
   CU_ASSERT_EQUAL(eq_op(&reg, &ip, RE_OP_BR_END), 1);
   CU_ASSERT_EQUAL(eq_op(&reg, &ip, RE_OP_END), 1);
@@ -2618,6 +2650,7 @@ int add_regex_suite(void)
   if(CU_add_test(suite, "regcomp compiles regular expression for BRE and brackets with caret", test_regcomp_compiles_regular_expression_for_bre_and_brackets_with_caret) == NULL) return -1;
   if(CU_add_test(suite, "regcomp compiles regular expression for BRE and brackets with ctype", test_regcomp_compiles_regular_expression_for_bre_and_brackets_with_ctype) == NULL) return -1;
   if(CU_add_test(suite, "regcomp compiles regular expression for BRE and brackets with range", test_regcomp_compiles_regular_expression_for_bre_and_brackets_with_range) == NULL) return -1;
+  if(CU_add_test(suite, "regcomp compiles regular expression for BRE and brackets with range and \\", test_regcomp_compiles_regular_expression_for_bre_and_brackets_with_range_and_backslash) == NULL) return -1;
   if(CU_add_test(suite, "regcomp compiles regular expression for BRE and brackets with [", test_regcomp_compiles_regular_expression_for_bre_and_brackets_with_left_bracket) == NULL) return -1;
   if(CU_add_test(suite, "regcomp compiles regular expression for BRE and escape", test_regcomp_compiles_regular_expression_for_bre_and_escape) == NULL) return -1;
   if(CU_add_test(suite, "regcomp compiles regular expression for BRE and .", test_regcomp_compiles_regular_expression_for_bre_and_dot) == NULL) return -1;
@@ -2656,6 +2689,7 @@ int add_regex_suite(void)
   if(CU_add_test(suite, "regcomp compiles regular expression for ERE and brackets with caret", test_regcomp_compiles_regular_expression_for_ere_and_brackets_with_caret) == NULL) return -1;
   if(CU_add_test(suite, "regcomp compiles regular expression for ERE and brackets with ctype", test_regcomp_compiles_regular_expression_for_ere_and_brackets_with_ctype) == NULL) return -1;
   if(CU_add_test(suite, "regcomp compiles regular expression for ERE and brackets with range", test_regcomp_compiles_regular_expression_for_ere_and_brackets_with_range) == NULL) return -1;
+  if(CU_add_test(suite, "regcomp compiles regular expression for ERE and brackets with range and \\", test_regcomp_compiles_regular_expression_for_ere_and_brackets_with_range_and_backslash) == NULL) return -1;
   if(CU_add_test(suite, "regcomp compiles regular expression for ERE and brackets with [", test_regcomp_compiles_regular_expression_for_ere_and_brackets_with_left_bracket) == NULL) return -1;
   if(CU_add_test(suite, "regcomp compiles regular expression for ERE and escape", test_regcomp_compiles_regular_expression_for_ere_and_escape) == NULL) return -1;
   if(CU_add_test(suite, "regcomp compiles regular expression for ERE and .", test_regcomp_compiles_regular_expression_for_ere_and_dot) == NULL) return -1;
