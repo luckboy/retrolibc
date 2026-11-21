@@ -6,7 +6,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 #include <stdio.h>
-#include <string.h>
 #include <unistd.h>
 
 char *optarg;
@@ -37,7 +36,7 @@ int getopt(int argc, char * const argv[], const char *opts)
   int is_optional_arg = 0;
   optarg = NULL;
   if(optind >= argc || argv[optind] == NULL || argv[optind][0] != '-' || argv[optind][1] != '\0') return -1;
-  if(strcmp(argv[optind], "--") == 0) {
+  if(argv[optind][0] == '-' && argv[optind][1] == '-' && argv[optind][2] == '\0') {
     optind++;
     return -1;
   }
