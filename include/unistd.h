@@ -72,6 +72,15 @@ extern "C" {
 int execv(const char *path, char *const argv[]);
 void *sbrk(intptr_t inc);
 
+#ifndef _GETOPT
+#define _GETOPT
+extern char *optarg;
+extern int optind;
+extern int opterr;
+extern int optopt;
+int getopt(int argc, char * const argv[], const char *opts);
+#endif
+
 void _exit(int status);
 int access(const char *path, int amode);
 int brk(void *addr);

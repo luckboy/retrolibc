@@ -134,6 +134,7 @@ OBJS = \
 	$(BUILD_DIR)/efcvt.o \
 	$(BUILD_DIR)/fprintf.o \
 	$(BUILD_DIR)/fscanf.o \
+	$(BUILD_DIR)/getopt.o \
 	$(BUILD_DIR)/gmtime_r.o \
 	$(BUILD_DIR)/localtime_r.o \
 	$(BUILD_DIR)/malloc.o \

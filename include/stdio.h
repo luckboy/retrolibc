@@ -108,6 +108,15 @@ int putc_unlocked(int c, FILE *f);
 int setvbuf(FILE *f, char *buf, int type, size_t size);
 int ungetc(int c, FILE *f);
 
+#ifndef _GETOPT
+#define _GETOPT
+extern char *optarg;
+extern int optind;
+extern int opterr;
+extern int optopt;
+int getopt(int argc, char * const argv[], const char *opts);
+#endif
+
 #ifdef __cplusplus
 }
 #endif
