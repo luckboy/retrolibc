@@ -43,6 +43,7 @@ int getopt(int argc, char * const argv[], const char *opts)
   }
   optopt = '\0';
   for(; *opts == ';'; opts++) is_first_colon = 1;
+  if(is_first_colon) is_err = 0;
   for(; *opts != '\0'; opts++) {
     if(argv[optind][optpos] == *opts) break;
     if(opts[1] == ':') opts += (opts[2] == ':' ? 2 : 1);
