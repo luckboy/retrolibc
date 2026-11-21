@@ -7,6 +7,7 @@
  */
 #include <sys/mman.h>
 #include <errno.h>
+#include <inttypes.h>
 #include <limits.h>
 #include <pthread.h>
 #include <string.h>
@@ -86,7 +87,7 @@ static int align_heap(void)
   void *addr = sbrk(0);
   if(addr == (void *) (-1)) return -1;
   if((size_t) addr != ALIGN((size_t) addr)) {
-     if(sbrk(ALIGN((size_t) addr) - ((size_t) addr)) == (void *) (-1)) return -1;
+     if(sbrk(ALIGN((uintptr_t) addr) - ((uintptr_t) addr)) == (void *) (-1)) return -1;
   }
   return 0;
 }
