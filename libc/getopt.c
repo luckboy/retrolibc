@@ -98,7 +98,7 @@ int getopt(int argc, char * const argv[], const char *opts)
       optind++;
     }
   } else {
-    if(is_arg == 1) {
+    if(is_arg) {
       optarg = argv[optind] + optpos;
       optind++;
       optpos = 1;
