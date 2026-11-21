@@ -83,9 +83,13 @@ STDIO_OBJS = \
 	$(BUILD_DIR)/stdio_vscanf.o
 
 STDLIB_OBJS = \
+	$(BUILD_DIR)/stdlib_atof.o \
 	$(BUILD_DIR)/stdlib_atoi.o \
 	$(BUILD_DIR)/stdlib_atol.o \
-	$(BUILD_DIR)/stdlib_atoll.o
+	$(BUILD_DIR)/stdlib_atoll.o \
+	$(BUILD_DIR)/stdlib_ecvt.o \
+	$(BUILD_DIR)/stdlib_fcvt.o \
+	$(BUILD_DIR)/stdlib_gcvt.o
 	
 STRING_OBJS = \
 	$(BUILD_DIR)/string_memccpy.o \

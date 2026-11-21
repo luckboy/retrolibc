@@ -15,12 +15,19 @@
 extern "C" {
 #endif
 
+double atof(const char *s);
 int atoi(const char *s);
 long atol(const char *s);
 long long atoll(const char *s);
-void *bsearch(const void *key, const void *base, size_t n, size_t width, int (*cmp)(const void *, const void *));
+char *ecvt(double n, int ndigits, int *decpt, int *sign);
+char *fcvt(double n, int ndigits, int *decpt, int *sign);
+char *gcvt(double n, int ndigits, char *buf);
+
 char *getenv(const char *name);
+
+void *bsearch(const void *key, const void *base, size_t n, size_t width, int (*cmp)(const void *, const void *));
 void qsort(void *base, size_t n, size_t size, int (*cmp)(const void *, const void *));
+
 double strtod(const char *s, char **endptr);
 long strtol(const char *s, char **endptr, int base);
 long long strtoll(const char *s, char **endptr, int base);
