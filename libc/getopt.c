@@ -34,6 +34,12 @@ int getopt(int argc, char * const argv[], const char *opts)
   int is_first_colon = 0;
   int is_arg = 0;
   int is_optional_arg = 0;
+  if(optind == 0) {
+    optarg = NULL;
+    optind = 1;
+    opterr = 1;
+    optopt = '?';
+  }
   optarg = NULL;
   if(optind >= argc || argv[optind] == NULL || argv[optind][0] != '-' || argv[optind][1] != '\0') return -1;
   if(argv[optind][0] == '-' && argv[optind][1] == '-' && argv[optind][2] == '\0') {
