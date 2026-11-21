@@ -36,7 +36,7 @@ int getopt(int argc, char * const argv[], const char *opts)
   int is_arg = 0;
   int is_optional_arg = 0;
   optarg = NULL;
-  if(optind >= argc || argv[optind][0] != '-' || argv[optind][1] != '\0') return -1;
+  if(optind >= argc || argv[optind] == NULL || argv[optind][0] != '-' || argv[optind][1] != '\0') return -1;
   if(strcmp(argv[optind], "--") == 0) {
     optind++;
     return -1;
