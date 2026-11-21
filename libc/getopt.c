@@ -6,14 +6,21 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 #include <stdio.h>
+#ifndef TEST
 #include <unistd.h>
+#else
+#define RETROLIBC_GETOPT
+#include "retrolibc.h"
+#endif
 
-char *optarg;
+char *optarg = NULL;
 int optind = 1;
 int opterr = 1;
 int optopt = '?';
 
 static size_t optpos = 1;
+
+#ifndef TEST
 
 static void print_error(const char *s, const char *s2, int c)
 {
@@ -27,6 +34,21 @@ static void print_error(const char *s, const char *s2, int c)
   funlockfile(stderr);
 }
 
+#else
+
+static char message[100];
+
+void initialize_retrolibc_optpos(void)
+{ optpos = 1; }
+
+static void print_error(const char *s, const char *s2, int c)
+{ snprintf(message, 100, "%s%s'%c'\n", s, s2, c); }
+
+char *retrolibc_getopt_message(void)
+{ return message; }
+
+#endif
+
 int getopt(int argc, char * const argv[], const char *opts)
 {
   int c = '?';
@@ -37,17 +59,16 @@ int getopt(int argc, char * const argv[], const char *opts)
   if(optind == 0) {
     optarg = NULL;
     optind = 1;
-    opterr = 1;
     optopt = '?';
   }
   optarg = NULL;
-  if(optind >= argc || argv[optind] == NULL || argv[optind][0] != '-' || argv[optind][1] != '\0') return -1;
+  if(optind >= argc || argv[optind] == NULL || argv[optind][0] != '-' || argv[optind][1] == '\0') return -1;
   if(argv[optind][0] == '-' && argv[optind][1] == '-' && argv[optind][2] == '\0') {
     optind++;
     return -1;
   }
   optopt = '\0';
-  for(; *opts == ';'; opts++) is_first_colon = 1;
+  for(; *opts == ':'; opts++) is_first_colon = 1;
   if(is_first_colon) is_err = 0;
   for(; *opts != '\0'; opts++) {
     if(argv[optind][optpos] == *opts) break;
@@ -72,13 +93,13 @@ int getopt(int argc, char * const argv[], const char *opts)
       if(is_err) print_error(argv[0], ": option requires an argument -- ", optopt);
       return is_first_colon ? ':' : '?';
     }
-    if(is_arg) {
+    if(optind < argc && is_arg) {
       optarg = argv[optind];
       optind++;
     }
   } else {
     if(is_arg == 1) {
-      optarg = argv[optind] + optpos + 1;
+      optarg = argv[optind] + optpos;
       optind++;
       optpos = 1;
     }

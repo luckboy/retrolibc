@@ -32,6 +32,7 @@ int add_efcvt_suite(void);
 int add_file_suite(void);
 int add_fprintf_suite(void);
 int add_fscanf_suite(void);
+int add_getopt_suite(void);
 int add_gmtime_r_suite(void);
 int add_localtime_r_suite(void);
 int add_malloc_suite(void);
@@ -98,6 +99,10 @@ int main(int argc, char **argv)
     return CU_get_error();
   }
   if(add_fscanf_suite() == -1) {
+    CU_cleanup_registry();
+    return CU_get_error();
+  }
+  if(add_getopt_suite() == -1) {
     CU_cleanup_registry();
     return CU_get_error();
   }

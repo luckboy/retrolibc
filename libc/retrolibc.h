@@ -478,6 +478,22 @@ int retrolibc_vsscanf(const char *s, const char *format, va_list ap);
 #define vsscanf retrolibc_vsscanf
 #endif
 
+/* getopt.c */
+
+extern char *retrolibc_optarg;
+extern int retrolibc_optind;
+extern int retrolibc_opterr;
+extern int retrolibc_optopt;
+int retrolibc_getopt(int argc, char * const argv[], const char *opts);
+
+#ifdef RETROLIBC_GETOPT
+#define optarg retrolibc_optarg
+#define optind retrolibc_optind
+#define opterr retrolibc_opterr
+#define optopt retrolibc_optopt
+#define getopt retrolibc_getopt
+#endif
+
 /* gmtime_r.c */
 
 struct retrolibc_tm
