@@ -217,14 +217,23 @@ int retrolibc_vscanf(const char *format, va_list ap);
 
 /* stdlib.c */
 
+double retrolibc_atof(const char *s);
 int retrolibc_atoi(const char *s);
 long retrolibc_atol(const char *s);
 long long retrolibc_atoll(const char *s);
+char *retrolibc_ecvt(double n, int ndigits, int *decpt, int *sign);
+char *retrolibc_fcvt(double n, int ndigits, int *decpt, int *sign);
+char *retrolibc_gcvt(double n, int ndigits, char *buf);
 
 #ifdef RETROLIBC_STDLIB
+#define atof retrolibc_atof
 #define atoi retrolibc_atoi
 #define atol retrolibc_atol
 #define atoll retrolibc_atoll
+#define ecvt retrolibc_ecvt
+#define fcvt retrolibc_fcvt
+#define gcvt retrolibc_gcvt
+#define __efcvt retrolibc___efcvt
 #endif
 
 /* string.c */

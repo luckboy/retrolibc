@@ -46,7 +46,7 @@ char *ecvt(double n, int ndigits, int *decpt, int *sign)
 #endif
 
 #ifdef L_fcvt
-char *ecvt(double n, int ndigits, int *decpt, int *sign)
+char *fcvt(double n, int ndigits, int *decpt, int *sign)
 {
   static char buf[DBL_DIG + 1];
   char *r = __efcvt(n, ndigits, decpt, sign, buf, DBL_DIG, 0);
