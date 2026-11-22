@@ -22,6 +22,7 @@ struct tm *getdate(const char *s)
   struct stat stat_buf;
   char *datemsk = getenv(DATEMSK);
   FILE *f;
+  int is_date;
   if(datemsk == NULL || *datemsk == '\0') {
     getdate_err = 1;
     return NULL;
@@ -41,19 +42,24 @@ struct tm *getdate(const char *s)
     getdate_err = 4;
     return NULL;
   }
+  is_date = 0;
   while(fgets(buf, 256, f) != NULL) {
     char *t = strptime(s, buf, &tm); 
-    if(t != NULL && *t == '\0') break;
+    if(t != NULL && *t == '\0') {
+      is_date = 1;
+      break;
+    }
   }
-  if(feof(f)) {
-    fclose(f);
-    getdate_err = 7;
-    return NULL;
-  }
-  if(ferror(f)) {
-    fclose(f);
-    getdate_err = 5;
-    return NULL;
+  if(!is_date) {
+    if(ferror(f)) {
+      fclose(f);
+      getdate_err = 5;
+      return NULL;
+    } else {
+      fclose(f);
+      getdate_err = 7;
+      return NULL;
+    }
   }
   fclose(f);
   return &tm;
