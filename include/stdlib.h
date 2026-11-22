@@ -37,6 +37,7 @@ unsigned long long strtoull(const char *s, char **endptr, int base);
 void *malloc(size_t size);
 void *realloc(void *p, size_t size);
 void free(void *p);
+void *valloc(size_t size);
 
 #ifdef __cplusplus
 }

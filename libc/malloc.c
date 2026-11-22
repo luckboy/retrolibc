@@ -22,8 +22,6 @@
 
 #define ALIGN(size)             (((size) + 7UL) & ~7UL)
 
-#define PAGE_ALIGN(size)        ((((size) + PAGE_SIZE - 1) / PAGE_SIZE) * PAGE_SIZE)
-
 #define MIN_SMALLER_MEM_SIZE    (sizeof(struct free_mem_header))
 #ifdef MAP_ANONYMOUS
 #define MAX_SMALLER_MEM_SIZE    (PAGE_SIZE >> 1)
@@ -150,7 +148,15 @@ static void *realloc_unlocked(void *p, size_t size)
   struct free_mem_header *free_mem;
   struct free_mem_header *right_free_mem = NULL;
   size_t right_free_mem_size = 0;
-  size_t mem_size = ALIGN(sizeof(struct alloc_mem_header) + size);
+  size_t mem_size;
+  size_t valloc_size = 0;
+  if((alloc_mem->size & VALLOC_FLAG) != 0) {
+    valloc_size = alloc_mem->size & ~7UL;
+    alloc_mem = (struct alloc_mem_header *) (((char *) alloc_mem) - valloc_size);
+    p = (void *) (((char *) p) - valloc_size);
+    size += PAGE_SIZE - 1;
+  }
+  mem_size = ALIGN(sizeof(struct alloc_mem_header) + size);
   mem_size = (mem_size > MIN_SMALLER_MEM_SIZE ? mem_size : MIN_SMALLER_MEM_SIZE);
 #ifdef MAP_ANONYMOUS
   if(alloc_mem->size >= PAGE_SIZE) {
@@ -169,21 +175,21 @@ static void *realloc_unlocked(void *p, size_t size)
           if(new_p == NULL) return NULL;
           memcpy(new_p, p, old_size);
           free_unlocked(p);
-          return new_p;
+          return (void *) (((char *) new_p) + valloc_size);
         } else {
           return NULL;
         }
       }
       alloc_mem = (struct alloc_mem_header *) new_addr;
       alloc_mem->size = mmap_size;
-      return (void *) (((char *) alloc_mem) + sizeof(struct alloc_mem_header));
+      return (void *) (((char *) alloc_mem) + sizeof(struct alloc_mem_header) + valloc_size);
 #else
       size_t old_size = alloc_mem->size - sizeof(struct alloc_mem_header);
       void *new_p = malloc_unlocked(size);
       if(new_p == NULL) return NULL;
       memcpy(new_p, p, old_size);
       free_unlocked(p);
-      return new_p;
+      return (void *) (((char *) new_p) + valloc_size);
 #endif
     } else if(mmap_size < alloc_mem->size) {
 #ifdef MREMAP_MAYMOVE
@@ -194,17 +200,17 @@ static void *realloc_unlocked(void *p, size_t size)
       if(new_addr == MAP_FAILED) {
         if(errno == ENOSYS) {
           errno = saved_errno;
-          return p;
+          return (void *) (((char *) p) + valloc_size);
         }
       }
       alloc_mem = (struct alloc_mem_header *) new_addr;
       alloc_mem->size = mmap_size;
-      return (void *) (((char *) alloc_mem) + sizeof(struct alloc_mem_header));
+      return (void *) (((char *) alloc_mem) + sizeof(struct alloc_mem_header) + valloc_size);
 #else
-      return p;
+      return (void *) (((char *) p) + valloc_size);
 #endif
     } else {
-      return p;
+      return (void *) (((char *) p) + valloc_size);
     }
   }
   if(mem_size > MAX_SMALLER_MEM_SIZE) {
@@ -213,7 +219,7 @@ static void *realloc_unlocked(void *p, size_t size)
     if(new_p == NULL) return NULL;
     memcpy(new_p, p, old_size);
     free_unlocked(p);
-    return new_p;
+    return (void *) (((char *) new_p) + valloc_size);
   }
 #endif
   if(mem_size != alloc_mem->size) {
@@ -229,7 +235,7 @@ static void *realloc_unlocked(void *p, size_t size)
     if(((char *) addr) == ((char *) alloc_mem) + alloc_mem->size)  {
       if(brk((void *) (((char *) alloc_mem) + mem_size))) return NULL;
       alloc_mem->size = mem_size;
-      return p;
+      return (void *) (((char *) p) + valloc_size);
     }
   }
   if(mem_size > alloc_mem->size) {
@@ -252,7 +258,7 @@ static void *realloc_unlocked(void *p, size_t size)
       if(new_p == NULL) return NULL;
       memcpy(new_p, p, old_size);
       free_unlocked(p);
-      return new_p;
+      return (void *) (((char *) new_p) + valloc_size);
     }
   } if(mem_size < alloc_mem->size) {
     if(right_free_mem != NULL) {
@@ -266,7 +272,7 @@ static void *realloc_unlocked(void *p, size_t size)
       alloc_mem->size = mem_size;
     }
   }
-  return p;
+  return (void *) (((char *) p) + valloc_size);
 }
 
 void *realloc(void *p, size_t size)
@@ -285,6 +291,7 @@ static void free_unlocked(void *p)
   struct free_mem_header *free_mem;
   struct free_mem_header *left_free_mem = NULL;
   struct free_mem_header *right_free_mem = NULL;
+  if((alloc_mem->size & VALLOC_FLAG) != 0) alloc_mem = (struct alloc_mem_header *) (((char *) alloc_mem) - (alloc_mem->size & ~7UL));
 #ifdef MAP_ANONYMOUS
   if(alloc_mem->size >= PAGE_SIZE) {
     munmap((void *) alloc_mem, alloc_mem->size);

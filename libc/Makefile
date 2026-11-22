@@ -153,6 +153,7 @@ OBJS = \
 	$(BUILD_DIR)/sys_errlist.o \
 	$(BUILD_DIR)/tzset.o \
 	$(BUILD_DIR)/ulltostr.o \
+	$(BUILD_DIR)/valloc.o \
 	$(BUILD_DIR)/week_day_names.o
 
 DEPS = $(addsuffix .d, $(OBJS))

@@ -15,6 +15,10 @@
 #define LONG_BIT        __WORDSIZE
 #endif
 
+#define PAGE_ALIGN(n)   ((((n) + PAGE_SIZE - 1) / PAGE_SIZE) * PAGE_SIZE)
+
+#define VALLOC_FLAG     1
+
 struct alloc_mem_header
 {
   size_t size;
