@@ -201,6 +201,8 @@ static void *realloc_unlocked(void *p, size_t size)
         if(errno == ENOSYS) {
           errno = saved_errno;
           return (void *) (((char *) p) + valloc_size);
+        } else {
+          return NULL;
         }
       }
       alloc_mem = (struct alloc_mem_header *) new_addr;
