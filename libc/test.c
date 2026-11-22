@@ -44,6 +44,7 @@ int add_strtod_suite(void);
 int add_strtol_suite(void);
 int add_tzset_suite(void);
 int add_ulltostr_suite(void);
+int add_valloc_suite(void);
 
 int main(int argc, char **argv)
 {
@@ -147,6 +148,10 @@ int main(int argc, char **argv)
     return CU_get_error();
   }
   if(add_ulltostr_suite() == -1) {
+    CU_cleanup_registry();
+    return CU_get_error();
+  }
+  if(add_valloc_suite() == -1) {
     CU_cleanup_registry();
     return CU_get_error();
   }

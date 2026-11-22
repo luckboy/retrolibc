@@ -541,7 +541,7 @@ void *retrolibc_malloc(size_t size);
 void *retrolibc_realloc(void *p, size_t size);
 void retrolibc_free(void *p);
 
-#ifdef RETROLIBC_MALLOC
+#if defined(RETROLIBC_MALLOC) || defined(RETROLIBC_VALLOC)
 
 #define brk mock_brk
 #define sbrk mock_sbrk
@@ -669,6 +669,14 @@ char *retrolibc___ulltostr(char *buf, unsigned long long n, int base, int is_upp
 
 #ifdef RETROLIBC_ULLTOSTR
 #define __ulltostr retrolibc___ulltostr
+#endif
+
+/* valloc.c */
+
+void *retrolibc_valloc(size_t size);
+
+#ifdef RETROLIBC_VALLOC
+#define valloc retrolibc_valloc
 #endif
 
 /* week_day_names.c */

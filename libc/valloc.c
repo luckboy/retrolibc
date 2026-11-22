@@ -6,7 +6,12 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 #include <inttypes.h>
+#ifndef TEST
 #include <stdlib.h>
+#else
+#define RETROLIBC_VALLOC
+#include "retrolibc.h"
+#endif
 #include "priv_malloc.h"
 
 void *valloc(size_t size)

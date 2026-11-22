@@ -27,7 +27,7 @@ static char *brk_addr;
 static int brk_count_to_err;
 static int sbrk_count_to_err;
 
-static void initialize_heap(void)
+void initialize_heap(void)
 {
   memset(brk_mem, 0, 10000);
   brk_addr = brk_mem;
