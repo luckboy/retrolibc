@@ -36,7 +36,7 @@ TEST_BUILD_DIR = $(TOP_DIR)/build/$(HOST)/$(DIR)/test
 
 # Variables of flags for target.
 
-CFLAGS += $(TARGET_FLAGS) -Wall -Os -nostdinc
+CFLAGS += $(TARGET_FLAGS) -Wall -Wformat-truncation=0 -Os -nostdinc
 CFLAGS += -I$(TOP_DIR)/include -I$(TOP_DIR)/arch/$(TARGET_ARCH)/include -I$(TOP_DIR)/sys/$(TARGET_SYS)/$(TARGET_ARCH)/include -I$(TOP_DIR)/sys/$(TARGET_SYS)/include
 CFLAGS += -I. -I./arch/$(TARGET_ARCH) -I./sys/$(TARGET_SYS)/$(TARGET_ARCH) -I./sys/$(TARGET_SYS)
 ifdef TARGET_COMMON_ARCH
@@ -48,7 +48,7 @@ SFLAGS += $(CFLAGS) -D__ASSEMBLER__=1
 
 # Variables of flags for host.
 
-HOSTCFLAGS += $(HOST_FLAGS) -Wall -DTEST=1 -D_XOPEN_SOURCE=1 -D_GNU_SOURCE=1 -g
+HOSTCFLAGS += $(HOST_FLAGS) -Wall -Wformat-truncation=0 -DTEST=1 -D_XOPEN_SOURCE=1 -D_GNU_SOURCE=1 -g
 HOSTCFLAGS += -I. -I./arch/$(HOST_ARCH) -I./sys/$(HOST_SYS)/$(HOST_ARCH) -I./sys/$(HOST_SYS)
 ifdef HOST_COMMON_ARCH
 HOSTCFLAGS += -I./arch/$(HOST_COMMON_ARCH) -I./sys/$(HOST_SYS)/$(HOST_COMMON_ARCH)

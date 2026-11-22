@@ -127,6 +127,15 @@ STRINGS_OBJS = \
 	$(BUILD_DIR)/strings_strcasecmp.o \
 	$(BUILD_DIR)/strings_strncasecmp.o
 
+TIME_OBJS = \
+	$(BUILD_DIR)/time_asctime.o \
+	$(BUILD_DIR)/time_asctime_r.o \
+	$(BUILD_DIR)/time_ctime.o \
+	$(BUILD_DIR)/time_ctime_r.o \
+	$(BUILD_DIR)/time_difftime.o \
+	$(BUILD_DIR)/time_gmtime.o \
+	$(BUILD_DIR)/time_localtime.o
+
 OBJS = \
 	$(CTYPE_OBJS) \
 	$(FILE_OBJS) \
@@ -134,6 +143,7 @@ OBJS = \
 	$(STDLIB_OBJS) \
 	$(STRING_OBJS) \
 	$(STRINGS_OBJS) \
+	$(TIME_OBJS) \
 	$(BUILD_DIR)/bsearch.o \
 	$(BUILD_DIR)/efcvt.o \
 	$(BUILD_DIR)/fprintf.o \
@@ -360,7 +370,10 @@ $(BUILD_DIR)/string_%.o: string.c $(BUILD_DIR)/.empty
 
 $(BUILD_DIR)/strings_%.o: strings.c $(BUILD_DIR)/.empty
 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -c -o $@ $<
-	
+
+$(BUILD_DIR)/time_%.o: time.c $(BUILD_DIR)/.empty
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -c -o $@ $<
+
 # Rules for target dependencies.
 
 $(BUILD_DIR)/ctype_%.o.d: ctype.c $(BUILD_DIR)/.empty
@@ -380,6 +393,9 @@ $(BUILD_DIR)/string_%.o.d: string.c $(BUILD_DIR)/.empty
 
 $(BUILD_DIR)/strings_%.o.d: strings.c $(BUILD_DIR)/.empty
 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -MM -MT $(BUILD_DIR)/strings_$*.o $< > $@
+
+$(BUILD_DIR)/time_%.o.d: time.c $(BUILD_DIR)/.empty
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DL_$* -MM -MT $(BUILD_DIR)/time_$*.o $< > $@
 
 # Rules for host objects.
 

@@ -39,7 +39,14 @@ extern int daylight;
 extern long timezone;
 extern char *tzname[2];
 
+char *asctime(const struct tm *tm);
+char *asctime_r(const struct tm *tm, char *buf);
+char *ctime(const time_t *time);
+char *ctime_r(const time_t *time, char *buf);
+double difftime(time_t time1, time_t time0);
+struct tm *gmtime(const time_t *time);
 struct tm *gmtime_r(const time_t *time, struct tm *tm);
+struct tm *localtime(const time_t *time);
 struct tm *localtime_r(const time_t *time, struct tm *tm);
 time_t mktime(struct tm *tm);
 size_t strftime(char *s, size_t maxsize, const char *format, const struct tm *tm);
