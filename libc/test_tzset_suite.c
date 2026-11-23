@@ -9,7 +9,7 @@
 #include <CUnit/Basic.h>
 #include "retrolibc.h"
 
-static void initialize_retrolibc_tzset()
+static void initialize_retrolibc_tzset(void)
 {
   retrolibc___tz_std_offset = 0L;
   retrolibc___tz_std_zone = "???";

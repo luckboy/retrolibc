@@ -26,7 +26,7 @@ static const int tab_month_days[12] = {
   31  /* Decembder */
 };
 
-static void initialize_retrolibc_localtime_r()
+static void initialize_retrolibc_localtime_r(void)
 {
   retrolibc___tz_std_offset = 0L;
   retrolibc___tz_std_zone = "???";

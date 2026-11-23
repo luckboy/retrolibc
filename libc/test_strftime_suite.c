@@ -11,7 +11,7 @@
 
 void free_retrolibc_tzname_list(void);
 
-static void initialize_retrolibc_strftime()
+static void initialize_retrolibc_strftime(void)
 {
   retrolibc___tz_std_offset = 0L;
   retrolibc___tz_std_zone = "???";
