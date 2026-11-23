@@ -426,7 +426,7 @@ static void test_mktime_returns_seconds_for_cet_with_different_offset(void)
 int add_localtime_r_suite(void)
 {
   CU_pSuite suite;
-  if((suite = CU_add_suite("lcoaltime_r suite", initialize_localtime_r, cleanup_localtime_r)) == NULL) return -1;
+  if((suite = CU_add_suite("localtime_r suite", initialize_localtime_r, cleanup_localtime_r)) == NULL) return -1;
   if(CU_add_test(suite, "localtime_r returns tm", test_localtime_r_returns_tm) == NULL) return -1;
   if(CU_add_test(suite, "localtime_r returns tm before dst", test_localtime_r_returns_tm_before_dst) == NULL) return -1;
   if(CU_add_test(suite, "localtime_r returns tm in dst", test_localtime_r_returns_tm_in_dst) == NULL) return -1;
