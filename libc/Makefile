@@ -83,14 +83,22 @@ STDIO_OBJS = \
 	$(BUILD_DIR)/stdio_vscanf.o
 
 STDLIB_OBJS = \
+	$(BUILD_DIR)/stdlib_a64l.o \
+	$(BUILD_DIR)/stdlib_abs.o \
 	$(BUILD_DIR)/stdlib_atof.o \
 	$(BUILD_DIR)/stdlib_atoi.o \
 	$(BUILD_DIR)/stdlib_atol.o \
 	$(BUILD_DIR)/stdlib_atoll.o \
+	$(BUILD_DIR)/stdlib_div.o \
 	$(BUILD_DIR)/stdlib_ecvt.o \
 	$(BUILD_DIR)/stdlib_fcvt.o \
 	$(BUILD_DIR)/stdlib_gcvt.o \
 	$(BUILD_DIR)/stdlib_getenv.o \
+	$(BUILD_DIR)/stdlib_l64a.o \
+	$(BUILD_DIR)/stdlib_labs.o \
+	$(BUILD_DIR)/stdlib_ldiv.o \
+	$(BUILD_DIR)/stdlib_llabs.o \
+	$(BUILD_DIR)/stdlib_lldiv.o \
 	$(BUILD_DIR)/stdlib_putenv.o
 	
 STRING_OBJS = \

@@ -20,6 +20,38 @@
 
 extern char **environ;
 
+#ifdef L_a64l
+long a64l(const char *s)
+{
+  int n;
+  size_t m;
+  unsigned shift;
+  for(n = 0, m = 6, shift = 0; m > 0 && *s != '\0'; s++, m--, shift += 6) {
+    int digit;
+    if(*s == '.') {
+      digit = 0;
+    } else if(*s == '/') {
+      digit = 1;
+    } else if(*s >= '0' && *s <= '9') {
+      digit = *s - '0' + 2;
+    } else if(*s >= 'A' && *s <= 'Z') {
+      digit = *s - 'A' + 12;
+    } else if(*s >= 'a' && *s <= 'z') {
+      digit = *s - 'a' + 38;
+    } else {
+      break;
+    }
+    n += digit << shift;
+  }
+  return n;
+}
+#endif
+
+#ifdef L_abs
+int abs(int x)
+{ return x >= 0 ? x : -x; }
+#endif
+
 #ifdef L_atof
 double atof(const char *s)
 { return strtod(s, NULL); }
@@ -38,6 +70,16 @@ long atol(const char *s)
 #ifdef L_atoll
 long long atoll(const char *s)
 { return strtoll(s, NULL, 10); }
+#endif
+
+#ifdef L_div
+div_t div(int n, int d)
+{
+  div_t r;
+  r.quot = n / d;
+  r.rem = n % d;
+  return r;
+}
 #endif
 
 #ifdef L_ecvt
@@ -76,6 +118,61 @@ char *getenv(const char *name)
     if(strncmp(name, s, len) == 0) return s[len] == '=' ? s + len + 1 : NULL;
   }
   return NULL;
+}
+#endif
+
+#ifdef L_l64a 
+char *l64a(long n)
+{
+  static char buf[7];
+  char *s;
+  int m = (int) n;
+  for(s = buf; m != 0; s++, m >>= 6) {
+    int digit = m & 63;
+    if(digit == 0) {
+      *s = '.';
+    } else if(digit == 1) {
+      *s = '/';
+    } else if(digit >= 2 && digit <= 11) {
+      *s = digit - 2 + '0';
+    } else if(digit >= 12 && digit <= 37) {
+      *s = digit - 12 + 'A';
+    } else {
+      *s = digit - 38 + 'a';
+    }
+  }
+  *s = '\0';
+  return buf;
+}
+#endif
+
+#ifdef L_labs
+long labs(long x)
+{ return x >= 0 ? x : -x; }
+#endif
+
+#ifdef L_ldiv
+ldiv_t ldiv(long n, long d)
+{
+  ldiv_t r;
+  r.quot = n / d;
+  r.rem = n % d;
+  return r;
+}
+#endif
+
+#ifdef L_llabs
+long long llabs(long long x)
+{ return x >= 0 ? x : -x; }
+#endif
+
+#ifdef L_lldiv
+lldiv_t lldiv(long long n, long long d)
+{
+  lldiv_t r;
+  r.quot = n / d;
+  r.rem = n % d;
+  return r;
 }
 #endif
 

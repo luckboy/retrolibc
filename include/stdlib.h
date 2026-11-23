@@ -11,18 +11,44 @@
 #include <bits/wait.h>
 #include <stddef.h>
 
+typedef struct
+{
+  int quot;
+  int rem;
+} div_t;
+
+typedef struct
+{
+  long quot;
+  long rem;
+} ldiv_t;
+
+typedef struct
+{
+  long long quot;
+  long long rem;
+} lldiv_t;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+long a64l(const char *s);
+int abs(int x);
 double atof(const char *s);
 int atoi(const char *s);
 long atol(const char *s);
 long long atoll(const char *s);
+div_t div(int n, int d);
 char *ecvt(double n, int ndigits, int *decpt, int *sign);
 char *fcvt(double n, int ndigits, int *decpt, int *sign);
 char *gcvt(double n, int ndigits, char *buf);
 char *getenv(const char *name);
+char *l64a(long n);
+long labs(long x);
+ldiv_t ldiv(long n, long d);
+long long llabs(long long x);
+lldiv_t lldiv(long long n, long long d);
 int putenv(const char *s);
 
 char *getenv(const char *name);
