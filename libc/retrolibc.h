@@ -313,6 +313,41 @@ int retrolibc_strncasecmp(const char *s, const char *s2, size_t n);
 #define strncasecmp retrolibc_strncasecmp
 #endif
 
+/* time.c */
+
+struct retrolibc_tm
+{
+  int tm_sec;
+  int tm_min;
+  int tm_hour;
+  int tm_mday;
+  int tm_mon;
+  int tm_year;
+  int tm_wday;
+  int tm_yday;
+  int tm_isdst;
+  long tm_gmtoff;
+  const char *tm_zone;
+};
+
+char *retrolibc_asctime(const struct retrolibc_tm *retrolibc_tm);
+char *retrolibc_asctime_r(const struct retrolibc_tm *retrolibc_tm, char *buf);
+char *retrolibc_ctime(const time_t *time);
+char *retrolibc_ctime_r(const time_t *time, char *buf);
+double retrolibc_difftime(time_t time1, time_t time0);
+struct retrolibc_tm *retrolibc_gmtime(const time_t *time);
+struct retrolibc_tm *retrolibc_localtime(const time_t *time);
+
+#ifdef RETROLIBC_TIME
+#define asctime retrolibc_asctime
+#define asctime_r retrolibc_asctime_r
+#define ctime retrolibc_ctime
+#define ctime_r retrolibc_ctime_r
+#define difftime retrolibc_difftime
+#define gmtime retrolibc_gmtime
+#define localtime retrolibc_localtime
+#endif
+
 /* bsearch.c */
 
 void *retrolibc_bsearch(const void *key, const void *base, size_t n, size_t width, int (*cmp)(const void *, const void *));
@@ -505,26 +540,11 @@ int retrolibc_getopt(int argc, char * const argv[], const char *opts);
 
 /* gmtime_r.c */
 
-struct retrolibc_tm
-{
-  int tm_sec;
-  int tm_min;
-  int tm_hour;
-  int tm_mday;
-  int tm_mon;
-  int tm_year;
-  int tm_wday;
-  int tm_yday;
-  int tm_isdst;
-  long tm_gmtoff;
-  const char *tm_zone;
-};
-
 struct retrolibc_tm *retrolibc_gmtime_r(const time_t *time, struct retrolibc_tm *retrolibc_tm);
 int retrolibc___cmp_tm_with_tz_rule(const struct retrolibc_tm *retrolibc_tm, const struct tz_rule *rule);
 time_t retrolibc___mktime_no_tzset(const struct retrolibc_tm *retrolibc_tm);
 
-#if defined(RETROLIBC_GMTIME_R) || defined(RETROLIBC_LOCALTIME_R)
+#if defined(RETROLIBC_GMTIME_R) || defined(RETROLIBC_LOCALTIME_R) || defined(RETROLIBC_TIME)
 #define tm retrolibc_tm
 #define gmtime_r retrolibc_gmtime_r
 #define __cmp_tm_with_tz_rule retrolibc___cmp_tm_with_tz_rule
@@ -536,7 +556,7 @@ time_t retrolibc___mktime_no_tzset(const struct retrolibc_tm *retrolibc_tm);
 struct tm *retrolibc_localtime_r(const time_t *time, struct retrolibc_tm *retrolibc_tm);
 time_t retrolibc_mktime(struct retrolibc_tm *retrolibc_tm);
 
-#ifdef RETROLIBC_LOCALTIME_R
+#if defined(RETROLIBC_LOCALTIME_R) || defined(RETROLIBC_TIME)
 #define localtime_r retrolibc_localtime_r
 #define mktime retrolibc_mktime
 #endif
@@ -563,7 +583,7 @@ void retrolibc_free(void *p);
 
 /* month_names.c */
 
-#if defined(RETROLIBC_MONTH_NAMES) || defined(RETROLIBC_STRFTIME) || defined(RETROLIBC_STRPTIME)
+#if defined(RETROLIBC_MONTH_NAMES) || defined(RETROLIBC_STRFTIME) || defined(RETROLIBC_STRPTIME) || defined(RETROLIBC_TIME)
 #define __month_names retrolibc___month_names
 #define __abbreviated_month_names retrolibc___abbreviated_month_names
 #endif
@@ -691,7 +711,7 @@ void *retrolibc_valloc(size_t size);
 
 /* week_day_names.c */
 
-#if defined(RETROLIBC_WEEK_DAY_NAMES) || defined(RETROLIBC_STRFTIME) || defined(RETROLIBC_STRPTIME)
+#if defined(RETROLIBC_WEEK_DAY_NAMES) || defined(RETROLIBC_STRFTIME) || defined(RETROLIBC_STRPTIME) || defined(RETROLIBC_TIME)
 #define __week_day_names retrolibc___week_day_names
 #define __abbreviated_week_day_names retrolibc___abbreviated_week_day_names
 #endif

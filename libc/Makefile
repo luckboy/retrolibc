@@ -290,6 +290,15 @@ TEST_STRINGS_OBJS = \
 	$(TEST_BUILD_DIR)/strings_rindex.o \
 	$(TEST_BUILD_DIR)/strings_strcasecmp.o \
 	$(TEST_BUILD_DIR)/strings_strncasecmp.o
+
+TEST_TIME_OBJS = \
+	$(TEST_BUILD_DIR)/time_asctime.o \
+	$(TEST_BUILD_DIR)/time_asctime_r.o \
+	$(TEST_BUILD_DIR)/time_ctime.o \
+	$(TEST_BUILD_DIR)/time_ctime_r.o \
+	$(TEST_BUILD_DIR)/time_difftime.o \
+	$(TEST_BUILD_DIR)/time_gmtime.o \
+	$(TEST_BUILD_DIR)/time_localtime.o
 	
 TEST_OBJS = \
 	$(TEST_BUILD_DIR)/test_file_helpers.o \
@@ -305,6 +314,8 @@ TEST_OBJS = \
 	$(TEST_BUILD_DIR)/test_string_suite.o \
 	$(TEST_STRINGS_OBJS) \
 	$(TEST_BUILD_DIR)/test_strings_suite.o \
+	$(TEST_TIME_OBJS) \
+	$(TEST_BUILD_DIR)/test_time_suite.o \
 	$(TEST_BUILD_DIR)/bsearch.o \
 	$(TEST_BUILD_DIR)/test_bsearch_suite.o \
 	$(TEST_BUILD_DIR)/efcvt.o \
@@ -418,6 +429,9 @@ $(TEST_BUILD_DIR)/string_%.o: string.c $(TEST_BUILD_DIR)/.empty
 $(TEST_BUILD_DIR)/strings_%.o: strings.c $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -c -o $@ $<
 
+$(TEST_BUILD_DIR)/time_%.o: time.c $(TEST_BUILD_DIR)/.empty
+	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -c -o $@ $<
+
 # Rules for host dependencies.
 
 $(TEST_BUILD_DIR)/ctype_%.o.d: ctype.c $(TEST_BUILD_DIR)/.empty
@@ -438,6 +452,9 @@ $(TEST_BUILD_DIR)/string_%.o.d: string.c $(TEST_BUILD_DIR)/.empty
 $(TEST_BUILD_DIR)/strings_%.o.d: strings.c $(TEST_BUILD_DIR)/.empty
 	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -MM -MT $(TEST_BUILD_DIR)/strings_$*.o $< > $@
 
+$(TEST_BUILD_DIR)/time_%.o.d: time.c $(TEST_BUILD_DIR)/.empty
+	$(HOSTCC) $(HOSTCFLAGS) -DL_$* -MM -MT $(TEST_BUILD_DIR)/time_$*.o $< > $@
+	
 include $(TOP_DIR)/Rules.mk
 
 # Rules.

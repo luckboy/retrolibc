@@ -6,7 +6,12 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 #include <stdio.h>
+#ifndef TEST
 #include <time.h>
+#else
+#define RETROLIBC_TIME
+#include "retrolibc.h"
+#endif
 
 extern const char *__abbreviated_month_names[12];
 
@@ -23,7 +28,7 @@ char *asctime(const struct tm *tm)
 #ifdef L_asctime_r
 char *asctime_r(const struct tm *tm, char *buf)
 {
-  snprintf(buf, 24, "%s %s%3d %.2d:%.2d:%.2d %.d\n",
+  snprintf(buf, 26, "%s %s%3d %.2d:%.2d:%.2d %.d\n",
     __abbreviated_week_day_names[tm->tm_wday >= 0 ? (tm->tm_wday <= 6 ? tm->tm_wday : 6) : 0],
     __abbreviated_month_names[tm->tm_mon % 12 ? (tm->tm_mon <= 11 ? tm->tm_mon : 11) : 0],
     tm->tm_mday,
