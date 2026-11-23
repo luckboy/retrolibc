@@ -18,6 +18,7 @@
 #define RETROLIBC_FILE
 #include "retrolibc.h"
 #endif
+
 #include "priv_file.h"
 
 #ifdef L_stdin
@@ -625,7 +626,7 @@ FILE *popen(const char *command, const char *mode)
   FILE *f;
   int oflags, is_writing = 0;
   int fds[2];
-  int fd;
+  int fd = -1;
   pid_t pid;
   oflags = __mode_to_oflags(mode);
   if(oflags == -1) return NULL;
