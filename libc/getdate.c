@@ -9,9 +9,18 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef TEST
 #include <time.h>
+#else
+#define RETROLIBC_GETDATE
+#include "retrolibc.h"
+#endif
 
+#ifndef TEST
 #define DATEMSK         "DATEMSK"
+#else
+#define DATEMSK         "RETROLIBC_DATEMSK"
+#endif
 
 int getdate_err = 0;
 

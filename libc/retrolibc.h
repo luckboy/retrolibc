@@ -522,6 +522,16 @@ int retrolibc_vsscanf(const char *s, const char *format, va_list ap);
 #define vsscanf retrolibc_vsscanf
 #endif
 
+/* getdate.c */
+
+extern int retrolibc_getdate_err;
+struct tm *retrolibc_getdate(const char *s);
+
+#ifdef RETROLIBC_GETDATE
+#define getdate_err retrolibc_getdate_err
+#define getdate retrolibc_getdate
+#endif
+
 /* getopt.c */
 
 extern char *retrolibc_optarg;
