@@ -22,6 +22,8 @@ long long atoll(const char *s);
 char *ecvt(double n, int ndigits, int *decpt, int *sign);
 char *fcvt(double n, int ndigits, int *decpt, int *sign);
 char *gcvt(double n, int ndigits, char *buf);
+char *getenv(const char *name);
+int putenv(const char *s);
 
 char *getenv(const char *name);
 

@@ -89,7 +89,9 @@ STDLIB_OBJS = \
 	$(BUILD_DIR)/stdlib_atoll.o \
 	$(BUILD_DIR)/stdlib_ecvt.o \
 	$(BUILD_DIR)/stdlib_fcvt.o \
-	$(BUILD_DIR)/stdlib_gcvt.o
+	$(BUILD_DIR)/stdlib_gcvt.o \
+	$(BUILD_DIR)/stdlib_getenv.o \
+	$(BUILD_DIR)/stdlib_putenv.o
 	
 STRING_OBJS = \
 	$(BUILD_DIR)/string_memccpy.o \
