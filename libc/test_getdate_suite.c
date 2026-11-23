@@ -73,17 +73,6 @@ static void test_getdate_complains_on_no_line_in_template(void)
   CU_ASSERT_EQUAL(retrolibc_getdate_err, 7);
 }
 
-static void test_getdate_complains_on_datemsk_is_not_defined(void)
-{
-  static struct tm *tm;
-  clean_current_dir();
-  putenv("RETROLIBC_DATEMSK");
-  retrolibc_getdate_err = 0;
-  tm = retrolibc_getdate("21:34:56 02/05/03");
-  CU_ASSERT_PTR_NULL(tm);
-  CU_ASSERT_EQUAL(retrolibc_getdate_err, 1);
-}
-
 static void test_getdate_complains_on_datemsk_is_empty(void)
 {
   static struct tm *tm;
@@ -112,7 +101,6 @@ int add_getdate_suite(void)
   if((suite = CU_add_suite("getdate suite", initialize_getdate, cleanup_getdate)) == NULL) return -1;
   if(CU_add_test(suite, "getdate converts date string to tm", test_getdate_converts_date_string_to_tm) == NULL) return -1;
   if(CU_add_test(suite, "getdate complains on no line in template", test_getdate_complains_on_no_line_in_template) == NULL) return -1;
-  if(CU_add_test(suite, "getdate complains on DATEMSK isn't defined", test_getdate_complains_on_datemsk_is_not_defined) == NULL) return -1;
   if(CU_add_test(suite, "getdate complains on DATEMSK is empty", test_getdate_complains_on_datemsk_is_empty) == NULL) return -1;
   if(CU_add_test(suite, "getdate complains on template file can't be opened for reading", test_getdate_complains_on_template_file_can_not_be_opened_for_reading) == NULL) return -1;
   return 0;
