@@ -127,7 +127,8 @@ char *l64a(long n)
   static char buf[7];
   char *s;
   int m = (int) n;
-  for(s = buf; m != 0; s++, m >>= 6) {
+  size_t l;
+  for(s = buf, l = 6; l > 0 && m != 0; s++, m >>= 6, l--) {
     int digit = m & 63;
     if(digit == 0) {
       *s = '.';
