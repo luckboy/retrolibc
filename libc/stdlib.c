@@ -195,9 +195,7 @@ int putenv(const char *s)
           *p = new_s;
         }
       } else {
-        size_t m;
-        for(m = 0; *p != NULL; p++, m++);
-        memmove(p, p + 1, m);
+        for(; (*p = p[1]) != NULL; p++);
       }
       return 0;
     }
