@@ -160,6 +160,47 @@ static void test_getenv_returns_null(void)
   CU_ASSERT_PTR_NULL(retrolibc_getenv("DEF"));
 }
 
+static void test_getsubopt_parses_suboptions(void)
+{
+  static char *tokens[] = {
+    "abc",
+    "def",
+    "ghi",
+    NULL
+  };
+  static char options[] = "abc,def=1234,ghi";
+  char *option = options;
+  char *value;
+  CU_ASSERT_EQUAL(retrolibc_getsubopt(&option, tokens, &value), 0);
+  CU_ASSERT_NOT_EQUAL(*option, '\0');
+  CU_ASSERT_PTR_NULL(value);
+  CU_ASSERT_EQUAL(retrolibc_getsubopt(&option, tokens, &value), 1);
+  CU_ASSERT_NOT_EQUAL(*option, '\0');
+  CU_ASSERT_STRING_EQUAL(value, "1234");
+  CU_ASSERT_EQUAL(retrolibc_getsubopt(&option, tokens, &value), 2);
+  CU_ASSERT_EQUAL(*option, '\0');
+  CU_ASSERT_PTR_NULL(value);
+}
+
+static void test_getsubopt_does_not_match_suboptions(void)
+{
+  static char *tokens[] = {
+    "abc",
+    "def",
+    "ghi",
+    NULL
+  };
+  static char options[] = "abcdef,jkl=3456";
+  char *option = options;
+  char *value;
+  CU_ASSERT_EQUAL(retrolibc_getsubopt(&option, tokens, &value), -1);
+  CU_ASSERT_NOT_EQUAL(*option, '\0');
+  CU_ASSERT_STRING_EQUAL(value, "abcdef");
+  CU_ASSERT_EQUAL(retrolibc_getsubopt(&option, tokens, &value), -1);
+  CU_ASSERT_EQUAL(*option, '\0');
+  CU_ASSERT_STRING_EQUAL(value, "jkl=3456");
+}
+
 static void test_l64a_converts_number_to_radix_64_string(void)
 {
   CU_ASSERT_STRING_EQUAL(retrolibc_l64a(0L), "");
@@ -327,6 +368,8 @@ int add_stdlib_suite(void)
   if(CU_add_test(suite, "gcvt converts number to string", test_gcvt_converts_number_to_string) == NULL) return -1;
   if(CU_add_test(suite, "getenv returns value", test_getenv_returns_value) == NULL) return -1;
   if(CU_add_test(suite, "getenv returns null", test_getenv_returns_null) == NULL) return -1;
+  if(CU_add_test(suite, "getsubopt parses suboptions", test_getsubopt_parses_suboptions) == NULL) return -1;
+  if(CU_add_test(suite, "getsubopt doesn't match suboptions", test_getsubopt_does_not_match_suboptions) == NULL) return -1;
   if(CU_add_test(suite, "l64a converts number to radix-64 string", test_l64a_converts_number_to_radix_64_string) == NULL) return -1;
   if(CU_add_test(suite, "labs calculates absolute value", test_labs_calculates_absolute_value) == NULL) return -1;
   if(CU_add_test(suite, "ldiv calculates quotient and remainder", test_ldiv_calculates_quotient_and_remainder) == NULL) return -1;

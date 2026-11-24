@@ -246,6 +246,7 @@ char *retrolibc_ecvt(double n, int ndigits, int *decpt, int *sign);
 char *retrolibc_fcvt(double n, int ndigits, int *decpt, int *sign);
 char *retrolibc_gcvt(double n, int ndigits, char *buf);
 char *retrolibc_getenv(const char *name);
+int retrolibc_getsubopt(char **opt, char * const *tokens, char **value);
 char *retrolibc_l64a(long n);
 long retrolibc_labs(long x);
 retrolibc_ldiv_t retrolibc_ldiv(long n, long d);
@@ -273,6 +274,7 @@ int retrolibc_rand_r(unsigned *seed);
 #define fcvt retrolibc_fcvt
 #define gcvt retrolibc_gcvt
 #define getenv retrolibc_getenv
+#define getsubopt retrolibc_getsubopt
 #define l64a retrolibc_l64a
 #define labs retrolibc_labs
 #define ldiv retrolibc_ldiv

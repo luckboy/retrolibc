@@ -272,6 +272,7 @@ TEST_STDLIB_OBJS = \
 	$(TEST_BUILD_DIR)/stdlib_fcvt.o \
 	$(TEST_BUILD_DIR)/stdlib_gcvt.o \
 	$(TEST_BUILD_DIR)/stdlib_getenv.o \
+	$(TEST_BUILD_DIR)/stdlib_getsubopt.o \
 	$(TEST_BUILD_DIR)/stdlib_l64a.o \
 	$(TEST_BUILD_DIR)/stdlib_labs.o \
 	$(TEST_BUILD_DIR)/stdlib_ldiv.o \
