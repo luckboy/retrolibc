@@ -223,3 +223,11 @@ int putenv(const char *s)
   return 0;
 }
 #endif
+
+#ifdef L_rand_r
+int rand_r(unsigned *seed)
+{
+  *seed = *seed * 1103515245 + 12345;
+  return *seed & 0x7fffffff;
+}
+#endif

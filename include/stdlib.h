@@ -11,6 +11,8 @@
 #include <bits/wait.h>
 #include <stddef.h>
 
+#define RAND_MAX        2147483647
+
 typedef struct
 {
   int quot;
@@ -50,9 +52,16 @@ ldiv_t ldiv(long n, long d);
 long long llabs(long long x);
 lldiv_t lldiv(long long n, long long d);
 int putenv(const char *s);
+int rand_r(unsigned *seed);
 
 void *bsearch(const void *key, const void *base, size_t n, size_t width, int (*cmp)(const void *, const void *));
 void qsort(void *base, size_t n, size_t size, int (*cmp)(const void *, const void *));
+
+int rand(void);
+void srand(unsigned seed);
+
+long random(void);
+void srandom(unsigned seed);
 
 double strtod(const char *s, char **endptr);
 long strtol(const char *s, char **endptr, int base);

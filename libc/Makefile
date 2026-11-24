@@ -99,7 +99,8 @@ STDLIB_OBJS = \
 	$(BUILD_DIR)/stdlib_ldiv.o \
 	$(BUILD_DIR)/stdlib_llabs.o \
 	$(BUILD_DIR)/stdlib_lldiv.o \
-	$(BUILD_DIR)/stdlib_putenv.o
+	$(BUILD_DIR)/stdlib_putenv.o \
+	$(BUILD_DIR)/stdlib_rand_r.o
 	
 STRING_OBJS = \
 	$(BUILD_DIR)/string_memccpy.o \
@@ -165,6 +166,8 @@ OBJS = \
 	$(BUILD_DIR)/malloc.o \
 	$(BUILD_DIR)/month_names.o \
 	$(BUILD_DIR)/qsort.o \
+	$(BUILD_DIR)/rand.o \
+	$(BUILD_DIR)/random.o \
 	$(BUILD_DIR)/regex.o \
 	$(BUILD_DIR)/strerror.o \
 	$(BUILD_DIR)/strftime.o \
