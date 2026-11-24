@@ -46,6 +46,7 @@ char *ecvt(double n, int ndigits, int *decpt, int *sign);
 char *fcvt(double n, int ndigits, int *decpt, int *sign);
 char *gcvt(double n, int ndigits, char *buf);
 char *getenv(const char *name);
+int getsubopt(char **opt, char * const *tokens, char **value);
 char *l64a(long n);
 long labs(long x);
 ldiv_t ldiv(long n, long d);

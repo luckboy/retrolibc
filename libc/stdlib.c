@@ -121,6 +121,39 @@ char *getenv(const char *name)
 }
 #endif
 
+#ifdef L_getsubopt
+int getsubopt(char **opt, char * const *tokens, char **value)
+{
+  char *next_opt;
+  int i;
+  if(**opt == '\0') return -1;
+  next_opt = strchr(*opt, ',');
+  if(next_opt != NULL) {
+    *next_opt = '\0';
+    next_opt++;
+  } else {
+    next_opt = *opt + strlen(*opt);
+  }
+  for(i = 0; tokens[i] != NULL; i++) {
+    size_t token_len = strlen(tokens[i]);
+    if(strncmp(tokens[i], *opt, token_len) == 0) {
+      if((*opt)[token_len] == '=') {
+        *value = *opt + token_len + 1;
+      } else if((*opt)[token_len] == '\0') {
+        *value = NULL;
+      } else {
+        continue;
+      }
+      *opt = next_opt;
+      return i;
+    }
+  }
+  *value = *opt;
+  *opt = next_opt;
+  return -1;
+}
+#endif
+
 #ifdef L_l64a 
 char *l64a(long n)
 {

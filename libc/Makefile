@@ -94,6 +94,7 @@ STDLIB_OBJS = \
 	$(BUILD_DIR)/stdlib_fcvt.o \
 	$(BUILD_DIR)/stdlib_gcvt.o \
 	$(BUILD_DIR)/stdlib_getenv.o \
+	$(BUILD_DIR)/stdlib_getsubopt.o \
 	$(BUILD_DIR)/stdlib_l64a.o \
 	$(BUILD_DIR)/stdlib_labs.o \
 	$(BUILD_DIR)/stdlib_ldiv.o \
