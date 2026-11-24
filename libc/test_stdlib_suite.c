@@ -10,10 +10,6 @@
 #include <CUnit/Basic.h>
 #include "retrolibc.h"
 
-#ifndef LONG_BIT
-#define LONG_BIT        __WORDSIZE
-#endif
-
 static int initialize_stdlib(void)
 { return 0; }
 
