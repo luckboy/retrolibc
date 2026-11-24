@@ -5,8 +5,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-#include <errno.h>
-#include <limits.h>
 #include <CUnit/Basic.h>
 #include "retrolibc.h"
 
