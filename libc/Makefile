@@ -276,8 +276,9 @@ TEST_STDLIB_OBJS = \
 	$(TEST_BUILD_DIR)/stdlib_ldiv.o \
 	$(TEST_BUILD_DIR)/stdlib_llabs.o \
 	$(TEST_BUILD_DIR)/stdlib_lldiv.o \
-	$(TEST_BUILD_DIR)/stdlib_putenv.o
-	
+	$(TEST_BUILD_DIR)/stdlib_putenv.o \
+	$(TEST_BUILD_DIR)/stdlib_rand_r.o
+
 TEST_STRING_OBJS = \
 	$(TEST_BUILD_DIR)/string_memccpy.o \
 	$(TEST_BUILD_DIR)/string_memchr.o \

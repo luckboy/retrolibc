@@ -309,6 +309,14 @@ static void test_putenv_does_not_remove_non_existent_environment_variable(void)
   CU_ASSERT_PTR_NULL(retrolibc_environ[4]);
 }
 
+static void test_rand_r_generates_random_number(void)
+{
+  unsigned seed = 0x12345678;
+  CU_ASSERT_EQUAL(retrolibc_rand_r(&seed), 0xb719151);
+  CU_ASSERT_EQUAL(retrolibc_rand_r(&seed), 0x6f47bdb6);
+  CU_ASSERT_EQUAL(retrolibc_rand_r(&seed), 0x2e1d6ab7);
+}
+
 int add_stdlib_suite(void)
 {
   CU_pSuite suite;
@@ -334,5 +342,6 @@ int add_stdlib_suite(void)
   if(CU_add_test(suite, "putenv adds new environment variable", test_putenv_adds_new_environment_variable) == NULL) return -1;
   if(CU_add_test(suite, "putenv removes existent environment variable", test_putenv_removes_existent_environment_variable) == NULL) return -1;
   if(CU_add_test(suite, "putenv doesn't remove non existent environment variable", test_putenv_does_not_remove_non_existent_environment_variable) == NULL) return -1;
+  if(CU_add_test(suite, "rand_r generates random number", test_rand_r_generates_random_number) == NULL) return -1;  
   return 0;
 }

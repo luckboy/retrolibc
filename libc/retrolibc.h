@@ -252,6 +252,7 @@ retrolibc_ldiv_t retrolibc_ldiv(long n, long d);
 long long retrolibc_llabs(long long x);
 retrolibc_lldiv_t retrolibc_lldiv(long long n, long long d);
 int retrolibc_putenv(const char *s);
+int retrolibc_rand_r(unsigned *seed);
 
 #ifdef RETROLIBC_STDLIB
 
@@ -278,6 +279,7 @@ int retrolibc_putenv(const char *s);
 #define llabs retrolibc_llabs
 #define lldiv retrolibc_lldiv
 #define putenv retrolibc_putenv
+#define rand_r retrolibc_rand_r
 #define __efcvt retrolibc___efcvt
 
 #endif
