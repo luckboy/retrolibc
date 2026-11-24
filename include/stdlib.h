@@ -51,8 +51,6 @@ long long llabs(long long x);
 lldiv_t lldiv(long long n, long long d);
 int putenv(const char *s);
 
-char *getenv(const char *name);
-
 void *bsearch(const void *key, const void *base, size_t n, size_t width, int (*cmp)(const void *, const void *));
 void qsort(void *base, size_t n, size_t size, int (*cmp)(const void *, const void *));
 
