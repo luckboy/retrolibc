@@ -257,13 +257,23 @@ TEST_STDIO_OBJS = \
 	$(TEST_BUILD_DIR)/stdio_vscanf.o
 	
 TEST_STDLIB_OBJS = \
+	$(TEST_BUILD_DIR)/stdlib_a64l.o \
+	$(TEST_BUILD_DIR)/stdlib_abs.o \
 	$(TEST_BUILD_DIR)/stdlib_atof.o \
 	$(TEST_BUILD_DIR)/stdlib_atoi.o \
 	$(TEST_BUILD_DIR)/stdlib_atol.o \
 	$(TEST_BUILD_DIR)/stdlib_atoll.o \
+	$(TEST_BUILD_DIR)/stdlib_div.o \
 	$(TEST_BUILD_DIR)/stdlib_ecvt.o \
 	$(TEST_BUILD_DIR)/stdlib_fcvt.o \
-	$(TEST_BUILD_DIR)/stdlib_gcvt.o
+	$(TEST_BUILD_DIR)/stdlib_gcvt.o \
+	$(TEST_BUILD_DIR)/stdlib_getenv.o \
+	$(TEST_BUILD_DIR)/stdlib_l64a.o \
+	$(TEST_BUILD_DIR)/stdlib_labs.o \
+	$(TEST_BUILD_DIR)/stdlib_ldiv.o \
+	$(TEST_BUILD_DIR)/stdlib_llabs.o \
+	$(TEST_BUILD_DIR)/stdlib_lldiv.o \
+	$(TEST_BUILD_DIR)/stdlib_putenv.o
 	
 TEST_STRING_OBJS = \
 	$(TEST_BUILD_DIR)/string_memccpy.o \

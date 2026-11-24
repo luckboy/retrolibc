@@ -217,23 +217,69 @@ int retrolibc_vscanf(const char *format, va_list ap);
 
 /* stdlib.c */
 
+typedef struct
+{
+  int quot;
+  int rem;
+} retrolibc_div_t;
+
+typedef struct
+{
+  long quot;
+  long rem;
+} retrolibc_ldiv_t;
+
+typedef struct
+{
+  long long quot;
+  long long rem;
+} retrolibc_lldiv_t;
+
+long retrolibc_a64l(const char *s);
+int retrolibc_abs(int x);
 double retrolibc_atof(const char *s);
 int retrolibc_atoi(const char *s);
 long retrolibc_atol(const char *s);
 long long retrolibc_atoll(const char *s);
+retrolibc_div_t retrolibc_div(int n, int d);
 char *retrolibc_ecvt(double n, int ndigits, int *decpt, int *sign);
 char *retrolibc_fcvt(double n, int ndigits, int *decpt, int *sign);
 char *retrolibc_gcvt(double n, int ndigits, char *buf);
+char *retrolibc_getenv(const char *name);
+char *retrolibc_l64a(long n);
+long retrolibc_labs(long x);
+retrolibc_ldiv_t retrolibc_ldiv(long n, long d);
+long long retrolibc_llabs(long long x);
+retrolibc_lldiv_t retrolibc_lldiv(long long n, long long d);
+int retrolibc_putenv(const char *s);
 
 #ifdef RETROLIBC_STDLIB
+
+#define environ retrolibc_environ
+
+#define div_t retrolibc_div_t
+#define ldiv_t retrolibc_ldiv_t
+#define lldiv_t retrolibc_lldiv_t
+
+#define a64l retrolibc_a64l
+#define abs retrolibc_abs
 #define atof retrolibc_atof
 #define atoi retrolibc_atoi
 #define atol retrolibc_atol
 #define atoll retrolibc_atoll
+#define div retrolibc_div
 #define ecvt retrolibc_ecvt
 #define fcvt retrolibc_fcvt
 #define gcvt retrolibc_gcvt
+#define getenv retrolibc_getenv
+#define l64a retrolibc_l64a
+#define labs retrolibc_labs
+#define ldiv retrolibc_ldiv
+#define llabs retrolibc_llabs
+#define lldiv retrolibc_lldiv
+#define putenv retrolibc_putenv
 #define __efcvt retrolibc___efcvt
+
 #endif
 
 /* string.c */
