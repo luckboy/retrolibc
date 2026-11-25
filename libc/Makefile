@@ -268,6 +268,7 @@ TEST_STDLIB_OBJS = \
 	$(TEST_BUILD_DIR)/stdlib_atoi.o \
 	$(TEST_BUILD_DIR)/stdlib_atol.o \
 	$(TEST_BUILD_DIR)/stdlib_atoll.o \
+	$(TEST_BUILD_DIR)/stdlib_calloc.o \
 	$(TEST_BUILD_DIR)/stdlib_div.o \
 	$(TEST_BUILD_DIR)/stdlib_ecvt.o \
 	$(TEST_BUILD_DIR)/stdlib_fcvt.o \

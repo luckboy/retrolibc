@@ -5,6 +5,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+#include <errno.h>
+#include <limits.h>
 #include <CUnit/Basic.h>
 #include "retrolibc.h"
 
@@ -61,6 +63,28 @@ static void test_atoll_converts_string_to_number(void)
 {
   CU_ASSERT_EQUAL(retrolibc_atoll("1234"), 1234LL);
   CU_ASSERT_EQUAL(retrolibc_atoll("-1234"), -1234LL);
+}
+
+static void test_calloc_allocates_and_fills_memory_with_0(void)
+{
+  void *p = retrolibc_calloc(10, 5);
+  char *s;
+  size_t i;
+  int is_0;
+  CU_ASSERT_PTR_NOT_NULL(p);
+  is_0 = 1;
+  s = (char *) p;
+  for(i = 0; i < 10 * 5; i++) is_0 &= (*s == '\0');
+  CU_ASSERT_NOT_EQUAL(is_0, 0);
+}
+
+static void test_calloc_complains_on_too_large_n_and_size(void)
+{
+  void *p;
+  errno = 0;
+  p = retrolibc_calloc(ULONG_MAX / 5, 10);
+  CU_ASSERT_PTR_NULL(p);
+  CU_ASSERT_EQUAL(errno, ENOMEM);  
 }
 
 static void test_div_calculates_quotient_and_remainder(void)
@@ -362,6 +386,8 @@ int add_stdlib_suite(void)
   if(CU_add_test(suite, "atoi converts string to number", test_atoi_converts_string_to_number) == NULL) return -1;
   if(CU_add_test(suite, "atol converts string to number", test_atol_converts_string_to_number) == NULL) return -1;
   if(CU_add_test(suite, "atoll converts string to number", test_atoll_converts_string_to_number) == NULL) return -1;  
+  if(CU_add_test(suite, "calloc allocates and fills memory with 0", test_calloc_allocates_and_fills_memory_with_0) == NULL) return -1;  
+  if(CU_add_test(suite, "calloc complains on too large n and size", test_calloc_complains_on_too_large_n_and_size) == NULL) return -1;  
   if(CU_add_test(suite, "div calculates quotient and remainder", test_div_calculates_quotient_and_remainder) == NULL) return -1;
   if(CU_add_test(suite, "ecvt converts number to string", test_ecvt_converts_number_to_string) == NULL) return -1;
   if(CU_add_test(suite, "fcvt converts number to string", test_fcvt_converts_number_to_string) == NULL) return -1;

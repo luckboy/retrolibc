@@ -241,6 +241,7 @@ double retrolibc_atof(const char *s);
 int retrolibc_atoi(const char *s);
 long retrolibc_atol(const char *s);
 long long retrolibc_atoll(const char *s);
+void *retrolibc_calloc(size_t n, size_t size);
 retrolibc_div_t retrolibc_div(int n, int d);
 char *retrolibc_ecvt(double n, int ndigits, int *decpt, int *sign);
 char *retrolibc_fcvt(double n, int ndigits, int *decpt, int *sign);
@@ -269,6 +270,7 @@ int retrolibc_rand_r(unsigned *seed);
 #define atoi retrolibc_atoi
 #define atol retrolibc_atol
 #define atoll retrolibc_atoll
+#define calloc retrolibc_calloc
 #define div retrolibc_div
 #define ecvt retrolibc_ecvt
 #define fcvt retrolibc_fcvt
