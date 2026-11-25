@@ -37,7 +37,6 @@ struct compiler
 #if defined(__i386__) || defined(__x86_64__)
 
 #define comp_get_int(comp, i)           (*((int *) ((comp)->bytecode + (i))))
-
 #define comp_set_int(comp, i, x)        do *((int *) ((comp)->bytecode + (i))) = (x); while(0)
 
 #else
