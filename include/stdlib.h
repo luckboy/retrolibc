@@ -41,6 +41,7 @@ double atof(const char *s);
 int atoi(const char *s);
 long atol(const char *s);
 long long atoll(const char *s);
+void *calloc(size_t n, size_t size);
 div_t div(int n, int d);
 char *ecvt(double n, int ndigits, int *decpt, int *sign);
 char *fcvt(double n, int ndigits, int *decpt, int *sign);

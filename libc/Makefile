@@ -89,6 +89,7 @@ STDLIB_OBJS = \
 	$(BUILD_DIR)/stdlib_atoi.o \
 	$(BUILD_DIR)/stdlib_atol.o \
 	$(BUILD_DIR)/stdlib_atoll.o \
+	$(BUILD_DIR)/stdlib_calloc.o \
 	$(BUILD_DIR)/stdlib_div.o \
 	$(BUILD_DIR)/stdlib_ecvt.o \
 	$(BUILD_DIR)/stdlib_fcvt.o \

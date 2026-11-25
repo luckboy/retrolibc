@@ -72,6 +72,21 @@ long long atoll(const char *s)
 { return strtoll(s, NULL, 10); }
 #endif
 
+#ifdef L_calloc
+void *calloc(size_t n, size_t size)
+{
+  void *p;
+  if(n > 1 && size > 1 && n > ULONG_MAX / size) {
+    errno = ENOMEM;
+    return NULL;
+  }
+  p = malloc(n * size);
+  if(p == NULL) return NULL;
+  memset(p, '\0', n * size);
+  return p;
+}
+#endif
+
 #ifdef L_div
 div_t div(int n, int d)
 {
