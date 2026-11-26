@@ -159,10 +159,10 @@ OBJS = \
 	$(TIME_OBJS) \
 	$(BUILD_DIR)/bsearch.o \
 	$(BUILD_DIR)/efcvt.o \
-	$(BUILD_DIR)/fprintf.o \
-	$(BUILD_DIR)/fscanf.o \
 	$(BUILD_DIR)/fnmatch.o \
 	$(BUILD_DIR)/fnmatch_glob.o \
+	$(BUILD_DIR)/fprintf.o \
+	$(BUILD_DIR)/fscanf.o \
 	$(BUILD_DIR)/getdate.o \
 	$(BUILD_DIR)/getopt.o \
 	$(BUILD_DIR)/gmtime_r.o \
