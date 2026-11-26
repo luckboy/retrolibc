@@ -68,7 +68,7 @@ int retrolibc_toupper(int c);
 #define RETROLIBC_REG_NOTBOL    (1 << 0)
 #define RETROLIBC_REG_NOTEOL    (1 << 1)
 
-#define RETROLIBC_REG_NOTMATCH  1
+#define RETROLIBC_REG_NOMATCH   1
 #define RETROLIBC_REG_BADPAT    2
 #define RETROLIBC_REG_ECOLLATE  3
 #define RETROLIBC_REG_ECTYPE    4
@@ -113,7 +113,7 @@ void retrolibc_regfree(retrolibc_regex_t *reg);
 #define REG_NOTBOL      RETROLIBC_REG_NOTBOL
 #define REG_NOTEOL      RETROLIBC_REG_NOTEOL
 
-#define REG_NOTMATCH    RETROLIBC_REG_NOTMATCH
+#define REG_NOMATCH     RETROLIBC_REG_NOMATCH
 #define REG_BADPAT      RETROLIBC_REG_BADPAT
 #define REG_ECOLLATE    RETROLIBC_REG_ECOLLATE
 #define REG_ECTYPE      RETROLIBC_REG_ECTYPE

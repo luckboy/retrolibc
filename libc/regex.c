@@ -728,7 +728,7 @@ static void match_failure(struct interpreter *interp)
       for(i = 0; i < interp->match_count; i++) interp->matches[i].re_so = interp->matches[i].re_eo = -1;
       for(i = 0; i < 9; i++) interp->subs[i].re_so = interp->subs[i].re_eo = -1;
       interp->is_stopped = 1;
-      interp->error_code = REG_NOTMATCH;
+      interp->error_code = REG_NOMATCH;
     }
   }
 }

@@ -19,7 +19,7 @@
 #define REG_NOTBOL      (1 << 0)
 #define REG_NOTEOL      (1 << 1)
 
-#define REG_NOTMATCH    1
+#define REG_NOMATCH     1
 #define REG_BADPAT      2
 #define REG_ECOLLATE    3
 #define REG_ECTYPE      4
