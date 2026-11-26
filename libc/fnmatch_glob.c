@@ -41,7 +41,7 @@ const char *__fnmatch_glob(const char *pattern, const char *s, int flags, int is
       for(is_matched = 0; *pattern != ']' && *pattern != '\0'; pattern++) {
         if((flags & FNM_NOESCAPE) == 0 && *pattern == '\\') pattern++;
         if(*pattern == '\0') break;
-        if(pattern[1] == '-' && pattern[2] == '\\' && pattern[3] != '\0') {
+        if((flags & FNM_NOESCAPE) == 0 && pattern[1] == '-' && pattern[2] == '\\' && pattern[3] != '\0') {
           is_matched |= (*s >= *pattern && *s <= pattern[3]);
           pattern += 3;
         } else if(pattern[1] == '-' && pattern[2] != ']' && pattern[2] != '\0') {
