@@ -24,6 +24,6 @@ void *valloc(size_t size)
   new_p = (void *) PAGE_ALIGN((uintptr_t) p);
   if(new_p == p) return p;
   alloc_mem = (struct alloc_mem_header *) (((char *) new_p) - sizeof(struct alloc_mem_header));
-  alloc_mem->size = (size_t) (((uintptr_t) new_p) - ((uintptr_t) p)) | VALLOC_FLAG;
+  alloc_mem->size = (size_t) ((uintptr_t) new_p - (uintptr_t) p) | VALLOC_FLAG;
   return new_p;
 }

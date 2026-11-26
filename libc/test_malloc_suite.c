@@ -60,7 +60,7 @@ void *mock_sbrk(intptr_t inc)
   return r;
 }
 
-#define MEM(p)          (((char *) (p)) - sizeof(struct alloc_mem_header))
+#define MEM(p)          ((char *) (p) - sizeof(struct alloc_mem_header))
 #define MEM_SIZE(size)  ((size) + sizeof(struct alloc_mem_header))
 #define ALLOC_MEM(p)    ((struct alloc_mem_header *) MEM((p)))
 #define FREE_MEM(p)     ((struct free_mem_header *) MEM((p)))

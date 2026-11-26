@@ -104,7 +104,7 @@ static void *malloc_unlocked(size_t size)
     if(new_addr == MAP_FAILED) return NULL;
     alloc_mem = (struct alloc_mem_header *) new_addr;
     alloc_mem->size = mmap_size;
-    return (void *) (((char *) alloc_mem) + sizeof(struct alloc_mem_header));
+    return (void *) ((char *) alloc_mem + sizeof(struct alloc_mem_header));
   }
 #endif
   for(free_mem = first_free_mem; free_mem != NULL; free_mem = free_mem->next) {
@@ -112,14 +112,14 @@ static void *malloc_unlocked(size_t size)
       size_t alloc_mem_size = free_mem->size;
       remove_free_mem(free_mem);
       if(free_mem->size - mem_size >= MIN_SMALLER_MEM_SIZE) {
-        struct free_mem_header *new_free_mem = (struct free_mem_header *) (((char *) free_mem) + mem_size);
+        struct free_mem_header *new_free_mem = (struct free_mem_header *) ((char *) free_mem + mem_size);
         add_free_mem(new_free_mem);
         new_free_mem->size = free_mem->size - mem_size;
         alloc_mem_size = mem_size;
       }
       alloc_mem = (struct alloc_mem_header *) free_mem;
       alloc_mem->size = alloc_mem_size;
-      return (void *) (((char *) alloc_mem) + sizeof(struct alloc_mem_header));
+      return (void *) ((char *) alloc_mem + sizeof(struct alloc_mem_header));
     }
   }
   if(align_heap() == -1) return NULL;
@@ -127,7 +127,7 @@ static void *malloc_unlocked(size_t size)
   if(new_addr != (void *) (-1)) {
     alloc_mem = (struct alloc_mem_header *) new_addr;
     alloc_mem->size = mem_size;
-    return (void *) (((char *) alloc_mem) + sizeof(struct alloc_mem_header));
+    return (void *) ((char *) alloc_mem + sizeof(struct alloc_mem_header));
   } else {
     return NULL;
   }
@@ -144,7 +144,7 @@ void *malloc(size_t size)
 
 static void *realloc_unlocked(void *p, size_t size)
 {
-  struct alloc_mem_header *alloc_mem = (struct alloc_mem_header *) (((char *) p) - sizeof(struct alloc_mem_header));
+  struct alloc_mem_header *alloc_mem = (struct alloc_mem_header *) ((char *) p - sizeof(struct alloc_mem_header));
   struct free_mem_header *free_mem;
   struct free_mem_header *right_free_mem = NULL;
   size_t right_free_mem_size = 0;
@@ -152,8 +152,8 @@ static void *realloc_unlocked(void *p, size_t size)
   size_t valloc_size = 0;
   if((alloc_mem->size & VALLOC_FLAG) != 0) {
     valloc_size = alloc_mem->size & ~7UL;
-    alloc_mem = (struct alloc_mem_header *) (((char *) alloc_mem) - valloc_size);
-    p = (void *) (((char *) p) - valloc_size);
+    alloc_mem = (struct alloc_mem_header *) ((char *) alloc_mem - valloc_size);
+    p = (void *) ((char *) p - valloc_size);
     size += PAGE_SIZE - 1;
   }
   mem_size = ALIGN(sizeof(struct alloc_mem_header) + size);
@@ -175,21 +175,21 @@ static void *realloc_unlocked(void *p, size_t size)
           if(new_p == NULL) return NULL;
           memcpy(new_p, p, old_size);
           free_unlocked(p);
-          return (void *) (((char *) new_p) + valloc_size);
+          return (void *) ((char *) new_p + valloc_size);
         } else {
           return NULL;
         }
       }
       alloc_mem = (struct alloc_mem_header *) new_addr;
       alloc_mem->size = mmap_size;
-      return (void *) (((char *) alloc_mem) + sizeof(struct alloc_mem_header) + valloc_size);
+      return (void *) ((char *) alloc_mem + sizeof(struct alloc_mem_header) + valloc_size);
 #else
       size_t old_size = alloc_mem->size - sizeof(struct alloc_mem_header);
       void *new_p = malloc_unlocked(size);
       if(new_p == NULL) return NULL;
       memcpy(new_p, p, old_size);
       free_unlocked(p);
-      return (void *) (((char *) new_p) + valloc_size);
+      return (void *) ((char *) new_p + valloc_size);
 #endif
     } else if(mmap_size < alloc_mem->size) {
 #ifdef MREMAP_MAYMOVE
@@ -200,19 +200,19 @@ static void *realloc_unlocked(void *p, size_t size)
       if(new_addr == MAP_FAILED) {
         if(errno == ENOSYS) {
           errno = saved_errno;
-          return (void *) (((char *) p) + valloc_size);
+          return (void *) ((char *) p + valloc_size);
         } else {
           return NULL;
         }
       }
       alloc_mem = (struct alloc_mem_header *) new_addr;
       alloc_mem->size = mmap_size;
-      return (void *) (((char *) alloc_mem) + sizeof(struct alloc_mem_header) + valloc_size);
+      return (void *) ((char *) alloc_mem + sizeof(struct alloc_mem_header) + valloc_size);
 #else
-      return (void *) (((char *) p) + valloc_size);
+      return (void *) ((char *) p + valloc_size);
 #endif
     } else {
-      return (void *) (((char *) p) + valloc_size);
+      return (void *) ((char *) p + valloc_size);
     }
   }
   if(mem_size > MAX_SMALLER_MEM_SIZE) {
@@ -221,23 +221,23 @@ static void *realloc_unlocked(void *p, size_t size)
     if(new_p == NULL) return NULL;
     memcpy(new_p, p, old_size);
     free_unlocked(p);
-    return (void *) (((char *) new_p) + valloc_size);
+    return (void *) ((char *) new_p + valloc_size);
   }
 #endif
   if(mem_size != alloc_mem->size) {
     void *addr = sbrk(0);
     if(addr == (void *) (-1)) return NULL;
     for(free_mem = first_free_mem; free_mem != NULL; free_mem = free_mem->next) {
-      if(((char *) free_mem) == ((char *) alloc_mem) + alloc_mem->size) {
+      if((char *) free_mem == (char *) alloc_mem + alloc_mem->size) {
         right_free_mem = free_mem;
         right_free_mem_size = right_free_mem->size;
         break;
       }
     }
-    if(((char *) addr) == ((char *) alloc_mem) + alloc_mem->size)  {
-      if(brk((void *) (((char *) alloc_mem) + mem_size))) return NULL;
+    if((char *) addr == (char *) alloc_mem + alloc_mem->size)  {
+      if(brk((void *) ((char *) alloc_mem + mem_size))) return NULL;
       alloc_mem->size = mem_size;
-      return (void *) (((char *) p) + valloc_size);
+      return (void *) ((char *) p + valloc_size);
     }
   }
   if(mem_size > alloc_mem->size) {
@@ -247,7 +247,7 @@ static void *realloc_unlocked(void *p, size_t size)
         remove_free_mem(right_free_mem);
       }
       if(alloc_mem->size + right_free_mem_size - mem_size >= MIN_SMALLER_MEM_SIZE) {
-        struct free_mem_header *new_free_mem = (struct free_mem_header *) (((char *) alloc_mem) + mem_size);
+        struct free_mem_header *new_free_mem = (struct free_mem_header *) ((char *) alloc_mem + mem_size);
         add_free_mem(new_free_mem);
         new_free_mem->size = alloc_mem->size - mem_size + right_free_mem_size;
         alloc_mem->size = mem_size;
@@ -260,7 +260,7 @@ static void *realloc_unlocked(void *p, size_t size)
       if(new_p == NULL) return NULL;
       memcpy(new_p, p, old_size);
       free_unlocked(p);
-      return (void *) (((char *) new_p) + valloc_size);
+      return (void *) ((char *) new_p + valloc_size);
     }
   } if(mem_size < alloc_mem->size) {
     if(right_free_mem != NULL) {
@@ -268,13 +268,13 @@ static void *realloc_unlocked(void *p, size_t size)
       remove_free_mem(right_free_mem);
     }
     if(alloc_mem->size + right_free_mem_size - mem_size >= MIN_SMALLER_MEM_SIZE) {
-      struct free_mem_header *new_free_mem = (struct free_mem_header *) (((char *) alloc_mem) + mem_size);
+      struct free_mem_header *new_free_mem = (struct free_mem_header *) ((char *) alloc_mem + mem_size);
       add_free_mem(new_free_mem);
       new_free_mem->size = alloc_mem->size - mem_size + right_free_mem_size;
       alloc_mem->size = mem_size;
     }
   }
-  return (void *) (((char *) p) + valloc_size);
+  return (void *) ((char *) p + valloc_size);
 }
 
 void *realloc(void *p, size_t size)
@@ -289,11 +289,11 @@ void *realloc(void *p, size_t size)
 
 static void free_unlocked(void *p)
 {
-  struct alloc_mem_header *alloc_mem = (struct alloc_mem_header *) (((char *) p) - sizeof(struct alloc_mem_header));
+  struct alloc_mem_header *alloc_mem = (struct alloc_mem_header *) ((char *) p - sizeof(struct alloc_mem_header));
   struct free_mem_header *free_mem;
   struct free_mem_header *left_free_mem = NULL;
   struct free_mem_header *right_free_mem = NULL;
-  if((alloc_mem->size & VALLOC_FLAG) != 0) alloc_mem = (struct alloc_mem_header *) (((char *) alloc_mem) - (alloc_mem->size & ~7UL));
+  if((alloc_mem->size & VALLOC_FLAG) != 0) alloc_mem = (struct alloc_mem_header *) ((char *) alloc_mem - (alloc_mem->size & ~7UL));
 #ifdef MAP_ANONYMOUS
   if(alloc_mem->size >= PAGE_SIZE) {
     munmap((void *) alloc_mem, alloc_mem->size);
@@ -301,12 +301,12 @@ static void free_unlocked(void *p)
   }
 #endif
   for(free_mem = first_free_mem; free_mem != NULL; free_mem = free_mem->next) {
-    if(((char *) free_mem) + free_mem->size == (char *) alloc_mem) left_free_mem = free_mem;
-    if(((char *) free_mem) == ((char *) alloc_mem) + alloc_mem->size) right_free_mem = free_mem;
+    if((char *) free_mem + free_mem->size == (char *) alloc_mem) left_free_mem = free_mem;
+    if((char *) free_mem == (char *) alloc_mem + alloc_mem->size) right_free_mem = free_mem;
     if(left_free_mem != NULL && right_free_mem != NULL) break;
   }
   if(left_free_mem != NULL) {
-    if((char *) sbrk(0) == ((char *) alloc_mem) + alloc_mem->size)  {
+    if((char *) sbrk(0) == (char *) alloc_mem + alloc_mem->size)  {
       remove_free_mem(left_free_mem);
       brk((void *) left_free_mem);
       return;
@@ -319,7 +319,7 @@ static void free_unlocked(void *p)
     }
   } else {
     size_t free_mem_size;
-    if((char *) sbrk(0) == ((char *) alloc_mem) + alloc_mem->size)  {
+    if((char *) sbrk(0) == (char *) alloc_mem + alloc_mem->size)  {
       brk((void *) alloc_mem);
       return;
     }
