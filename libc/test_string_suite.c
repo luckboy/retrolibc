@@ -44,13 +44,13 @@ static void test_memchr_returns_null(void)
   CU_ASSERT_PTR_NULL(retrolibc_memchr(s, 'X', 8));
 }
 
-static void test_memcmp_returns_zero(void)
+static void test_memcmp_returns_0(void)
 { CU_ASSERT_EQUAL(retrolibc_memcmp("abc\0def\0", "abc\0def\0", 8), 0); }
 
-static void test_memcmp_returns_number_that_is_less_than_zero(void)
+static void test_memcmp_returns_number_that_is_less_than_0(void)
 { CU_ASSERT_EQUAL(retrolibc_memcmp("abc\0Def\0", "abc\0def\0", 8), 'D' - 'd'); }
 
-static void test_memcmp_returns_number_that_is_greater_than_zero(void)
+static void test_memcmp_returns_number_that_is_greater_than_0(void)
 { CU_ASSERT_EQUAL(retrolibc_memcmp("abc\0def\0", "abc\0dEf\0", 8), 'e' - 'E'); }
 
 static void test_memcpy_copies_memory(void)
@@ -88,7 +88,7 @@ static void test_memset_fills_memory_with_character(void)
   CU_ASSERT_EQUAL(memcmp(buf, "YYYYYYYYXX", 10), 0);
 }
 
-static void test_strcat_concatenates_two_strings(void)
+static void test_strcat_concatenates_2_strings(void)
 {
   static char buf[11] = "abcdef\0XXX";
   CU_ASSERT_PTR_EQUAL(retrolibc_strcat(buf, "ghi"), buf);
@@ -110,37 +110,37 @@ static void test_strchr_returns_null(void)
   CU_ASSERT_PTR_NULL(retrolibc_strchr(s, 'X'));
 }
 
-static void test_strcmp_returns_zero(void)
+static void test_strcmp_returns_0(void)
 {
   CU_ASSERT_EQUAL(retrolibc_strcmp("abcdef", "abcdef"), 0);
   CU_ASSERT_EQUAL(retrolibc_strcmp("abcdef\0Ghi", "abcdef\0ghi"), 0);
 }
 
-static void test_strcmp_returns_number_that_is_less_than_zero(void)
+static void test_strcmp_returns_number_that_is_less_than_0(void)
 {
   CU_ASSERT_EQUAL(retrolibc_strcmp("abcDef", "abcdef"), 'D' - 'd');
   CU_ASSERT_EQUAL(retrolibc_strcmp("abc", "abcdef"), -'d');
 }
 
-static void test_strcmp_returns_number_that_is_greater_than_zero(void)
+static void test_strcmp_returns_number_that_is_greater_than_0(void)
 {
   CU_ASSERT_EQUAL(retrolibc_strcmp("abcdef", "abcdEf"), 'e' - 'E');
   CU_ASSERT_EQUAL(retrolibc_strcmp("abcdef", "abc"), 'd');
 }
 
-static void test_strcoll_returns_zero(void)
+static void test_strcoll_returns_0(void)
 {
   CU_ASSERT_EQUAL(retrolibc_strcoll("abcdef", "abcdef"), 0);
   CU_ASSERT_EQUAL(retrolibc_strcoll("abcdef\0Ghi", "abcdef\0ghi"), 0);
 }
 
-static void test_strcoll_returns_number_that_is_less_than_zero(void)
+static void test_strcoll_returns_number_that_is_less_than_0(void)
 {
   CU_ASSERT_EQUAL(retrolibc_strcoll("abcDef", "abcdef"), 'D' - 'd');
   CU_ASSERT_EQUAL(retrolibc_strcoll("abcdef", "abc"), 'd');
 }
 
-static void test_strcoll_returns_number_that_is_greater_than_zero(void)
+static void test_strcoll_returns_number_that_is_greater_than_0(void)
 {
   CU_ASSERT_EQUAL(retrolibc_strcoll("abcdef", "abcdEf"), 'e' - 'E');
   CU_ASSERT_EQUAL(retrolibc_strcoll("abc", "abcdef"), -'d');
@@ -175,21 +175,21 @@ static void test_strlen_returns_lenght_of_string(void)
   CU_ASSERT_EQUAL(retrolibc_strlen(""), 0);
 }
 
-static void test_strncat_concatenates_two_strings(void)
+static void test_strncat_concatenates_2_strings(void)
 {
   static char buf[11] = "abcdef\0XXX";
   CU_ASSERT_PTR_EQUAL(retrolibc_strncat(buf, "ghi", 5), buf);
   CU_ASSERT_STRING_EQUAL(buf, "abcdefghi");
 }
 
-static void test_strncat_concatenates_two_strings_for_too_large_string(void)
+static void test_strncat_concatenates_2_strings_for_too_large_string(void)
 {
   static char buf[11] = "abcdef\0XXX";
   CU_ASSERT_PTR_EQUAL(retrolibc_strncat(buf, "ghijkl", 3), buf);
   CU_ASSERT_STRING_EQUAL(buf, "abcdefghi");
 }
 
-static void test_strncmp_returns_zero(void)
+static void test_strncmp_returns_0(void)
 {
   CU_ASSERT_EQUAL(retrolibc_strncmp("abcdef", "abcdef", 8), 0);
   CU_ASSERT_EQUAL(retrolibc_strncmp("abcdef\0Ghi", "abcdef\0ghi", 8), 0);
@@ -197,7 +197,7 @@ static void test_strncmp_returns_zero(void)
   CU_ASSERT_EQUAL(retrolibc_strncmp("abcdef", "abcdef", 0), 0);
 }
 
-static void test_strncmp_returns_number_that_is_less_than_zero(void)
+static void test_strncmp_returns_number_that_is_less_than_0(void)
 {
   CU_ASSERT_EQUAL(retrolibc_strncmp("abcDef", "abcdef", 8), 'D' - 'd');
   CU_ASSERT_EQUAL(retrolibc_strncmp("abc", "abcdef", 8), -'d');
@@ -205,7 +205,7 @@ static void test_strncmp_returns_number_that_is_less_than_zero(void)
   CU_ASSERT_EQUAL(retrolibc_strncmp("abc", "abcdef", 4), -'d');
 }
 
-static void test_strncmp_returns_number_that_is_greater_than_zero(void)
+static void test_strncmp_returns_number_that_is_greater_than_0(void)
 {
   CU_ASSERT_EQUAL(retrolibc_strncmp("abcdef", "abcdEf", 8), 'e' - 'E');
   CU_ASSERT_EQUAL(retrolibc_strncmp("abcdef", "abc", 8), 'd');
@@ -312,32 +312,32 @@ int add_string_suite(void)
   if(CU_add_test(suite, "memccpy copies memory and returns pointer", test_memccpy_copies_memory_and_returns_pointer) == NULL) return -1;
   if(CU_add_test(suite, "memchr returns pointer to occurrence", test_memchr_returns_pointer_to_occurrence) == NULL) return -1;
   if(CU_add_test(suite, "memchr returns null", test_memchr_returns_null) == NULL) return -1;
-  if(CU_add_test(suite, "memcmp returns zero", test_memcmp_returns_zero) == NULL) return -1;
-  if(CU_add_test(suite, "memcmp returns number that is less than zero", test_memcmp_returns_number_that_is_less_than_zero) == NULL) return -1;
-  if(CU_add_test(suite, "memcmp returns number that is greater than zero", test_memcmp_returns_number_that_is_greater_than_zero) == NULL) return -1;
+  if(CU_add_test(suite, "memcmp returns 0", test_memcmp_returns_0) == NULL) return -1;
+  if(CU_add_test(suite, "memcmp returns number that is less than 0", test_memcmp_returns_number_that_is_less_than_0) == NULL) return -1;
+  if(CU_add_test(suite, "memcmp returns number that is greater than 0", test_memcmp_returns_number_that_is_greater_than_0) == NULL) return -1;
   if(CU_add_test(suite, "memcpy copies memory", test_memcpy_copies_memory) == NULL) return -1;
   if(CU_add_test(suite, "memmove moves memory", test_memmove_moves_memory) == NULL) return -1;
   if(CU_add_test(suite, "memmove moves memory with overflap", test_memmove_moves_memory_with_overflap) == NULL) return -1;  
   if(CU_add_test(suite, "memmove moves memory with overflap for destination that is less than source", test_memmove_moves_memory_with_overflap_for_destination_that_is_less_than_source) == NULL) return -1;
   if(CU_add_test(suite, "memset fills memory with character", test_memset_fills_memory_with_character) == NULL) return -1;
-  if(CU_add_test(suite, "strcat concatenates two strings",  test_strcat_concatenates_two_strings) == NULL) return -1;
+  if(CU_add_test(suite, "strcat concatenates 2 strings",  test_strcat_concatenates_2_strings) == NULL) return -1;
   if(CU_add_test(suite, "strchr returns pointer to occurrence", test_strchr_returns_pointer_to_occurrence) == NULL) return -1;
   if(CU_add_test(suite, "strchr returns null", test_strchr_returns_null) == NULL) return -1;
-  if(CU_add_test(suite, "strcmp returns zero", test_strcmp_returns_zero) == NULL) return -1;
-  if(CU_add_test(suite, "strcmp returns number that is less than zero", test_strcmp_returns_number_that_is_less_than_zero) == NULL) return -1;
-  if(CU_add_test(suite, "strcmp returns number that is greater than zero", test_strcmp_returns_number_that_is_greater_than_zero) == NULL) return -1;
-  if(CU_add_test(suite, "strcoll returns zero", test_strcoll_returns_zero) == NULL) return -1;
-  if(CU_add_test(suite, "strcoll returns number that is less than zero", test_strcoll_returns_number_that_is_less_than_zero) == NULL) return -1;
-  if(CU_add_test(suite, "strcoll returns number that is greater than zero", test_strcoll_returns_number_that_is_greater_than_zero) == NULL) return -1;
+  if(CU_add_test(suite, "strcmp returns 0", test_strcmp_returns_0) == NULL) return -1;
+  if(CU_add_test(suite, "strcmp returns number that is less than 0", test_strcmp_returns_number_that_is_less_than_0) == NULL) return -1;
+  if(CU_add_test(suite, "strcmp returns number that is greater than 0", test_strcmp_returns_number_that_is_greater_than_0) == NULL) return -1;
+  if(CU_add_test(suite, "strcoll returns 0", test_strcoll_returns_0) == NULL) return -1;
+  if(CU_add_test(suite, "strcoll returns number that is less than 0", test_strcoll_returns_number_that_is_less_than_0) == NULL) return -1;
+  if(CU_add_test(suite, "strcoll returns number that is greater than 0", test_strcoll_returns_number_that_is_greater_than_0) == NULL) return -1;
   if(CU_add_test(suite, "strcpy copies string", test_strcpy_copies_string) == NULL) return -1;
   if(CU_add_test(suite, "strcspn returns length of complementary substring", test_strcspn_returns_length_of_complementary_substring) == NULL) return -1;
   if(CU_add_test(suite, "strdup duplicates string", test_strdup_duplicates_string) == NULL) return -1;
   if(CU_add_test(suite, "strlen returns lenght of string", test_strlen_returns_lenght_of_string) == NULL) return -1;
-  if(CU_add_test(suite, "strncat concatenates two strings",  test_strncat_concatenates_two_strings) == NULL) return -1;
-  if(CU_add_test(suite, "strncat concatenates two strings for too large string",  test_strncat_concatenates_two_strings_for_too_large_string) == NULL) return -1;
-  if(CU_add_test(suite, "strncmp returns zero", test_strncmp_returns_zero) == NULL) return -1;
-  if(CU_add_test(suite, "strncmp returns number that is less than zero", test_strncmp_returns_number_that_is_less_than_zero) == NULL) return -1;
-  if(CU_add_test(suite, "strncmp returns number that is greater than zero", test_strncmp_returns_number_that_is_greater_than_zero) == NULL) return -1;
+  if(CU_add_test(suite, "strncat concatenates 2 strings",  test_strncat_concatenates_2_strings) == NULL) return -1;
+  if(CU_add_test(suite, "strncat concatenates 2 strings for too large string",  test_strncat_concatenates_2_strings_for_too_large_string) == NULL) return -1;
+  if(CU_add_test(suite, "strncmp returns 0", test_strncmp_returns_0) == NULL) return -1;
+  if(CU_add_test(suite, "strncmp returns number that is less than 0", test_strncmp_returns_number_that_is_less_than_0) == NULL) return -1;
+  if(CU_add_test(suite, "strncmp returns number that is greater than 0", test_strncmp_returns_number_that_is_greater_than_0) == NULL) return -1;
   if(CU_add_test(suite, "strncpy copies string", test_strncpy_copies_string) == NULL) return -1;
   if(CU_add_test(suite, "strncpy copies string that is too large", test_strncpy_copies_string_that_is_too_large) == NULL) return -1;
   if(CU_add_test(suite, "strpbrk returns pointer to occurrence", test_strpbrk_returns_pointer_to_occurrence) == NULL) return -1;

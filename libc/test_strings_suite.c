@@ -15,13 +15,13 @@ static int initialize_strings(void)
 static int cleanup_strings(void)
 { return 0; }
 
-static void test_bcmp_returns_zero(void)
+static void test_bcmp_returns_0(void)
 { CU_ASSERT_EQUAL(retrolibc_bcmp("abc\0def\0", "abc\0def\0", 8), 0); }
 
-static void test_bcmp_returns_number_that_is_less_than_zero(void)
+static void test_bcmp_returns_number_that_is_less_than_0(void)
 { CU_ASSERT(retrolibc_bcmp("abc\0Def\0", "abc\0def\0", 8) < 0); }
 
-static void test_bcmp_returns_number_that_is_greater_than_zero(void)
+static void test_bcmp_returns_number_that_is_greater_than_0(void)
 { CU_ASSERT(retrolibc_bcmp("abc\0def\0", "abc\0dEf\0", 8) > 0); }
 
 static void test_bcopy_copies_memory(void)
@@ -82,7 +82,7 @@ static void test_rindex_returns_null(void)
 }
 
 
-static void test_strcasecmp_returns_zero(void)
+static void test_strcasecmp_returns_0(void)
 {
   CU_ASSERT_EQUAL(retrolibc_strcasecmp("abcdef", "abcdef"), 0);
   CU_ASSERT_EQUAL(retrolibc_strcasecmp("abcdef\0@hi", "abcdef\0ghi"), 0);
@@ -90,19 +90,19 @@ static void test_strcasecmp_returns_zero(void)
   CU_ASSERT_EQUAL(retrolibc_strcasecmp("abcDEF\0@hi", "ABCdef\0ghi"), 0);
 }
 
-static void test_strcasecmp_returns_number_that_is_less_than_zero(void)
+static void test_strcasecmp_returns_number_that_is_less_than_0(void)
 {
   CU_ASSERT_EQUAL(retrolibc_strcasecmp("abc1ef", "abcDef"), '1' - 'd');
   CU_ASSERT_EQUAL(retrolibc_strcasecmp("abc", "abcDEF"), -'d');
 }
 
-static void test_strcasecmp_returns_number_that_is_greater_than_zero(void)
+static void test_strcasecmp_returns_number_that_is_greater_than_0(void)
 {
   CU_ASSERT_EQUAL(retrolibc_strcasecmp("abcdEf", "abcd1f"), 'e' - '1');
   CU_ASSERT_EQUAL(retrolibc_strcasecmp("abcDEF", "abc"), 'd');
 }
 
-static void test_strncasecmp_returns_zero(void)
+static void test_strncasecmp_returns_0(void)
 {
   CU_ASSERT_EQUAL(retrolibc_strncasecmp("abcdef", "abcdef", 8), 0);
   CU_ASSERT_EQUAL(retrolibc_strncasecmp("abcdef\0@hi", "abcdef\0ghi", 8), 0);
@@ -114,7 +114,7 @@ static void test_strncasecmp_returns_zero(void)
   CU_ASSERT_EQUAL(retrolibc_strncasecmp("abcDEF", "ABCdef", 0), 0);
 }
 
-static void test_strncasecmp_returns_number_that_is_less_than_zero(void)
+static void test_strncasecmp_returns_number_that_is_less_than_0(void)
 {
   CU_ASSERT_EQUAL(retrolibc_strncasecmp("abc1ef", "abcDef", 8), '1' - 'd');
   CU_ASSERT_EQUAL(retrolibc_strncasecmp("abc", "abcDef", 8), -'d');
@@ -122,7 +122,7 @@ static void test_strncasecmp_returns_number_that_is_less_than_zero(void)
   CU_ASSERT_EQUAL(retrolibc_strncasecmp("abc", "abcDef", 4), -'d');
 }
 
-static void test_strncasecmp_returns_number_that_is_greater_than_zero(void)
+static void test_strncasecmp_returns_number_that_is_greater_than_0(void)
 {
   CU_ASSERT_EQUAL(retrolibc_strncasecmp("abcdEf", "abcd1f", 8), 'e' - '1');
   CU_ASSERT_EQUAL(retrolibc_strncasecmp("abcDef", "abc", 8), 'd');
@@ -134,9 +134,9 @@ int add_strings_suite(void)
 {
   CU_pSuite suite;
   if((suite = CU_add_suite("strings suite", initialize_strings, cleanup_strings)) == NULL) return -1;
-  if(CU_add_test(suite, "bcmp returns zero", test_bcmp_returns_zero) == NULL) return -1;
-  if(CU_add_test(suite, "bcmp returns number that is less than zero", test_bcmp_returns_number_that_is_less_than_zero) == NULL) return -1;
-  if(CU_add_test(suite, "bcmp returns number that is greater than zero", test_bcmp_returns_number_that_is_greater_than_zero) == NULL) return -1;
+  if(CU_add_test(suite, "bcmp returns 0", test_bcmp_returns_0) == NULL) return -1;
+  if(CU_add_test(suite, "bcmp returns number that is less than 0", test_bcmp_returns_number_that_is_less_than_0) == NULL) return -1;
+  if(CU_add_test(suite, "bcmp returns number that is greater than 0", test_bcmp_returns_number_that_is_greater_than_0) == NULL) return -1;
   if(CU_add_test(suite, "bcopy copies memory", test_bcopy_copies_memory) == NULL) return -1;
   if(CU_add_test(suite, "bzero fills memory with 0", test_bzero_fills_memory_with_0) == NULL) return -1;
   if(CU_add_test(suite, "ffs returns bit index", test_ffs_returns_first_bit_index) == NULL) return -1;
@@ -145,11 +145,11 @@ int add_strings_suite(void)
   if(CU_add_test(suite, "index returns null", test_index_returns_null) == NULL) return -1;
   if(CU_add_test(suite, "rindex returns pointer to occurrence", test_rindex_returns_pointer_to_occurrence) == NULL) return -1;
   if(CU_add_test(suite, "rindex returns null", test_rindex_returns_null) == NULL) return -1;
-  if(CU_add_test(suite, "strcasecmp returns zero", test_strcasecmp_returns_zero) == NULL) return -1;
-  if(CU_add_test(suite, "strcasecmp returns number that is less than zero", test_strcasecmp_returns_number_that_is_less_than_zero) == NULL) return -1;
-  if(CU_add_test(suite, "strcasecmp returns number that is greater than zero", test_strcasecmp_returns_number_that_is_greater_than_zero) == NULL) return -1;
-  if(CU_add_test(suite, "strncasecmp returns zero", test_strncasecmp_returns_zero) == NULL) return -1;
-  if(CU_add_test(suite, "strncasecmp returns number that is less than zero", test_strncasecmp_returns_number_that_is_less_than_zero) == NULL) return -1;
-  if(CU_add_test(suite, "strncasecmp returns number that is greater than zero", test_strncasecmp_returns_number_that_is_greater_than_zero) == NULL) return -1;
+  if(CU_add_test(suite, "strcasecmp returns 0", test_strcasecmp_returns_0) == NULL) return -1;
+  if(CU_add_test(suite, "strcasecmp returns number that is less than 0", test_strcasecmp_returns_number_that_is_less_than_0) == NULL) return -1;
+  if(CU_add_test(suite, "strcasecmp returns number that is greater than 0", test_strcasecmp_returns_number_that_is_greater_than_0) == NULL) return -1;
+  if(CU_add_test(suite, "strncasecmp returns 0", test_strncasecmp_returns_0) == NULL) return -1;
+  if(CU_add_test(suite, "strncasecmp returns number that is less than 0", test_strncasecmp_returns_number_that_is_less_than_0) == NULL) return -1;
+  if(CU_add_test(suite, "strncasecmp returns number that is greater than 0", test_strncasecmp_returns_number_that_is_greater_than_0) == NULL) return -1;
   return 0;
 }

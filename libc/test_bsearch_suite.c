@@ -77,7 +77,7 @@ static void test_bsearch_returns_null(void)
   CU_ASSERT_PTR_NULL(retrolibc_bsearch(&key, array, 1000, sizeof(int), cmp));
 }
 
-static void test_bsearch_returns_pointer_to_element_for_array_with_two_elements(void)
+static void test_bsearch_returns_pointer_to_element_for_array_with_2_elements(void)
 {
   static int array[2] = { 1, 2 };
   int key = 1;
@@ -86,7 +86,7 @@ static void test_bsearch_returns_pointer_to_element_for_array_with_two_elements(
   CU_ASSERT_PTR_EQUAL(retrolibc_bsearch(&key, array, 2, sizeof(int), cmp), (void *) (array + 1));
 }
 
-static void test_bsearch_returns_null_for_array_with_two_elements(void)
+static void test_bsearch_returns_null_for_array_with_2_elements(void)
 {
   static int array[2] = { 1, 3 };
   int key = 0;
@@ -95,14 +95,14 @@ static void test_bsearch_returns_null_for_array_with_two_elements(void)
   CU_ASSERT_PTR_NULL(retrolibc_bsearch(&key, array, 2, sizeof(int), cmp));
 }
 
-static void test_bsearch_returns_pointer_to_element_for_array_with_one_element(void)
+static void test_bsearch_returns_pointer_to_element_for_array_with_1_element(void)
 {
   static int array[1] = { 1 };
   int key = 1;
   CU_ASSERT_PTR_EQUAL(retrolibc_bsearch(&key, array, 1, sizeof(int), cmp), (void *) (array + 0));
 }
 
-static void test_bsearch_returns_null_for_array_with_one_element(void)
+static void test_bsearch_returns_null_for_array_with_1_element(void)
 {
   static int array[1] = { 1 };
   int key = 0;
@@ -124,10 +124,10 @@ int add_bsearch_suite(void)
   if((suite = CU_add_suite("bsearch suite", initialize_bsearch, cleanup_bsearch)) == NULL) return -1;
   if(CU_add_test(suite, "bsearch returns pointer to element", test_bsearch_returns_pointer_to_element) == NULL) return -1;
   if(CU_add_test(suite, "bsearch returns null", test_bsearch_returns_null) == NULL) return -1;
-  if(CU_add_test(suite, "bsearch returns pointer to element for array with two elements", test_bsearch_returns_pointer_to_element_for_array_with_two_elements) == NULL) return -1;
-  if(CU_add_test(suite, "bsearch returns null for array with two elements", test_bsearch_returns_null_for_array_with_two_elements) == NULL) return -1;
-  if(CU_add_test(suite, "bsearch returns pointer to element for array with one element", test_bsearch_returns_pointer_to_element_for_array_with_one_element) == NULL) return -1;
-  if(CU_add_test(suite, "bsearch returns null for array with one element", test_bsearch_returns_null_for_array_with_one_element) == NULL) return -1;
+  if(CU_add_test(suite, "bsearch returns pointer to element for array with 2 elements", test_bsearch_returns_pointer_to_element_for_array_with_2_elements) == NULL) return -1;
+  if(CU_add_test(suite, "bsearch returns null for array with 2 elements", test_bsearch_returns_null_for_array_with_2_elements) == NULL) return -1;
+  if(CU_add_test(suite, "bsearch returns pointer to element for array with 1 element", test_bsearch_returns_pointer_to_element_for_array_with_1_element) == NULL) return -1;
+  if(CU_add_test(suite, "bsearch returns null for array with 1 element", test_bsearch_returns_null_for_array_with_1_element) == NULL) return -1;
   if(CU_add_test(suite, "bsearch returns null for array without elements", test_bsearch_returns_null_for_array_without_elements) == NULL) return -1;
   return 0;
 }

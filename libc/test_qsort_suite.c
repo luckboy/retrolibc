@@ -38,7 +38,7 @@ static void test_qsort_sorts_array(void)
   CU_ASSERT_EQUAL(memcmp(array, expected_array, 1000 * sizeof(int)), 0);
 }
 
-static void test_qsort_sorts_array_with_two_elements(void)
+static void test_qsort_sorts_array_with_2_elements(void)
 {
   static int array[2] = { 1, 2 };
   static int expected_array[2] = { 1, 2 };
@@ -50,7 +50,7 @@ static void test_qsort_sorts_array_with_two_elements(void)
   CU_ASSERT_EQUAL(memcmp(array2, expected_array2, 2 * sizeof(int)), 0);
 }
 
-static void test_qsort_sorts_array_with_one_element(void)
+static void test_qsort_sorts_array_with_1_element(void)
 {
   static int array[1] = { 1 };
   static int expected_array[1] = { 1 };
@@ -69,8 +69,8 @@ int add_qsort_suite(void)
   CU_pSuite suite;
   if((suite = CU_add_suite("qsort suite", initialize_qsort, cleanup_qsort)) == NULL) return -1;
   if(CU_add_test(suite, "qsort sorts array", test_qsort_sorts_array) == NULL) return -1;
-  if(CU_add_test(suite, "qsort sorts array with two elements", test_qsort_sorts_array_with_two_elements) == NULL) return -1;
-  if(CU_add_test(suite, "qsort sorts sorted array with one element", test_qsort_sorts_array_with_one_element) == NULL) return -1;
+  if(CU_add_test(suite, "qsort sorts array with 2 elements", test_qsort_sorts_array_with_2_elements) == NULL) return -1;
+  if(CU_add_test(suite, "qsort sorts sorted array with 1 element", test_qsort_sorts_array_with_1_element) == NULL) return -1;
   if(CU_add_test(suite, "qsort sorts sorted array without elements", test_qsort_sorts_array_without_elements) == NULL) return -1;
   return 0;
 }
