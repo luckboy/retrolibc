@@ -537,6 +537,14 @@ int retrolibc_ungetc(int c, retrolibc_FILE *f);
 
 #endif
 
+/* fnmatch.c */
+
+int retrolibc_fnmatch(const char *pattern, const char *s, int flags);
+
+#ifdef RETROLIBC_FNMATCH
+#define fnmatch retrolibc_fnmatch
+#endif
+
 /* fnmatch_glob.c */
 
 #define RETROLIBC_FNM_NOMATCH   1
@@ -548,7 +556,7 @@ int retrolibc_ungetc(int c, retrolibc_FILE *f);
 
 const char *retrolibc___fnmatch_glob(const char *pattern, const char *s, int flags, int is_first_char);
 
-#ifdef RETROLIBC_FNMATCH_GLOB
+#if defined(RETROLIBC_FNMATCH_GLOB) || defined(RETROLIBC_FNMATCH)
 
 #define FNM_NOMATCH     RETROLIBC_FNM_NOMATCH
 #define FNM_NOSYS       RETROLIBC_FNM_NOSYS

@@ -6,8 +6,13 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 #include <stddef.h>
+#ifndef TEST
 #include <fnmatch.h>
 #include "priv_fnmatch.h"
+#else
+#define RETROLIBC_FNMATCH
+#include "retrolibc.h"
+#endif
 
 int fnmatch(const char *pattern, const char *s, int flags)
 {
