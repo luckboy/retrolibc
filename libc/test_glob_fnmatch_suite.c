@@ -480,6 +480,6 @@ int add_glob_fnmatch_suite(void)
   if(CU_add_test(suite, "glob_fnmatch returns pointer to /", test_glob_fnmatch_returns_pointer_to_slash) == NULL) return -1;
   if(CU_add_test(suite, "glob_fnmatch returns pointer to / for / escapes", test_glob_fnmatch_returns_pointer_to_slash_for_slash_escapes) == NULL) return -1;
   if(CU_add_test(suite, "glob_fnmatch matches string for ? and FNM_PERIOD and is_first_char that is 0", test_glob_fnmatch_matches_string_for_question_and_fnm_period_and_is_first_char_that_is_0) == NULL) return -1;
-  if(CU_add_test(suite, "fnmatch glob matches string for 0 escape", test_glob_fnmatch_matches_string_for_0_escape) == NULL) return -1;
+  if(CU_add_test(suite, "glob_fnmatch matches string for 0 escape", test_glob_fnmatch_matches_string_for_0_escape) == NULL) return -1;
   return 0;
 }
