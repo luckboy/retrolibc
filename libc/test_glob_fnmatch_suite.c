@@ -241,6 +241,14 @@ static void test_glob_fnmatch_matches_string_for_brackets_and_slash_and_dot_and_
   CU_ASSERT_PTR_NULL(retrolibc___glob_fnmatch(pattern, "Abc", RETROLIBC_FNM_PATHNAME, 1));
 }
 
+static void test_glob_fnmatch_matches_string_for_star_before_slash_and_fnm_pathname(void)
+{
+  const char *pattern = "abc*/def";
+  CU_ASSERT_PTR_EQUAL(retrolibc___glob_fnmatch(pattern, "abcdef/def", RETROLIBC_FNM_PATHNAME, 1), pattern + strlen(pattern));
+  CU_ASSERT_PTR_EQUAL(retrolibc___glob_fnmatch(pattern, "abc/def", RETROLIBC_FNM_PATHNAME, 1), pattern + strlen(pattern));
+  CU_ASSERT_PTR_NULL(retrolibc___glob_fnmatch(pattern, "abc/ghi/def", RETROLIBC_FNM_PATHNAME, 1));
+}
+
 static void test_glob_fnmatch_matches_string_for_escapes_and_fnm_pathname(void)
 {
   const char *pattern = "a\\*c\\?\\[f";
@@ -460,6 +468,7 @@ int add_glob_fnmatch_suite(void)
   if(CU_add_test(suite, "glob_fnmatch matches string for ? and FNM_PATHNAME", test_glob_fnmatch_matches_string_for_question_and_fnm_pathname) == NULL) return -1;
   if(CU_add_test(suite, "glob_fnmatch matches string for * and FNM_PATHNAME", test_glob_fnmatch_matches_string_for_star_and_fnm_pathname) == NULL) return -1;
   if(CU_add_test(suite, "glob_fnmatch matches string for brackets and / and . and FNM_PATHNAME", test_glob_fnmatch_matches_string_for_brackets_and_slash_and_dot_and_fnm_pathname) == NULL) return -1;
+  if(CU_add_test(suite, "glob_fnmatch matches string for * before / and FNM_PATHNAME", test_glob_fnmatch_matches_string_for_star_before_slash_and_fnm_pathname) == NULL) return -1;
   if(CU_add_test(suite, "glob_fnmatch matches string for escapes and FNM_PATHNAME", test_glob_fnmatch_matches_string_for_escapes_and_fnm_pathname) == NULL) return -1;
   if(CU_add_test(suite, "glob_fnmatch matches string for escapes in brackets and FNM_PATHNAME", test_glob_fnmatch_matches_string_for_escapes_in_brackets_and_fnm_pathname) == NULL) return -1;
   if(CU_add_test(suite, "glob_fnmatch matches string for / after other character and FNM_PATHNAME", test_glob_fnmatch_matches_string_for_slash_after_other_character_and_fnm_pathname) == NULL) return -1; 
