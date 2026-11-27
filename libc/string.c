@@ -60,7 +60,7 @@ void *memcpy(void *d, const void *s, size_t n)
 #ifdef L_memmove
 void *memmove(void *d, const void *s, size_t n)
 {
-  if((char *) s + n > (char *) d) {
+  if((char *) s < (char *) d && (char *) s + n > (char *) d) {
     char *d2 = (char *) d + n;
     const char *s2 = (const char *) s + n;
     for(; n > 0; n--) {

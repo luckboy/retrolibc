@@ -74,6 +74,13 @@ static void test_memmove_moves_memory_with_overflap(void)
   CU_ASSERT_EQUAL(memcmp(buf, "abc\0abc\0def\0", 12), 0);
 }
 
+static void test_memmove_moves_memory_with_overflap_for_destination_that_is_less_than_source(void)
+{
+  static char buf[13] = "XXXXabc\0def\0";
+  CU_ASSERT_PTR_EQUAL(retrolibc_memmove(buf, buf + 4, 8), buf);
+  CU_ASSERT_EQUAL(memcmp(buf, "abc\0def\0def\0", 12), 0);
+}
+
 static void test_memset_fills_memory_with_character(void)
 {
   static char buf[11] = "XXXXXXXXXX";
@@ -311,6 +318,7 @@ int add_string_suite(void)
   if(CU_add_test(suite, "memcpy copies memory", test_memcpy_copies_memory) == NULL) return -1;
   if(CU_add_test(suite, "memmove moves memory", test_memmove_moves_memory) == NULL) return -1;
   if(CU_add_test(suite, "memmove moves memory with overflap", test_memmove_moves_memory_with_overflap) == NULL) return -1;  
+  if(CU_add_test(suite, "memmove moves memory with overflap for destination that is less than source", test_memmove_moves_memory_with_overflap_for_destination_that_is_less_than_source) == NULL) return -1;
   if(CU_add_test(suite, "memset fills memory with character", test_memset_fills_memory_with_character) == NULL) return -1;
   if(CU_add_test(suite, "strcat concatenates two strings",  test_strcat_concatenates_two_strings) == NULL) return -1;
   if(CU_add_test(suite, "strchr returns pointer to occurrence", test_strchr_returns_pointer_to_occurrence) == NULL) return -1;
