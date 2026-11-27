@@ -10,11 +10,11 @@
 #include <fnmatch.h>
 #include "priv_fnmatch.h"
 #else
-#define RETROLIBC_FNMATCH_GLOB
+#define RETROLIBC_GLOB_FNMATCH
 #include "retrolibc.h"
 #endif
 
-const char *__fnmatch_glob(const char *pattern, const char *s, int flags, int is_first_char)
+const char *__glob_fnmatch(const char *pattern, const char *s, int flags, int is_first_char)
 {
   int is_matched;
   int is_caret_or_excl;
@@ -30,7 +30,7 @@ const char *__fnmatch_glob(const char *pattern, const char *s, int flags, int is
       if((flags & FNM_PERIOD) != 0 && is_first_char && *s == '.') return NULL;
       for(; *pattern == '*'; pattern++);
       while(1) {
-        const char *r = __fnmatch_glob(pattern, s, flags, is_first_char);
+        const char *r = __glob_fnmatch(pattern, s, flags, is_first_char);
         if(r != NULL) return r;
         if(*s == '\0' || ((flags & FNM_PATHNAME) != 0 && *s == '/')) break;
         is_first_char = 0;

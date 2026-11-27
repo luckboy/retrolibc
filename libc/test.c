@@ -30,12 +30,12 @@ int add_strings_suite(void);
 int add_time_suite(void);
 int add_bsearch_suite(void);
 int add_efcvt_suite(void);
-int add_fnmatch_glob_suite(void);
 int add_file_suite(void);
 int add_fprintf_suite(void);
 int add_fscanf_suite(void);
 int add_getdate_suite(void);
 int add_getopt_suite(void);
+int add_glob_fnmatch_suite(void);
 int add_gmtime_r_suite(void);
 int add_localtime_r_suite(void);
 int add_malloc_suite(void);
@@ -98,10 +98,6 @@ int main(int argc, char **argv)
     CU_cleanup_registry();
     return CU_get_error();
   }
-  if(add_fnmatch_glob_suite() == -1) {
-    CU_cleanup_registry();
-    return CU_get_error();
-  }
   if(add_file_suite() == -1) {
     CU_cleanup_registry();
     return CU_get_error();
@@ -119,6 +115,10 @@ int main(int argc, char **argv)
     return CU_get_error();
   }
   if(add_getopt_suite() == -1) {
+    CU_cleanup_registry();
+    return CU_get_error();
+  }
+  if(add_glob_fnmatch_suite() == -1) {
     CU_cleanup_registry();
     return CU_get_error();
   }

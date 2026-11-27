@@ -8,6 +8,6 @@
 #ifndef _PRIV_FNMATCH_H
 #define _PRIV_FNMATCH_H
 
-const char *__fnmatch_glob(const char *pattern, const char *s, int flags, int is_first_char);
+const char *__glob_fnmatch(const char *pattern, const char *s, int flags, int is_first_char);
 
 #endif

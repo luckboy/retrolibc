@@ -16,6 +16,6 @@
 
 int fnmatch(const char *pattern, const char *s, int flags)
 {
-  const char *p = __fnmatch_glob(pattern, s, flags, 1);
+  const char *p = __glob_fnmatch(pattern, s, flags, 1);
   return (p !=  NULL && *p == '\0') ? 0 : FNM_NOMATCH;
 }

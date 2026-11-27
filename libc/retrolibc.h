@@ -545,30 +545,6 @@ int retrolibc_fnmatch(const char *pattern, const char *s, int flags);
 #define fnmatch retrolibc_fnmatch
 #endif
 
-/* fnmatch_glob.c */
-
-#define RETROLIBC_FNM_NOMATCH   1
-#define RETROLIBC_FNM_NOSYS     2
-
-#define RETROLIBC_FNM_PATHNAME  (1 << 0)
-#define RETROLIBC_FNM_PERIOD    (1 << 1)
-#define RETROLIBC_FNM_NOESCAPE  (1 << 2)
-
-const char *retrolibc___fnmatch_glob(const char *pattern, const char *s, int flags, int is_first_char);
-
-#if defined(RETROLIBC_FNMATCH_GLOB) || defined(RETROLIBC_FNMATCH)
-
-#define FNM_NOMATCH     RETROLIBC_FNM_NOMATCH
-#define FNM_NOSYS       RETROLIBC_FNM_NOSYS
-
-#define FNM_PATHNAME    RETROLIBC_FNM_PATHNAME
-#define FNM_PERIOD      RETROLIBC_FNM_PERIOD
-#define FNM_NOESCAPE    RETROLIBC_FNM_NOESCAPE
-
-#define __fnmatch_glob retrolibc___fnmatch_glob
-
-#endif
-
 /* fprintf.c */
 
 int retrolibc_fprintf(FILE *f, const char *format, ...);
@@ -630,6 +606,30 @@ int retrolibc_getopt(int argc, char * const argv[], const char *opts);
 #define opterr retrolibc_opterr
 #define optopt retrolibc_optopt
 #define getopt retrolibc_getopt
+#endif
+
+/* glob_fnmatch.c */
+
+#define RETROLIBC_FNM_NOMATCH   1
+#define RETROLIBC_FNM_NOSYS     2
+
+#define RETROLIBC_FNM_PATHNAME  (1 << 0)
+#define RETROLIBC_FNM_PERIOD    (1 << 1)
+#define RETROLIBC_FNM_NOESCAPE  (1 << 2)
+
+const char *retrolibc___glob_fnmatch(const char *pattern, const char *s, int flags, int is_first_char);
+
+#if defined(RETROLIBC_GLOB_FNMATCH) || defined(RETROLIBC_FNMATCH)
+
+#define FNM_NOMATCH     RETROLIBC_FNM_NOMATCH
+#define FNM_NOSYS       RETROLIBC_FNM_NOSYS
+
+#define FNM_PATHNAME    RETROLIBC_FNM_PATHNAME
+#define FNM_PERIOD      RETROLIBC_FNM_PERIOD
+#define FNM_NOESCAPE    RETROLIBC_FNM_NOESCAPE
+
+#define __glob_fnmatch retrolibc___glob_fnmatch
+
 #endif
 
 /* gmtime_r.c */

@@ -160,11 +160,11 @@ OBJS = \
 	$(BUILD_DIR)/bsearch.o \
 	$(BUILD_DIR)/efcvt.o \
 	$(BUILD_DIR)/fnmatch.o \
-	$(BUILD_DIR)/fnmatch_glob.o \
 	$(BUILD_DIR)/fprintf.o \
 	$(BUILD_DIR)/fscanf.o \
 	$(BUILD_DIR)/getdate.o \
 	$(BUILD_DIR)/getopt.o \
+	$(BUILD_DIR)/glob_fnmatch.o \
 	$(BUILD_DIR)/gmtime_r.o \
 	$(BUILD_DIR)/localtime_r.o \
 	$(BUILD_DIR)/malloc.o \
@@ -352,8 +352,6 @@ TEST_OBJS = \
 	$(TEST_BUILD_DIR)/test_efcvt_suite.o \
 	$(TEST_BUILD_DIR)/fnmatch.o \
 	$(TEST_BUILD_DIR)/test_fnmatch_suite.o \
-	$(TEST_BUILD_DIR)/fnmatch_glob.o \
-	$(TEST_BUILD_DIR)/test_fnmatch_glob_suite.o \
 	$(TEST_BUILD_DIR)/fprintf.o \
 	$(TEST_BUILD_DIR)/test_fprintf_suite.o \
 	$(TEST_BUILD_DIR)/fscanf.o \
@@ -362,6 +360,8 @@ TEST_OBJS = \
 	$(TEST_BUILD_DIR)/test_getdate_suite.o \
 	$(TEST_BUILD_DIR)/getopt.o \
 	$(TEST_BUILD_DIR)/test_getopt_suite.o \
+	$(TEST_BUILD_DIR)/glob_fnmatch.o \
+	$(TEST_BUILD_DIR)/test_glob_fnmatch_suite.o \
 	$(TEST_BUILD_DIR)/gmtime_r.o \
 	$(TEST_BUILD_DIR)/test_gmtime_r_suite.o \
 	$(TEST_BUILD_DIR)/localtime_r.o \
