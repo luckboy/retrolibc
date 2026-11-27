@@ -350,6 +350,8 @@ TEST_OBJS = \
 	$(TEST_BUILD_DIR)/test_bsearch_suite.o \
 	$(TEST_BUILD_DIR)/efcvt.o \
 	$(TEST_BUILD_DIR)/test_efcvt_suite.o \
+	$(TEST_BUILD_DIR)/fnmatch_glob.o \
+	$(TEST_BUILD_DIR)/test_fnmatch_glob_suite.o \
 	$(TEST_BUILD_DIR)/fprintf.o \
 	$(TEST_BUILD_DIR)/test_fprintf_suite.o \
 	$(TEST_BUILD_DIR)/fscanf.o \

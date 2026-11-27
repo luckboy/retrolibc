@@ -6,8 +6,13 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 #include <stddef.h>
+#ifndef TEST
 #include <fnmatch.h>
 #include "priv_fnmatch.h"
+#else
+#define RETROLIBC_FNMATCH_GLOB
+#include "retrolibc.h"
+#endif
 
 const char *__fnmatch_glob(const char *pattern, const char *s, int flags, int is_first_char)
 {
@@ -22,7 +27,6 @@ const char *__fnmatch_glob(const char *pattern, const char *s, int flags, int is
       is_first_char = 0;
       break;
     case '*':
-      if((flags & FNM_PATHNAME) != 0 && *s == '/') return NULL;
       if((flags & FNM_PERIOD) != 0 && is_first_char && *s == '.') return NULL;
       for(; *pattern == '*'; pattern++);
       while(1) {
@@ -37,7 +41,11 @@ const char *__fnmatch_glob(const char *pattern, const char *s, int flags, int is
       if((flags & FNM_PATHNAME) != 0 && *s == '/') return NULL;
       if((flags & FNM_PERIOD) != 0 && is_first_char && *s == '.') return NULL;
       is_caret_or_excl = 0;
-      if(*pattern == '^' || *pattern == '!') is_caret_or_excl = 1;
+      pattern++;
+      if(*pattern == '^' || *pattern == '!') {
+        is_caret_or_excl = 1;
+        pattern++;
+      }
       for(is_matched = 0; *pattern != ']' && *pattern != '\0'; pattern++) {
         if((flags & FNM_NOESCAPE) == 0 && *pattern == '\\') pattern++;
         if(*pattern == '\0') break;
@@ -52,11 +60,13 @@ const char *__fnmatch_glob(const char *pattern, const char *s, int flags, int is
         }
       }
       if(!is_caret_or_excl ? !is_matched : is_matched) return NULL;
+      if(*pattern == '\0') pattern--;
       is_first_char = 0;
       break;
     default:
       if((flags & FNM_NOESCAPE) == 0 && *pattern == '\\') pattern++;
       if(*s != *pattern) return NULL;
+      if(*pattern == '\0') pattern--;
       is_first_char = ((flags & FNM_PATHNAME) != 0 && *s == '/');
       break;
     }

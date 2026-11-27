@@ -537,6 +537,30 @@ int retrolibc_ungetc(int c, retrolibc_FILE *f);
 
 #endif
 
+/* fnmatch_glob.c */
+
+#define RETROLIBC_FNM_NOMATCH   1
+#define RETROLIBC_FNM_NOSYS     2
+
+#define RETROLIBC_FNM_PATHNAME  (1 << 0)
+#define RETROLIBC_FNM_PERIOD    (1 << 1)
+#define RETROLIBC_FNM_NOESCAPE  (1 << 2)
+
+const char *retrolibc___fnmatch_glob(const char *pattern, const char *s, int flags, int is_first_char);
+
+#ifdef RETROLIBC_FNMATCH_GLOB
+
+#define FNM_NOMATCH     RETROLIBC_FNM_NOMATCH
+#define FNM_NOSYS       RETROLIBC_FNM_NOSYS
+
+#define FNM_PATHNAME    RETROLIBC_FNM_PATHNAME
+#define FNM_PERIOD      RETROLIBC_FNM_PERIOD
+#define FNM_NOESCAPE    RETROLIBC_FNM_NOESCAPE
+
+#define __fnmatch_glob retrolibc___fnmatch_glob
+
+#endif
+
 /* fprintf.c */
 
 int retrolibc_fprintf(FILE *f, const char *format, ...);

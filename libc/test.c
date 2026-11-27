@@ -30,6 +30,7 @@ int add_strings_suite(void);
 int add_time_suite(void);
 int add_bsearch_suite(void);
 int add_efcvt_suite(void);
+int add_fnmatch_glob_suite(void);
 int add_file_suite(void);
 int add_fprintf_suite(void);
 int add_fscanf_suite(void);
@@ -94,6 +95,10 @@ int main(int argc, char **argv)
     return CU_get_error();
   }
   if(add_efcvt_suite() == -1) {
+    CU_cleanup_registry();
+    return CU_get_error();
+  }
+  if(add_fnmatch_glob_suite() == -1) {
     CU_cleanup_registry();
     return CU_get_error();
   }
